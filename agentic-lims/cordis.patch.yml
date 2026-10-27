@@ -1,0 +1,3 @@
+- insert:
+    - id: agentic-lims
+      name: '@local/agentic-lims'

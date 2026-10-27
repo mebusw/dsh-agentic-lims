@@ -1,0 +1,57 @@
+﻿allocation_id,task_id,person_id,resource_id,allocation_date,allocation_type,planned_load,load_unit,notes
+AL-0001,TASK-2001,P-004,,2026-10-27,Person effort,4,hour,Simulated planned effort; verify daily capacity and activity blocks.
+AL-0002,TASK-2001,P-004,,2026-10-28,Person effort,5,hour,Simulated planned effort; verify daily capacity and activity blocks.
+AL-0003,TASK-2001,P-004,,2026-10-29,Person effort,4,hour,Simulated planned effort; verify daily capacity and activity blocks.
+AL-0004,TASK-2001,P-004,,2026-10-30,Person effort,5,hour,Simulated planned effort; verify daily capacity and activity blocks.
+AL-0005,TASK-2002,P-004,,2026-11-02,Person effort,4,hour,Simulated planned effort; verify daily capacity and activity blocks.
+AL-0006,TASK-2002,P-004,,2026-11-03,Person effort,6,hour,Simulated planned effort; verify daily capacity and activity blocks.
+AL-0007,TASK-2002,P-004,,2026-11-04,Person effort,6,hour,Simulated planned effort; verify daily capacity and activity blocks.
+AL-0008,TASK-2003,P-002,,2026-10-27,Person effort,4,hour,Simulated planned effort; verify daily capacity and activity blocks.
+AL-0009,TASK-2003,P-002,,2026-10-28,Person effort,4,hour,Simulated planned effort; verify daily capacity and activity blocks.
+AL-0010,TASK-2003,P-002,,2026-10-29,Person effort,4,hour,Simulated planned effort; verify daily capacity and activity blocks.
+AL-0011,TASK-2004,P-005,,2026-10-29,Person effort,1,hour,Simulated planned effort; verify daily capacity and activity blocks.
+AL-0012,TASK-2004,P-005,,2026-10-30,Person effort,1,hour,Simulated planned effort; verify daily capacity and activity blocks.
+AL-0013,TASK-2004,P-005,,2026-11-02,Person effort,2,hour,Simulated planned effort; verify daily capacity and activity blocks.
+AL-0014,TASK-2004,P-005,,2026-11-03,Person effort,2,hour,Simulated planned effort; verify daily capacity and activity blocks.
+AL-0015,TASK-2004,P-005,,2026-11-04,Person effort,2,hour,Simulated planned effort; verify daily capacity and activity blocks.
+AL-0016,TASK-2005,P-003,,2026-10-27,Person effort,4,hour,Simulated planned effort; verify daily capacity and activity blocks.
+AL-0017,TASK-2005,P-003,,2026-10-28,Person effort,4,hour,Simulated planned effort; verify daily capacity and activity blocks.
+AL-0018,TASK-2005,P-003,,2026-10-29,Person effort,2,hour,Simulated planned effort; verify daily capacity and activity blocks.
+AL-0019,TASK-2006,P-001,,2026-10-30,Person effort,4,hour,Simulated planned effort; verify daily capacity and activity blocks.
+AL-0020,TASK-2007,P-002,,2026-11-02,Person effort,5,hour,Simulated planned effort; verify daily capacity and activity blocks.
+AL-0021,TASK-2007,P-002,,2026-11-03,Person effort,5,hour,Simulated planned effort; verify daily capacity and activity blocks.
+AL-0022,TASK-2007,P-002,,2026-11-04,Person effort,5,hour,Simulated planned effort; verify daily capacity and activity blocks.
+AL-0023,TASK-2007,P-002,,2026-11-05,Person effort,5,hour,Simulated planned effort; verify daily capacity and activity blocks.
+AL-0024,TASK-2007,P-002,,2026-11-06,Person effort,4,hour,Simulated planned effort; verify daily capacity and activity blocks.
+AL-0025,TASK-2008,P-004,,2026-11-05,Person effort,5,hour,Simulated planned effort; verify daily capacity and activity blocks.
+AL-0026,TASK-2008,P-004,,2026-11-06,Person effort,5,hour,Simulated planned effort; verify daily capacity and activity blocks.
+AL-0027,TASK-2008,P-004,,2026-11-09,Person effort,4,hour,Simulated planned effort; verify daily capacity and activity blocks.
+AL-0028,TASK-2001,,EQ-007,2026-10-27,Resource reservation,4,hour,Simulated reservation load; equipment may require finer-grained time slots in production.
+AL-0029,TASK-2001,,EQ-007,2026-10-28,Resource reservation,5,hour,Simulated reservation load; equipment may require finer-grained time slots in production.
+AL-0030,TASK-2001,,EQ-007,2026-10-29,Resource reservation,4,hour,Simulated reservation load; equipment may require finer-grained time slots in production.
+AL-0031,TASK-2001,,EQ-007,2026-10-30,Resource reservation,5,hour,Simulated reservation load; equipment may require finer-grained time slots in production.
+AL-0032,TASK-2002,,EQ-007,2026-11-02,Resource reservation,4,hour,Simulated reservation load; equipment may require finer-grained time slots in production.
+AL-0033,TASK-2002,,EQ-007,2026-11-03,Resource reservation,6,hour,Simulated reservation load; equipment may require finer-grained time slots in production.
+AL-0034,TASK-2002,,EQ-007,2026-11-04,Resource reservation,6,hour,Simulated reservation load; equipment may require finer-grained time slots in production.
+AL-0035,TASK-2003,,EQ-003,2026-10-27,Resource reservation,4,hour,Simulated reservation load; equipment may require finer-grained time slots in production.
+AL-0036,TASK-2003,,EQ-003,2026-10-28,Resource reservation,4,hour,Simulated reservation load; equipment may require finer-grained time slots in production.
+AL-0037,TASK-2003,,EQ-003,2026-10-29,Resource reservation,4,hour,Simulated reservation load; equipment may require finer-grained time slots in production.
+AL-0038,TASK-2004,,EQ-006,2026-10-29,Resource reservation,1,hour,Simulated reservation load; equipment may require finer-grained time slots in production.
+AL-0039,TASK-2004,,EQ-006,2026-10-30,Resource reservation,1,hour,Simulated reservation load; equipment may require finer-grained time slots in production.
+AL-0040,TASK-2004,,EQ-006,2026-11-02,Resource reservation,2,hour,Simulated reservation load; equipment may require finer-grained time slots in production.
+AL-0041,TASK-2004,,EQ-006,2026-11-03,Resource reservation,2,hour,Simulated reservation load; equipment may require finer-grained time slots in production.
+AL-0042,TASK-2004,,EQ-006,2026-11-04,Resource reservation,2,hour,Simulated reservation load; equipment may require finer-grained time slots in production.
+AL-0043,TASK-2005,,EQ-005,2026-10-27,Resource reservation,4,hour,Simulated reservation load; equipment may require finer-grained time slots in production.
+AL-0044,TASK-2005,,EQ-005,2026-10-28,Resource reservation,4,hour,Simulated reservation load; equipment may require finer-grained time slots in production.
+AL-0045,TASK-2005,,EQ-005,2026-10-29,Resource reservation,2,hour,Simulated reservation load; equipment may require finer-grained time slots in production.
+AL-0046,TASK-2006,,EQ-001,2026-10-30,Resource reservation,4,hour,Simulated reservation load; equipment may require finer-grained time slots in production.
+AL-0047,TASK-2007,,EQ-003,2026-11-02,Resource reservation,5,hour,Simulated reservation load; equipment may require finer-grained time slots in production.
+AL-0048,TASK-2007,,EQ-003,2026-11-03,Resource reservation,5,hour,Simulated reservation load; equipment may require finer-grained time slots in production.
+AL-0049,TASK-2007,,EQ-003,2026-11-04,Resource reservation,5,hour,Simulated reservation load; equipment may require finer-grained time slots in production.
+AL-0050,TASK-2007,,EQ-003,2026-11-05,Resource reservation,5,hour,Simulated reservation load; equipment may require finer-grained time slots in production.
+AL-0051,TASK-2007,,EQ-003,2026-11-06,Resource reservation,4,hour,Simulated reservation load; equipment may require finer-grained time slots in production.
+AL-0052,TASK-2007,,SP-001,2026-11-02,Resource reservation,2,hour,Simulated reservation load; equipment may require finer-grained time slots in production.
+AL-0053,TASK-2007,,SP-001,2026-11-03,Resource reservation,2,hour,Simulated reservation load; equipment may require finer-grained time slots in production.
+AL-0054,TASK-2008,,EQ-007,2026-11-05,Resource reservation,5,hour,Simulated reservation load; equipment may require finer-grained time slots in production.
+AL-0055,TASK-2008,,EQ-007,2026-11-06,Resource reservation,5,hour,Simulated reservation load; equipment may require finer-grained time slots in production.
+AL-0056,TASK-2008,,EQ-007,2026-11-09,Resource reservation,4,hour,Simulated reservation load; equipment may require finer-grained time slots in production.

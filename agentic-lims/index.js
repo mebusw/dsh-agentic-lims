@@ -1,0 +1,76 @@
+/**
+ * Agentic LIMS — Host half.
+ *
+ * Owns the MongoDB connection, the JSON routes consumed by the right-sidebar
+ * page, and the `lims_*` tools the chat agent uses. The browser half lives in
+ * `client.js`; both halves read the same routes and therefore the same results.
+ */
+import { MongoClient } from 'mongodb';
+import { buildRoutes } from './lib/routes.js';
+import { buildTools } from './lib/tools.js';
+import { ensureIndexes, seedDatabase } from './lib/seed.js';
+
+export const name = 'agentic-lims';
+export const inject = ['tools', 'connection', 'systemPrompt'];
+
+const DEFAULTS = {
+  mongoUri: process.env.AGENTIC_LIMS_MONGO_URI || 'mongodb://127.0.0.1:27018',
+  dbName: process.env.AGENTIC_LIMS_DB || 'agentic_lims',
+  demoNow: '2026-10-27T08:00:00+08:00',
+};
+
+const PROMPT = `## Agentic LIMS right-sidebar workspace
+
+The DSH right sidebar hosts an "智能实验室 / Agentic LIMS" workbench backed by MongoDB. It shows the same data you can read through the \`lims_*\` tools.
+
+When the user's request concerns lab tasks, scheduling, resources, qualifications, calibration, delivery risk, utilization, or "what should I do next" in the lab:
+1. Call a \`lims_*\` tool before answering with concrete facts. Do not invent task IDs, durations, resource availability, or feasibility.
+2. For a scheduling request, call \`lims_get_task\` if the task is not fully known, then \`lims_generate_plans\`. The workspace switches to the Schedule page and renders plan comparison, a Gantt timeline, and constraint evaluations.
+3. Treat the engine's constraint results as authoritative. A plan is feasible only when the tool says it is; a hard-constraint failure must never be described as confirmable.
+4. Only call \`lims_confirm_plan\` after the user explicitly confirms a plan. The prototype always writes a simulated confirmation and an audit event, never a production reservation.
+5. Explain trade-offs from the returned structured plans (completion time, due margin, equipment/person load, risks). Mention that the right sidebar shows the visual version.
+6. If there is no feasible plan, explain the diagnostics and suggest concrete next actions; do not fabricate one.
+7. For equipment downtime ("EQ-007 明天维护，哪些任务受影响"), call \`lims_analyze_downtime\` with the device and date. It registers the simulated downtime, re-plans affected tasks against the deterministic engine, and switches the right sidebar to the Impact page. Explain the before/after delta and any remaining late or blocked tasks.
+8. For a revision ("周五下午不要排，优先用 EQ-005，重新安排"), call \`lims_revise_plan\` with the current plan ID and the new constraints. Explain completion-time, score, resource, execution-day and risk changes from the returned comparison. Never claim a plan was revised without the tool result.
+9. Projects contain tasks; a group of tasks under one template can become a test plan. Use \`lims_list_projects\` / \`lims_get_project\` to inspect the structure, then \`lims_generate_test_plan\` with the project and template group. The engine schedules the group in priority order and avoids resource conflicts with earlier tasks in the same batch.
+10. For a simple numeric question ("周三 EQ-007 有多少个预约"), call the dedicated query tool rather than estimating; the chat renders the returned numbers as cards.
+
+The demo clock is frozen at 2026-10-27 08:00 so the bundled mock dataset stays reproducible. The UI is in the right sidebar, not in a separate browser tab.`;
+
+export async function apply(ctx, config = {}) {
+  const settings = { ...DEFAULTS, ...config };
+  const client = new MongoClient(settings.mongoUri, {
+    serverSelectionTimeoutMS: 2500,
+    connectTimeoutMS: 2500,
+    maxPoolSize: 8,
+  });
+  await client.connect();
+  const db = client.db(settings.dbName);
+  await ensureIndexes(db);
+  await seedDatabase(db);
+  ctx.effect(() => () => client.close(), 'agentic-lims: mongodb');
+
+  const routes = buildRoutes({ db, config: settings });
+  for (const route of routes) {
+    ctx.effect(() => ctx.connection.fetch.register(route), `agentic-lims: route ${route.path}`);
+  }
+
+  const tools = buildTools({ db, config: settings }, routes);
+  for (const tool of tools) {
+    ctx.effect(() => ctx.tools.register(tool), `agentic-lims: tool ${tool.name}`);
+  }
+
+  ctx.effect(
+    () =>
+      ctx.systemPrompt.section({
+        name: 'agentic-lims:workspace',
+        order: 640,
+        text: PROMPT,
+      }),
+    'agentic-lims: system prompt',
+  );
+
+  ctx.logger?.info?.(
+    `[agentic-lims] ready: ${routes.length} routes, ${tools.length} tools, mongodb=${settings.mongoUri}/${settings.dbName}`,
+  );
+}

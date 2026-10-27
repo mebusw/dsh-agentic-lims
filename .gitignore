@@ -1,0 +1,9 @@
+# Local MongoDB data and logs (run ./agentic-lims/scripts/start-mongo.sh to recreate)
+.data/
+
+# Dependencies
+node_modules/
+
+# OS / editor noise
+.DS_Store
+*.log

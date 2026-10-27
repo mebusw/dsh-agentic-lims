@@ -1,0 +1,7 @@
+﻿template_id,template_name,method_code,required_equipment_type,required_qualification,required_space_id,prep_duration_min,test_duration_min,notes
+TPL-001,HPLC Assay - Standard,CHEM-HPLC-01,HPLC,HPLC Level 2,SP-001,60,180,Equilibration included
+TPL-002,GC Residual Solvent,CHEM-GC-02,GC-FID,GC Level 2,SP-002,45,150,Includes vial preparation
+TPL-003,Balance Verification,MET-BAL-01,Precision Balance,Balance Level 1,SP-002,20,60,Routine verification
+TPL-004,Tensile Strength Test,MAT-TEN-01,Universal Tester,Universal Tester Level 2,,30,120,Specimen conditioning may be required
+TPL-005,Stability Chamber Loading,STAB-CH-01,Climate Chamber,Climate Chamber Level 1,SP-003,30,90,Long-term chamber occupancy is modeled separately
+TPL-006,Non-standard Method Validation,CUSTOM-VAL,HPLC or GC (case dependent),Relevant Level 2 qualification,SP-001 or SP-002,60,240,Use historical cases as guidance; manual review required

@@ -1,0 +1,61 @@
+{
+  "workspace_id": "ws-task-scheduling-demo",
+  "title": "测试任务排程工作区",
+  "context": {
+    "task_id": "TASK-2005",
+    "project_name": "Hybrid",
+    "task_name": "GC residual solvent test",
+    "due_date": "2026-10-30",
+    "priority": "Urgent"
+  },
+  "components": [
+    {
+      "type": "task-summary",
+      "data_ref": "test_tasks.csv:TASK-2005"
+    },
+    {
+      "type": "plan-comparison",
+      "plans": [
+        {
+          "plan_id": "PLAN-A",
+          "label": "优先交付",
+          "status": "needs_validation"
+        },
+        {
+          "plan_id": "PLAN-B",
+          "label": "均衡负荷",
+          "status": "needs_validation"
+        }
+      ]
+    },
+    {
+      "type": "resource-load",
+      "data_refs": [
+        "person_activities.csv",
+        "daily_schedule_allocations.csv"
+      ]
+    },
+    {
+      "type": "conflict-diagnostics",
+      "status": "must_be_computed_by_constraint_engine"
+    }
+  ],
+  "actions": [
+    {
+      "id": "revise",
+      "label": "调整条件",
+      "requires_confirmation": false
+    },
+    {
+      "id": "confirm",
+      "label": "确认并提交排程",
+      "requires_confirmation": true
+    },
+    {
+      "id": "history",
+      "label": "查看排程历史",
+      "requires_confirmation": false
+    }
+  ],
+  "notice": "演示用静态 payload；候选状态不是实际排程校验结果。"
+}

@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Agentic LIMS",
+    "description": "AI-native lab scheduling workspace in the DSH right sidebar, backed by MongoDB and a deterministic constraint engine."
+  }
+}

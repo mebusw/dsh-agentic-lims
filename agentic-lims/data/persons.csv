@@ -1,0 +1,7 @@
+﻿person_id,person_name,employment_type,team,qualifications,daily_capacity_hours,workday_start,workday_end,status
+P-001,Tester 01,Permanent,Analytical Chemistry,HPLC Level 2; Balance Level 1,8,08:00,17:00,Active
+P-002,Tester 02,Permanent,Analytical Chemistry,HPLC Level 2; GC Level 2,8,08:00,17:00,Active
+P-003,Tester 03,Temporary,Analytical Chemistry,GC Level 2; Sample Prep,7,08:00,16:00,Active
+P-004,Tester 04,Permanent,Materials Testing,Universal Tester Level 2,8,08:00,17:00,Active
+P-005,Tester 05,Permanent,Stability Testing,Climate Chamber Level 1,8,08:00,17:00,Active
+P-006,Tester 06,Temporary,General Lab Support,Sample Prep; Balance Level 1,6,09:00,16:00,Active

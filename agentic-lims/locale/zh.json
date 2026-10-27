@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "智能实验室 Agentic LIMS",
+    "description": "在 DSH 右侧边栏运行的 AI-Native 实验室排程工作台，由 MongoDB 与确定性约束引擎驱动。"
+  }
+}

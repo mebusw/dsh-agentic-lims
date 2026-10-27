@@ -1,0 +1,11 @@
+﻿plan_id,request_id,plan_option,equipment_id,space_id,tester_id,planned_start,planned_end,duration_min,score_0_100,status,strategy,rationale
+PLAN-001,REQ-1002,A,EQ-003,SP-001,P-001,2026-10-27 09:00,2026-10-27 12:00,180,92,Feasible,Fastest completion,Illustrative; check against all other assignments
+PLAN-002,REQ-1009,A,EQ-005,SP-002,P-003,2026-10-27 09:00,2026-10-27 11:30,150,90,Feasible,Fastest completion,GC-FID and qualified tester available
+PLAN-003,REQ-1005,A,EQ-007,,P-004,2026-10-27 09:00,2026-10-27 11:00,120,88,Feasible,Fastest completion,Equipment capability and qualification match
+PLAN-004,REQ-1001,A,EQ-003,SP-001,P-001,2026-10-27 13:00,2026-10-27 16:00,180,84,Conflict,Provisional,Overlaps with PLAN-001 on EQ-003/P-001; must be recalculated
+PLAN-005,REQ-1003,A,EQ-005,SP-002,P-003,2026-10-27 12:30,2026-10-27 15:00,150,83,Feasible,Balanced load,Illustrative slot; verify resource occupancy
+PLAN-006,REQ-1004,A,EQ-001,SP-002,P-001,2026-10-27 09:00,2026-10-27 10:00,60,86,Feasible,Fastest completion,Balance and qualification match
+PLAN-007,REQ-1006,A,EQ-006,SP-003,P-005,2026-10-27 13:00,2026-10-27 14:30,90,81,Feasible,Earliest start,Long-term chamber occupancy modeled separately
+PLAN-008,REQ-1007,A,EQ-003,SP-001,P-001,2026-10-28 09:00,2026-10-28 13:00,240,68,NeedsReview,Historical recommendation,Only two similar examples; manual review required
+PLAN-009,REQ-1008,A,EQ-004,SP-001,P-001,2026-10-28 09:00,2026-10-28 12:00,180,76,Blocked,Blocked,EQ-004 is In Calibration; cannot be scheduled
+PLAN-010,REQ-1010,A,EQ-007,,P-004,2026-10-28 13:00,2026-10-28 15:00,120,79,Feasible,Balanced load,Illustrative slot; verify all resource constraints

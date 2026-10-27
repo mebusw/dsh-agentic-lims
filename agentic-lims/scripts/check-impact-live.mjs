@@ -1,0 +1,11 @@
+import { MongoClient } from 'mongodb';
+import { buildRoutes } from '../lib/routes.js';
+const client = await MongoClient.connect('mongodb://127.0.0.1:27018', { serverSelectionTimeoutMS: 3000 });
+const db = client.db('agentic_lims');
+const routes = buildRoutes({ db, config: { demoNow: '2026-10-27T08:00:00+08:00' } });
+const route = routes.find((r) => r.path === '/api/lims/impact');
+const res = await route.fetch(new Request('http://x/api/lims/impact?equipmentId=EQ-007&date=2026-10-28'));
+const data = await res.json();
+console.log(res.status, data.registered, data.impact?.summary);
+console.log(data.impact?.tasks?.map((t) => ({ task: t.task.id, before: t.before.startLabel, after: t.recommended?.startLabel, days: t.recommended?.segments.map((s) => s.day), delta: t.deltaHours })));
+await client.close();
