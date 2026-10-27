@@ -162,6 +162,7 @@ DSH Web
 | `scripts/check-revision.mjs` | 方案重排、前后对比、旧版本替代与确认拦截测试 |
 | `scripts/check-projects.mjs` | 项目、模板分组、Test Plan 生成与持久化测试 |
 | `scripts/check-resource-schedule.mjs` | 多任务资源排程总览（按周、每任务一个方案）测试 |
+| `scripts/check-client-cards.mjs` | 回答末尾卡片（turn tail）自测：插件注册、Turn 投影与卡片筛选，无需浏览器 |
 
 ## 已知边界
 
