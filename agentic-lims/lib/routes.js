@@ -34,6 +34,11 @@ import {
 } from './seed.js';
 import { dateKey, diffHours, formatDate, parseInstant, priorityRank, round1, sum } from './util.js';
 
+/** Bumped whenever the host route surface changes; the client checks this to
+ * explain a stale `dsh web` process instead of showing a raw HTTP 404. */
+const BUILD = '2026.10.28.2';
+const FEATURES = ['orders', 'order-detail', 'change-impact', 'policies', 'sample-status'];
+
 function json(data, status = 200) {
   return Response.json(data, { status, headers: { 'cache-control': 'no-store' } });
 }
@@ -653,6 +658,8 @@ export function buildRoutes(store) {
         const workspace = await readWorkspace(db);
         return json({
           ok: true,
+          build: BUILD,
+          features: FEATURES,
           mongo: 'connected',
           seed: meta?.version ?? null,
           seededAt: meta?.seededAt ?? null,

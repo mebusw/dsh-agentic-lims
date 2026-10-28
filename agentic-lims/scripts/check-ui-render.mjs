@@ -108,6 +108,14 @@ var inputActions = {
   setDraft: function (text) { inputActions._text = text; document.body.setAttribute('data-quote', text); },
 };
 window.__inputActions = inputActions;
+if (new URLSearchParams(location.search).get('stale')) {
+  var realFetch = window.fetch.bind(window);
+  window.fetch = function (url, options) {
+    var target = String(url);
+    if (target.indexOf('/api/lims/health') === 0) target += '?stale=1';
+    return realFetch(target, options);
+  };
+}
 window.__module.apply(fakeCtx());
 var Panel = registered['sidebar.right.pane.tab'];
 ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(Panel, { inputActions: inputActions }));
@@ -240,6 +248,12 @@ const server = http.createServer(async (req, res) => {
       res.end(url.pathname.endsWith('react-dom.js') ? reactDom : react);
       return;
     }
+    if (url.pathname === '/api/lims/health' && url.searchParams.get('stale') === '1') {
+      // Simulate the pre-upgrade host: same route, no feature list.
+      res.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
+      res.end(JSON.stringify({ ok: true, mongo: 'connected', seed: '2026-10-27.1', demoNow: '2026-10-27T08:00:00+08:00', workspaceRevision: 1 }));
+      return;
+    }
     if (url.pathname.startsWith('/api/lims/')) {
       const route = routes.find((entry) => entry.path === url.pathname && entry.methods.includes(req.method));
       if (!route) {
@@ -321,6 +335,24 @@ const { stdout, stderr } = await exec(
 );
 if (stderr && /uncaught|exception|error/i.test(stderr)) console.error('chrome stderr:', stderr.slice(0, 1500));
 
+const staleRun = await exec(
+  chrome,
+  [
+    '--headless',
+    '--disable-gpu',
+    '--no-sandbox',
+    '--no-first-run',
+    `--user-data-dir=${process.env.TMPDIR ?? '/tmp'}/lims-ui-profile`,
+    '--hide-scrollbars',
+    '--window-size=420,1200',
+    '--virtual-time-budget=9000',
+    '--dump-dom',
+    `http://127.0.0.1:${port}/harness.html?stale=1&only=${encodeURIComponent('订单')}`,
+  ],
+  { maxBuffer: 40 * 1024 * 1024, timeout: 120000 },
+);
+const staleBanner = /后端插件仍是旧进程/.test(staleRun.stdout) && /dsh --profile lims web/.test(staleRun.stdout);
+
 const match = stdout.match(/<pre id="harness-result">([\s\S]*?)<\/pre>/);
 server.close();
 await db.dropDatabase();
@@ -356,6 +388,7 @@ const checks = [
   ['chat tool card renders', result.chatToolView === true],
   ['chat tool card exposes a quote button', result.chatQuoteButton === true],
   ['chat tool card quotes into the composer', result.chatQuoteInserted === true],
+  ['stale host is explained, not shown as a raw 404', staleBanner === true],
   ['no runtime errors', (result.errors || []).length === 0],
 ];
 

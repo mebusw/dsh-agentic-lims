@@ -82,6 +82,11 @@
 .alims-page { display: flex; flex-direction: column; gap: 10px; padding: 12px; }
 .alims-card { position: relative; background: var(--dsw-alias-bg-layer-1); border: 1px solid var(--dsw-alias-border-l1); border-radius: 10px; padding: 11px; min-width: 0; transition: border-color .16s ease, box-shadow .16s ease; }
 .alims-card:hover { border-color: var(--dsw-alias-border-l2); box-shadow: 0 2px 10px rgba(0,0,0,.04); }
+.alims-stale-banner { flex: 0 0 auto; display: flex; align-items: flex-start; gap: 7px; margin: 8px 12px 0; padding: 7px 9px; border: 1px solid var(--alims-warn-border); background: var(--alims-warn-bg); color: var(--alims-warn); border-radius: 8px; font-size: 9.5px; }
+.alims-stale-banner svg { margin-top: 1px; flex: 0 0 auto; }
+.alims-stale-body { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.alims-stale-body strong { font-size: 10px; font-weight: 700; }
+.alims-stale-body span { color: var(--dsw-alias-label-secondary); line-height: 1.5; }
 .alims-rule-badge { display: inline-flex; align-items: center; gap: 3px; font-size: 8.5px; font-weight: 600; color: var(--alims-warn); background: var(--alims-warn-bg); border: 1px solid var(--alims-warn-border); border-radius: 999px; padding: 1px 6px; white-space: nowrap; }
 .alims-muted-card { background: color-mix(in srgb, var(--dsw-alias-bg-layer-1) 72%, transparent); }
 .alims-section-title { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 9px; padding-right: 64px; }
@@ -874,6 +879,8 @@
 
       const PKG = '@local/agentic-lims';
       const KIND = 'agentic-lims';
+      /** Host route surface this build relies on; older processes lack it. */
+      const REQUIRED_FEATURES = ['orders', 'change-impact', 'policies'];
       const MENU = [
         { id: 'dashboard', label: '概览', icon: 'grid' },
         { id: 'orders', label: '订单', icon: 'file' },
@@ -3021,7 +3028,15 @@
         }, [initialOrderId]);
         const detail = useApi(selectedId ? `/api/lims/order?orderId=${encodeURIComponent(selectedId)}` : null, [selectedId]);
         if (list.loading && !list.data) return h(Loading, { label: '读取 Test Order 与 Spec…' });
-        if (list.error) return h(ErrorBox, { message: list.error, onRetry: list.reload });
+        if (list.error) {
+          const stale = /404/.test(String(list.error));
+          return h(ErrorBox, {
+            message: stale
+              ? '订单接口不存在（HTTP 404）：当前运行的后端插件还是旧进程。请在终端执行 dsh --profile lims web 重启，然后刷新页面。'
+              : list.error,
+            onRetry: list.reload,
+          });
+        }
         const orders = list.data?.orders || [];
         const filters = [
           { id: 'all', label: '全部', count: orders.length },
@@ -5232,6 +5247,7 @@
         const [busy, setBusy] = useState(false);
         const [toast, setToast] = useState(null);
         const [connected, setConnected] = useState(false);
+        const [backend, setBackend] = useState(null);
         const workspaceRef = useRef(null);
 
         const showToast = useCallback((title, tone = 'info', detail = '') => {
@@ -5329,6 +5345,18 @@
           const timer = setInterval(loadOverview, 20000);
           return () => clearInterval(timer);
         }, [loadOverview]);
+
+        // A refresh only reloads the client; the host plugin needs `dsh web` to
+        // restart. Detect the mismatch once and explain it instead of a raw 404.
+        useEffect(() => {
+          let alive = true;
+          api('/api/lims/health')
+            .then((data) => alive && setBackend(data))
+            .catch(() => alive && setBackend({ ok: false, features: [] }));
+          return () => {
+            alive = false;
+          };
+        }, []);
 
         useEffect(() => {
           let stopped = false;
@@ -5556,6 +5584,19 @@
           'div',
           { className: 'alims-root' },
           h(TopBar, { page, setPage, connected, workspace, role, onRoleChange: changeRole, menuItems }),
+          backend && (!Array.isArray(backend.features) || REQUIRED_FEATURES.some((feature) => !backend.features.includes(feature)))
+            ? h(
+                'div',
+                { className: 'alims-stale-banner', role: 'alert' },
+                h(Icon, { name: 'alert', size: 14 }),
+                h(
+                  'div',
+                  { className: 'alims-stale-body' },
+                  h('strong', null, '后端插件仍是旧进程'),
+                  h('span', null, '「订单 / 变更影响 / 规则」接口返回 404。请在终端重启 `dsh --profile lims web`，再刷新此页面。'),
+                ),
+              )
+            : null,
           h(
             LimsContext.Provider,
             { value: { inputActions, showToast, pinned, togglePin, removePin, sendToChat, setPage, quote, contextLines } },
