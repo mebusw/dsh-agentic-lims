@@ -2,6 +2,7 @@
  * Model-facing LIMS tools. They call the same HTTP handlers the page uses, so
  * feasibility, revalidation and audit behavior cannot drift between chat and UI.
  */
+import { formatDateTime } from './util.js';
 
 function text(value) {
   return [{ type: 'text', text: value }];
@@ -116,7 +117,7 @@ function renderPlans(value) {
       );
       lines.push(`  预计 ${plan.startLabel || plan.startAt} → ${plan.endLabel || plan.endAt}｜交期余量 ${plan.dueMarginHours}h`);
       if (plan.reservation?.label) lines.push(`  预约规则：${plan.reservation.label}${plan.reservation.confirmed ? '' : '（原型假设，待确认）'}`);
-      if (plan.sample?.readyAt) lines.push(`  样品到位：${plan.sample.statusLabel ?? plan.sample.status} · ${plan.sample.readyAt.slice(5, 16).replace('T', ' ')}`);
+      if (plan.sample?.readyAt) lines.push(`  样品到位：${plan.sample.statusLabel ?? plan.sample.status} · ${formatDateTime(plan.sample.readyAt)}`);
       for (const risk of plan.risks ?? []) lines.push(`  风险：${risk.text}`);
     }
     lines.push('请让用户比较方案后在右侧确认；不要在未确认前说已经写入排程。');
@@ -238,7 +239,7 @@ function renderRequests(value) {
 
 function sampleText(sample) {
   if (!sample) return '样品信息未登记';
-  const ready = sample.readyAt ? `，到位 ${sample.readyAt.slice(5, 16).replace('T', ' ')}` : '';
+  const ready = sample.readyAt ? `，到位 ${formatDateTime(sample.readyAt)}` : '';
   return `${sample.statusLabel ?? sample.status}${ready}${sample.confirmed ? '' : '（原型假设，待确认）'}`;
 }
 
