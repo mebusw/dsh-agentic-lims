@@ -1,12 +1,12 @@
 ﻿equipment_id,equipment_name,equipment_type,location,capabilities,status,maintenance_or_calibration_due,available_from,available_to
-EQ-001,Precision Balance PB-01,Precision Balance,Analytical Lab A,0.1 mg,Operational,2026-12-15,08:00,18:00
-EQ-002,Precision Balance PB-02,Precision Balance,Analytical Lab A,0.1 mg,Operational,2026-11-20,08:00,18:00
-EQ-003,HPLC HPLC-01,HPLC,Instrument Room B,HPLC / UV-Vis,Operational,2027-03-31,08:00,20:00
-EQ-004,HPLC HPLC-02,HPLC,Instrument Room B,HPLC / UV-Vis,In Calibration,2026-10-28,08:00,20:00
-EQ-005,GC GC-01,GC-FID,Instrument Room C,GC-FID,Operational,2027-01-31,08:00,18:00
-EQ-006,Climate Chamber CC-01,Climate Chamber,Stability Lab,Temperature / humidity,Operational,2027-06-30,00:00,23:59
-EQ-007,Universal Tester UT-01,Universal Tester,Materials Lab,Tensile / compression,Operational,2027-02-28,08:00,18:00
-EQ-008,Universal Tester UT-02,Universal Tester,Materials Lab,Tensile / compression,Maintenance Due,2026-10-27,08:00,18:00
-SP-001,Sample Prep Bench A,Lab Space,Prep Room A,Wet chemistry preparation,Available,,08:00,18:00
-SP-002,Sample Prep Bench B,Lab Space,Prep Room B,Dry sample preparation,Available,,08:00,18:00
-SP-003,Controlled Environment Booth,Lab Space,Controlled Room,Humidity-controlled preparation,Available,,08:00,18:00
+EQ-001,Precision Balance PB-01 精密天平,Precision Balance,Analytical Lab A 分析实验室A,0.1 mg,Operational,2026-12-15,08:00,18:00
+EQ-002,Precision Balance PB-02 精密天平,Precision Balance,Analytical Lab A 分析实验室A,0.1 mg,Operational,2026-11-20,08:00,18:00
+EQ-003,HPLC HPLC-01 液相色谱,HPLC,Instrument Room B 仪器室B,HPLC / UV-Vis,Operational,2027-03-31,08:00,20:00
+EQ-004,HPLC HPLC-02 液相色谱,HPLC,Instrument Room B 仪器室B,HPLC / UV-Vis,In Calibration,2026-10-28,08:00,20:00
+EQ-005,GC GC-01 气相色谱,GC-FID,Instrument Room C 仪器室C,GC-FID,Operational,2027-01-31,08:00,18:00
+EQ-006,Climate Chamber CC-01 恒温恒湿箱,Climate Chamber,Stability Lab 稳定性实验室,Temperature / humidity,Operational,2027-06-30,00:00,23:59
+EQ-007,Universal Tester UT-01 万能试验机,Universal Tester,Materials Lab 材料实验室,Tensile / compression,Operational,2027-02-28,08:00,18:00
+EQ-008,Universal Tester UT-02 万能试验机,Universal Tester,Materials Lab 材料实验室,Tensile / compression,Maintenance Due,2026-10-27,08:00,18:00
+SP-001,Sample Prep Bench A 前处理台A,Lab Space,Prep Room A 前处理室A,Wet chemistry preparation,Available,,08:00,18:00
+SP-002,Sample Prep Bench B 前处理台B,Lab Space,Prep Room B 前处理室B,Dry sample preparation,Available,,08:00,18:00
+SP-003,Controlled Environment Booth 控温室,Lab Space,Controlled Room 控温室,Humidity-controlled preparation,Available,,08:00,18:00

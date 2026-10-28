@@ -1132,6 +1132,7 @@ function projectTaskSummary(domain, task) {
     review: isReviewTask(task),
     readiness: taskReadiness(domain, task).state,
     templateId: task.templateId,
+    templateOverrideId: task.templateOverrideId ?? null,
     templateName: task.template?.name ?? null,
     methodCode: task.template?.methodCode ?? null,
     equipmentIds: task.requirements.equipmentIds,

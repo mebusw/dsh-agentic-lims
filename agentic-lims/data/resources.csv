@@ -1,17 +1,17 @@
 ﻿resource_id,resource_name,resource_type,location,capabilities_or_qualification,status,calibration_due_or_status_date,workday_start,workday_end
-EQ-001,Precision Balance PB-01,Equipment,Analytical Lab A,0.1 mg,Operational,2026-12-15,08:00,18:00
-EQ-002,Precision Balance PB-02,Equipment,Analytical Lab A,0.1 mg,Operational,2026-11-20,08:00,18:00
-EQ-003,HPLC HPLC-01,Equipment,Instrument Room B,HPLC / UV-Vis,Operational,2027-03-31,08:00,20:00
-EQ-004,HPLC HPLC-02,Equipment,Instrument Room B,HPLC / UV-Vis,In Calibration,2026-10-28,08:00,20:00
-EQ-005,GC GC-01,Equipment,Instrument Room C,GC-FID,Operational,2027-01-31,08:00,18:00
-EQ-006,Climate Chamber CC-01,Equipment,Stability Lab,Temperature / humidity,Operational,2027-06-30,00:00,23:59
-EQ-007,Universal Tester UT-01,Equipment,Materials Lab,Tensile / compression,Operational,2027-02-28,08:00,18:00
-EQ-008,Universal Tester UT-02,Equipment,Materials Lab,Tensile / compression,Maintenance Due,2026-10-27,08:00,18:00
-SP-001,Sample Prep Bench A,Space,Prep Room A,Wet chemistry preparation,Available,,08:00,18:00
-SP-002,Sample Prep Bench B,Space,Prep Room B,Dry sample preparation,Available,,08:00,18:00
-SP-003,Controlled Environment Booth,Space,Controlled Room,Humidity-controlled preparation,Available,,08:00,18:00
-P-001,Tester 01,Person,Analytical Lab A,HPLC Level 2; Balance Level 1,Active,,08:00,17:00
-P-002,Tester 02,Person,Instrument Room B,HPLC Level 2; GC Level 2,Active,,08:00,17:00
-P-003,Tester 03,Person,Instrument Room C,GC Level 2; Sample Prep,Active,,08:00,17:00
-P-004,Tester 04,Person,Materials Lab,Universal Tester Level 2,Active,,08:00,17:00
-P-005,Tester 05,Person,Stability Lab,Climate Chamber Level 1,Active,,08:00,17:00
+EQ-001,Precision Balance PB-01 精密天平,Equipment,Analytical Lab A 分析实验室A,0.1 mg,Operational,2026-12-15,08:00,18:00
+EQ-002,Precision Balance PB-02 精密天平,Equipment,Analytical Lab A 分析实验室A,0.1 mg,Operational,2026-11-20,08:00,18:00
+EQ-003,HPLC HPLC-01 液相色谱,Equipment,Instrument Room B 仪器室B,HPLC / UV-Vis,Operational,2027-03-31,08:00,20:00
+EQ-004,HPLC HPLC-02 液相色谱,Equipment,Instrument Room B 仪器室B,HPLC / UV-Vis,In Calibration,2026-10-28,08:00,20:00
+EQ-005,GC GC-01 气相色谱,Equipment,Instrument Room C 仪器室C,GC-FID,Operational,2027-01-31,08:00,18:00
+EQ-006,Climate Chamber CC-01 恒温恒湿箱,Equipment,Stability Lab 稳定性实验室,Temperature / humidity,Operational,2027-06-30,00:00,23:59
+EQ-007,Universal Tester UT-01 万能试验机,Equipment,Materials Lab 材料实验室,Tensile / compression,Operational,2027-02-28,08:00,18:00
+EQ-008,Universal Tester UT-02 万能试验机,Equipment,Materials Lab 材料实验室,Tensile / compression,Maintenance Due,2026-10-27,08:00,18:00
+SP-001,Sample Prep Bench A 前处理台A,Space,Prep Room A 前处理室A,Wet chemistry preparation,Available,,08:00,18:00
+SP-002,Sample Prep Bench B 前处理台B,Space,Prep Room B 前处理室B,Dry sample preparation,Available,,08:00,18:00
+SP-003,Controlled Environment Booth 控温室,Space,Controlled Room 控温室,Humidity-controlled preparation,Available,,08:00,18:00
+P-001,Tester 01 张伟,Person,Analytical Lab A 分析实验室A,HPLC Level 2; Balance Level 1,Active,,08:00,17:00
+P-002,Tester 02 李娜,Person,Instrument Room B 仪器室B,HPLC Level 2; GC Level 2,Active,,08:00,17:00
+P-003,Tester 03 王强,Person,Instrument Room C 仪器室C,GC Level 2; Sample Prep,Active,,08:00,17:00
+P-004,Tester 04 赵敏,Person,Materials Lab 材料实验室,Universal Tester Level 2,Active,,08:00,17:00
+P-005,Tester 05 陈晨,Person,Stability Lab 稳定性实验室,Climate Chamber Level 1,Active,,08:00,17:00

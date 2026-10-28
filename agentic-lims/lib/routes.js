@@ -3,6 +3,7 @@
  * (`ctx.connection.fetch.register`), so the page uses the same cookie as chat.
  */
 import { analyzeDowntime, buildOverview, comparePlans, computeAnalytics, createEngineContext, equipmentBookings, explainResource, generatePlans, generateTestPlan, projectDetail, projectSummaries, resourcePage, resourceSchedule, taskDetail } from './engine.js';
+import { createTaskDrafts, prepareTaskDrafts } from './drafts.js';
 import { isReviewTask } from './model.js';
 import {
   addAudit,
@@ -47,12 +48,22 @@ async function makeContext(db, domain, config) {
   return createEngineContext(domain, now, { downtime });
 }
 
-function overviewPayload(domain, ctx, audit) {
+function overviewPayload(domain, ctx, audit, plans = []) {
   const recentAudit = audit.slice(0, 6);
   const overview = buildOverview(domain, ctx);
+  const activeByTask = new Map();
+  for (const plan of plans) {
+    if (!plan || plan.status === 'superseded' || !Array.isArray(plan.segments) || plan.segments.length === 0) continue;
+    if (!activeByTask.has(plan.taskId)) activeByTask.set(plan.taskId, plan);
+  }
+  const scheduledTasks = domain.tasks.filter((task) => activeByTask.has(task.id)).length;
+  overview.stats.scheduledTasks = scheduledTasks;
+  overview.stats.unscheduledTasks = domain.tasks.length - scheduledTasks;
   overview.tasks = overview.tasks.map((task) => ({
     ...task,
     risk: overview.riskTasks.includes(task.id) ? (task.review ? 'medium' : 'high') : 'low',
+    scheduled: activeByTask.has(task.id),
+    planId: activeByTask.get(task.id)?.id ?? null,
   }));
   return { ...overview, recentAudit };
 }
@@ -136,8 +147,9 @@ async function handlePlans(db, config, request) {
       taskId: task.id,
     });
   }
+  const targetPage = body.page === 'dashboard' ? 'dashboard' : 'schedule';
   const workspace = await writeWorkspace(db, {
-    page: 'schedule',
+    page: targetPage,
     taskId: task.id,
     planIds: result.plans.map((plan) => plan.id),
     selectedPlanId: result.plans[0]?.id ?? null,
@@ -150,7 +162,7 @@ async function handlePlans(db, config, request) {
         : `「${task.name}」当前没有可行方案，请查看冲突诊断。`,
     source: body.actor ?? 'workspace',
   });
-  return json({ ok: true, ...result, comparison, workspace });
+  return json({ ok: true, ...result, comparison, workspace, task: { id: task.id, name: task.name } });
 }
 
 async function handleConfirm(db, config, request) {
@@ -470,7 +482,8 @@ export function buildRoutes(store) {
         const domain = await loadDomain(db);
         const ctx = await makeContext(db, domain, config);
         const audit = await readAudit(db, 20);
-        return json({ ok: true, ...overviewPayload(domain, ctx, audit) });
+        const plans = await readActivePlans(db);
+        return json({ ok: true, ...overviewPayload(domain, ctx, audit, plans) });
       }),
     },
     {
@@ -519,6 +532,147 @@ export function buildRoutes(store) {
         const ctx = await makeContext(db, domain, config);
         const audit = await readAudit(db, 6);
         return json({ ok: true, ...computeAnalytics(domain, ctx, audit) });
+      }),
+    },
+    {
+      path: '/api/lims/requests',
+      methods: ['GET'],
+      requestBody: 'buffered',
+      fetch: wrap(async () => {
+        const domain = await loadDomain(db);
+        const requests = domain.requests.map((request) => ({
+          id: request.id,
+          orderId: request.orderId,
+          templateId: request.templateId,
+          templateName: domain.templateById.get(request.templateId)?.name ?? null,
+          name: request.name,
+          priority: request.priority,
+          requestedAt: request.requestedAt?.toISOString() ?? null,
+          dueAt: request.dueAt?.toISOString() ?? null,
+          sampleCount: request.sampleCount,
+          summary: request.summary,
+          ruleStatus: request.ruleStatus,
+        }));
+        return json({ ok: true, requests });
+      }),
+    },
+    {
+      path: '/api/lims/task-draft/prepare',
+      methods: ['POST'],
+      requestBody: 'buffered',
+      fetch: wrap(async (request) => {
+        const body = await readBody(request);
+        if (!body.projectId) return fail('缺少 projectId', 400);
+        const domain = await loadDomain(db);
+        const result = prepareTaskDrafts(domain, body.projectId, {
+          requestText: body.requestText,
+          requestId: body.requestId,
+          templateId: body.templateId,
+          name: body.name,
+          method: body.method,
+          priority: body.priority,
+          dueDate: body.dueDate,
+          requestedStart: body.requestedStart ?? dateKey(config.demoNow),
+          effortHours: body.effortHours,
+          elapsedDays: body.elapsedDays,
+          qualifications: body.qualifications,
+          equipmentIds: body.equipmentIds,
+          spaceIds: body.spaceIds,
+        });
+        if (!result.found) return fail(result.error, 404);
+        return json({ ok: true, ...result });
+      }),
+    },
+    {
+      path: '/api/lims/task-drafts',
+      methods: ['POST'],
+      requestBody: 'buffered',
+      fetch: wrap(async (request) => {
+        const body = await readBody(request);
+        if (!body.projectId) return fail('缺少 projectId', 400);
+        const domain = await loadDomain(db);
+        const result = await createTaskDrafts(db, domain, body.projectId, body.drafts, body.actor ?? 'agent');
+        if (!result.ok) return fail(result.error, 400);
+        await addAudit(db, {
+          type: 'task_drafts_created',
+          actor: body.actor ?? 'agent',
+          summary: `从 request 拆解创建 ${result.created.length} 个任务`,
+          detail: result.created.map((task) => `${task.id} ${task.name}（${task.templateId}）`).join('；'),
+          projectId: body.projectId,
+        });
+        const workspace = await writeWorkspace(db, {
+          page: 'projects',
+          projectId: body.projectId,
+          message: `已从 request 拆解创建 ${result.created.length} 个任务，可在项目页查看并继续排程。`,
+          source: body.actor ?? 'agent',
+        });
+        return json({ ok: true, ...result, workspace });
+      }),
+    },
+    {
+      path: '/api/lims/templates',
+      methods: ['GET'],
+      requestBody: 'buffered',
+      fetch: wrap(async () => {
+        const domain = await loadDomain(db);
+        const templates = domain.templates.map((template) => {
+          const tasks = domain.tasks.filter((task) => task.templateId === template.id);
+          const projects = new Map();
+          for (const task of tasks) {
+            if (!projects.has(task.projectId)) projects.set(task.projectId, { id: task.projectId, name: task.projectName, taskCount: 0 });
+            projects.get(task.projectId).taskCount += 1;
+          }
+          return {
+            id: template.id,
+            name: template.name,
+            methodCode: template.methodCode,
+            requiredEquipmentType: template.requiredEquipmentType,
+            requiredQualification: template.requiredQualification,
+            requiredSpaceId: template.requiredSpaceId,
+            prepMinutes: template.prepMinutes,
+            testMinutes: template.testMinutes,
+            notes: template.notes,
+            taskCount: tasks.length,
+            projects: [...projects.values()].sort((a, b) => a.id.localeCompare(b.id)),
+          };
+        });
+        const unmatchedTasks = domain.tasks
+          .filter((task) => !task.templateId)
+          .map((task) => ({ id: task.id, name: task.name, projectId: task.projectId, projectName: task.projectName }));
+        return json({ ok: true, templates, unmatchedTasks });
+      }),
+    },
+    {
+      path: '/api/lims/task-template',
+      methods: ['POST'],
+      requestBody: 'buffered',
+      fetch: wrap(async (request) => {
+        const body = await readBody(request);
+        if (!body.taskId) return fail('缺少 taskId', 400);
+        const domain = await loadDomain(db);
+        const task = domain.taskById.get(body.taskId);
+        if (!task) return fail(`找不到任务 ${body.taskId}`, 404);
+        const templateId = body.templateId || null;
+        if (templateId && !domain.templateById.has(templateId)) return fail(`找不到模板 ${templateId}`, 404);
+        if (templateId) {
+          await db.collection('task_template_overrides').updateOne(
+            { _id: task.id },
+            { $set: { templateId, updatedAt: new Date().toISOString(), actor: body.actor ?? 'workspace' } },
+            { upsert: true },
+          );
+        } else {
+          await db.collection('task_template_overrides').deleteOne({ _id: task.id });
+        }
+        await addAudit(db, {
+          type: 'template_mapping_changed',
+          actor: body.actor ?? 'workspace',
+          summary: templateId ? `修改 ${task.id} 的模板映射为 ${templateId}` : `重置 ${task.id} 为自动模板匹配`,
+          detail: templateId
+            ? `任务「${task.name}」的模板从 ${task.templateId ?? '未匹配'} 改为 ${templateId}；项目分组与后续测试计划会使用新模板。`
+            : `任务「${task.name}」恢复按方法/设备自动匹配模板；项目分组与后续测试计划会重新计算。`,
+          taskId: task.id,
+        });
+        return json({ ok: true, taskId: task.id, projectId: task.projectId, templateId });
       }),
     },
     {

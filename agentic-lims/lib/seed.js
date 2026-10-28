@@ -55,7 +55,9 @@ export async function readRawDataset(db) {
 
 export async function loadDomain(db) {
   const raw = await readRawDataset(db);
-  return buildDomain(raw);
+  const overrides = await db.collection('task_template_overrides').find({}).toArray();
+  const mapping = Object.fromEntries(overrides.map((item) => [item._id, item.templateId]));
+  return buildDomain(raw, mapping);
 }
 
 export async function ensureIndexes(db) {
@@ -79,6 +81,7 @@ export async function seedDatabase(db, { force = false } = {}) {
       db.collection('test_plans').deleteMany({}),
       db.collection('audit_events').deleteMany({}),
       db.collection('downtime_events').deleteMany({}),
+      db.collection('task_template_overrides').deleteMany({}),
     ]);
   }
   const raw = await loadRawDataset();

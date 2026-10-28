@@ -78,9 +78,9 @@
 .alims-menu-live { width: 5px; height: 5px; border-radius: 50%; background: var(--alims-ok); margin-left: 1px; }
 .alims-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden; scrollbar-width: thin; }
 .alims-page { display: flex; flex-direction: column; gap: 10px; padding: 12px; }
-.alims-card { background: var(--dsw-alias-bg-layer-1); border: 1px solid var(--dsw-alias-border-l1); border-radius: 10px; padding: 11px; min-width: 0; }
+.alims-card { position: relative; background: var(--dsw-alias-bg-layer-1); border: 1px solid var(--dsw-alias-border-l1); border-radius: 10px; padding: 11px; min-width: 0; }
 .alims-muted-card { background: color-mix(in srgb, var(--dsw-alias-bg-layer-1) 72%, transparent); }
-.alims-section-title { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 9px; }
+.alims-section-title { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 9px; padding-right: 24px; }
 .alims-section-heading { display: flex; align-items: baseline; gap: 6px; font-size: 12px; font-weight: 650; min-width: 0; }
 .alims-section-meta { font-size: 10px; font-weight: 400; color: var(--dsw-alias-label-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .alims-link { border: 1px solid var(--alims-action-border); background: var(--alims-action); color: #fff; font-size: 9.5px; font-weight: 600; cursor: pointer; padding: 2px 6px; border-radius: 5px; white-space: nowrap; }
@@ -607,6 +607,188 @@
 .alims-overview-footer i { width: 5px; height: 5px; border-radius: 50%; display: inline-block; }
 .alims-overview-note { font-style: italic; }
 .alims-overview-missing { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; font-size: 8.5px; color: var(--dsw-alias-label-secondary); border-top: 1px solid var(--dsw-alias-border-l1); padding-top: 5px; }
+.alims-viewtoggle { display: inline-flex; border: 1px solid var(--dsw-alias-border-l1); border-radius: 5px; overflow: hidden; flex: 0 0 auto; }
+.alims-viewtoggle button { border: 0; background: transparent; color: var(--dsw-alias-label-secondary); font-size: 8.5px; font-weight: 600; padding: 2px 6px; cursor: pointer; font-family: inherit; }
+.alims-viewtoggle button.is-active { background: var(--alims-action); color: #fff; }
+.alims-week-calendar { display: grid; grid-template-columns: repeat(7, minmax(118px, 1fr)); gap: 4px; overflow-x: auto; padding-bottom: 3px; }
+.alims-cal-day { border: 1px solid var(--dsw-alias-border-l1); border-radius: 6px; background: color-mix(in srgb, var(--dsw-alias-bg-base) 45%, transparent); padding: 4px; min-height: 84px; min-width: 0; }
+.alims-cal-day-head { display: flex; align-items: baseline; justify-content: space-between; gap: 3px; border-bottom: 1px solid var(--dsw-alias-border-l1); padding-bottom: 3px; margin-bottom: 3px; }
+.alims-cal-day-head span { font-size: 8.5px; font-weight: 650; }
+.alims-cal-day-head small { font-size: 7px; color: var(--dsw-alias-label-secondary); }
+.alims-cal-empty { font-size: 8px; color: var(--dsw-alias-label-secondary); text-align: center; padding-top: 10px; }
+.alims-cal-card { border-left: 3px solid var(--alims-action); border-radius: 4px; background: var(--dsw-alias-bg-layer-1); padding: 3px 4px; margin-top: 3px; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.alims-cal-card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 3px; }
+.alims-cal-card-head strong { font-size: 7.5px; }
+.alims-cal-card-head span { font-size: 7px; color: var(--alims-action); font-weight: 650; white-space: nowrap; }
+.alims-cal-card-name { font-size: 7.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.alims-cal-card-res { font-size: 6.5px; color: var(--dsw-alias-label-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.alims-cal-card-hours { font-size: 6.5px; color: var(--dsw-alias-label-secondary); }
+.alims-card-collapse { position: absolute; top: 5px; right: 5px; z-index: 2; width: 17px; height: 17px; border-radius: 4px; border: 1px solid var(--dsw-alias-border-l1); background: var(--dsw-alias-bg-layer-1); color: var(--dsw-alias-label-secondary); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; padding: 0; opacity: .7; }
+.alims-card-collapse:hover { opacity: 1; color: var(--alims-action); border-color: var(--alims-action); }
+.alims-card.is-collapsed { padding-top: 9px; padding-bottom: 7px; }
+.alims-card-collapsed { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 2px 24px 1px 0; font-size: 10px; font-weight: 600; color: var(--dsw-alias-label-secondary); border-top: 1px dashed var(--dsw-alias-border-l1); cursor: pointer; }
+.alims-card-collapsed-title { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--dsw-alias-label-primary); }
+.alims-card-collapsed small { font-size: 8px; font-weight: 400; color: var(--dsw-alias-label-secondary); }
+.alims-action-banner { display: flex; align-items: flex-start; gap: 7px; border: 1px solid var(--alims-ok-border); background: var(--alims-ok-bg); border-radius: 8px; padding: 8px 9px; color: var(--alims-ok); }
+.alims-action-banner.is-error { border-color: var(--alims-err-border); background: var(--alims-err-bg); color: var(--alims-err); }
+.alims-action-icon { margin-top: 1px; flex: 0 0 auto; }
+.alims-action-body { flex: 1 1 auto; min-width: 0; }
+.alims-action-title { font-size: 10.5px; font-weight: 700; }
+.alims-action-detail { font-size: 9px; color: var(--dsw-alias-label-secondary); overflow-wrap: anywhere; }
+.alims-action-time { font-size: 8px; color: var(--dsw-alias-label-secondary); margin-top: 1px; }
+.alims-action-banner .alims-link { flex: 0 0 auto; }
+.alims-action-banner .alims-icon-btn { width: 18px; height: 18px; flex: 0 0 auto; }
+.alims-widget-picker-card { background: linear-gradient(135deg, var(--alims-brand-bg), var(--dsw-alias-bg-layer-1) 70%); border-color: var(--alims-brand-border); }
+.alims-widget-picker { display: flex; flex-wrap: wrap; gap: 4px; }
+.alims-widget-chip { display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--dsw-alias-border-l1); background: var(--dsw-alias-bg-layer-2); color: var(--dsw-alias-label-secondary); border-radius: 5px; padding: 3px 6px; font-size: 9px; cursor: pointer; font-family: inherit; }
+.alims-widget-chip.is-active { background: var(--alims-action); border-color: var(--alims-action-border); color: #fff; }
+.alims-widget-card { display: flex; flex-direction: column; gap: 5px; }
+.alims-widget-actions { display: flex; align-items: center; gap: 3px; flex-wrap: wrap; justify-content: flex-end; }
+.alims-widget-actions .alims-icon-btn { width: 17px; height: 17px; }
+.alims-widget-select { width: 64px !important; font-size: 8px !important; padding: 1px 3px !important; }
+.alims-widget-body { display: flex; flex-direction: column; gap: 4px; }
+.alims-widget-kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
+.alims-widget-kpis > div { display: flex; flex-direction: column; gap: 1px; padding: 5px 6px; border: 1px solid var(--dsw-alias-border-l1); border-radius: 6px; background: color-mix(in srgb, var(--dsw-alias-bg-base) 45%, transparent); }
+.alims-widget-kpis span { font-size: 8px; color: var(--dsw-alias-label-secondary); }
+.alims-widget-kpis strong { font-size: 14px; }
+.alims-widget-row { display: flex; align-items: center; gap: 5px; padding: 3px 1px; border-bottom: 1px solid var(--dsw-alias-border-l1); min-width: 0; font-size: 9px; }
+.alims-widget-row:last-child { border-bottom: 0; }
+.alims-widget-row strong { font-size: 9px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.alims-widget-row small { margin-left: auto; color: var(--dsw-alias-label-secondary); font-size: 8px; white-space: nowrap; }
+.alims-widget-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--alims-action); flex: 0 0 auto; }
+.alims-widget-dot.is-warn { background: var(--alims-warn); }
+.alims-widget-alert { display: flex; align-items: center; gap: 5px; padding: 4px 6px; border-radius: 5px; background: var(--alims-warn-bg); border: 1px solid var(--alims-warn-border); font-size: 8.5px; color: var(--alims-warn); min-width: 0; }
+.alims-widget-alert span { font-weight: 600; white-space: nowrap; }
+.alims-widget-alert small { color: var(--dsw-alias-label-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.alims-widget-summary { font-size: 9px; color: var(--dsw-alias-label-secondary); }
+.alims-widget-callout { display: flex; align-items: flex-start; gap: 5px; padding: 5px 6px; border-radius: 5px; background: var(--alims-warn-bg); border: 1px solid var(--alims-warn-border); color: var(--alims-warn); font-size: 8.5px; }
+.alims-pinned-widgets { display: flex; flex-direction: column; gap: 8px; }
+.alims-pinned-label { font-size: 8px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: var(--dsw-alias-label-secondary); padding-left: 2px; }
+.alims-timeline { display: flex; flex-direction: column; gap: 4px; }
+.alims-timeline-header { display: grid; gap: 4px; align-items: stretch; }
+.alims-timeline-corner { display: flex; align-items: center; font-size: 8px; color: var(--dsw-alias-label-secondary); padding: 2px 3px; min-width: 0; }
+.alims-timeline-days { display: grid; gap: 1px; min-width: 0; }
+.alims-timeline-day-head { display: flex; flex-direction: column; align-items: center; justify-content: center; border-bottom: 1px solid var(--dsw-alias-border-l1); padding: 2px 0; min-width: 0; }
+.alims-timeline-day-head span { font-size: 8px; font-weight: 600; white-space: nowrap; }
+.alims-timeline-day-head small { font-size: 7px; color: var(--dsw-alias-label-secondary); white-space: nowrap; }
+.alims-timeline-row { display: grid; gap: 4px; align-items: stretch; }
+.alims-timeline-label { display: flex; flex-direction: column; justify-content: center; gap: 1px; padding: 3px 0; min-width: 0; }
+.alims-timeline-label-main { display: flex; align-items: center; gap: 4px; font-size: 8.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.alims-timeline-dot { width: 5px; height: 5px; border-radius: 50%; flex: 0 0 auto; }
+.alims-timeline-label small { font-size: 7px; color: var(--dsw-alias-label-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.alims-timeline-track { position: relative; min-height: 30px; border: 1px solid var(--dsw-alias-border-l1); border-radius: 5px; background: color-mix(in srgb, var(--dsw-alias-bg-base) 45%, transparent); overflow: hidden; }
+.alims-timeline-grid { position: absolute; inset: 0; display: grid; }
+.alims-timeline-day { border-left: 1px solid var(--dsw-alias-border-l1); }
+.alims-timeline-day:first-child { border-left: 0; }
+.alims-timeline-bar { position: absolute; border: 1px solid; border-radius: 3px; color: #fff; display: flex; align-items: center; gap: 3px; padding: 0 3px; font-size: 7px; line-height: 1; overflow: hidden; white-space: nowrap; box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+.alims-timeline-bar-label { font-weight: 650; overflow: hidden; text-overflow: ellipsis; }
+.alims-timeline-bar small { font-size: 6px; opacity: .9; overflow: hidden; text-overflow: ellipsis; }
+.alims-gantt-hint { font-size: 8px; color: var(--dsw-alias-label-secondary); line-height: 1.35; margin-top: 1px; }
+.alims-calendar-two-weeks { display: flex; flex-direction: column; gap: 7px; }
+.alims-cal-week { border: 1px solid var(--dsw-alias-border-l1); border-radius: 7px; padding: 5px; background: color-mix(in srgb, var(--dsw-alias-bg-base) 35%, transparent); }
+.alims-cal-week-head { display: flex; align-items: baseline; justify-content: space-between; gap: 5px; margin-bottom: 4px; }
+.alims-cal-week-head strong { font-size: 9px; }
+.alims-cal-week-head span { font-size: 8px; color: var(--dsw-alias-label-secondary); }
+.alims-cal-week-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px; }
+.alims-cal-day { min-height: 88px; border: 1px solid var(--dsw-alias-border-l1); border-radius: 5px; padding: 3px; background: var(--dsw-alias-bg-layer-1); min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.alims-cal-day-head { display: flex; align-items: baseline; justify-content: space-between; gap: 2px; border-bottom: 1px solid var(--dsw-alias-border-l1); padding-bottom: 2px; }
+.alims-cal-day-head span { font-size: 8px; font-weight: 650; white-space: nowrap; }
+.alims-cal-day-head small { font-size: 6.5px; color: var(--dsw-alias-label-secondary); white-space: nowrap; }
+.alims-cal-day-head em { font-size: 6px; font-style: normal; color: var(--alims-action); white-space: nowrap; }
+.alims-cal-empty { font-size: 8px; color: var(--dsw-alias-label-secondary); text-align: center; padding-top: 12px; }
+.alims-cal-block { border-radius: 3px; color: #fff; padding: 2px 3px; display: flex; flex-direction: column; gap: 1px; min-width: 0; overflow: hidden; }
+.alims-cal-block-time { font-size: 6px; font-weight: 650; white-space: nowrap; }
+.alims-cal-block-task { font-size: 6px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.alims-cal-block-hours { font-size: 5.5px; opacity: .85; }
+.alims-agent-note { font-size: 8.5px; color: var(--dsw-alias-label-secondary); line-height: 1.35; }
+.alims-agent-result { display: flex; align-items: flex-start; gap: 6px; margin-top: 6px; padding: 6px 7px; border-radius: 7px; border: 1px solid var(--alims-ok-border); background: var(--alims-ok-bg); color: var(--alims-ok); }
+.alims-agent-result.is-error { border-color: var(--alims-err-border); background: var(--alims-err-bg); color: var(--alims-err); }
+.alims-agent-result.is-pending { border-color: var(--alims-brand-border); background: var(--alims-brand-bg); color: var(--alims-brand); }
+.alims-agent-result-body { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.alims-agent-result-body strong { font-size: 9.5px; }
+.alims-agent-result-body span { font-size: 8.5px; color: var(--dsw-alias-label-secondary); overflow-wrap: anywhere; }
+.alims-agent-result-body small { font-size: 8px; color: var(--dsw-alias-label-secondary); }
+.alims-coverage { display: flex; flex-direction: column; gap: 4px; }
+.alims-coverage-bar { display: flex; height: 8px; border-radius: 999px; overflow: hidden; background: var(--dsw-alias-bg-layer-2); }
+.alims-coverage-bar span { display: block; height: 100%; }
+.alims-coverage-bar .is-scheduled, .alims-coverage-legend i.is-scheduled { background: #1d4ed8; }
+.alims-coverage-bar .is-unplanned, .alims-coverage-legend i.is-unplanned { background: #b45309; }
+.alims-coverage-legend { display: flex; align-items: center; gap: 9px; font-size: 8px; color: var(--dsw-alias-label-secondary); }
+.alims-coverage-legend span { display: inline-flex; align-items: center; gap: 3px; }
+.alims-coverage-legend i { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+.alims-coverage-list { display: flex; flex-direction: column; gap: 2px; margin-top: 6px; }
+.alims-coverage-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 5px; padding: 3px 1px; border-bottom: 1px solid var(--dsw-alias-border-l1); }
+.alims-coverage-row:last-child { border-bottom: 0; }
+.alims-coverage-id { font-size: 7.5px; color: var(--alims-action); font-weight: 650; white-space: nowrap; }
+.alims-coverage-name { font-size: 8.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.alims-coverage-row .alims-link { font-size: 8px; padding: 1px 4px; }
+.alims-coverage-note { font-size: 8px; color: var(--dsw-alias-label-secondary); line-height: 1.35; margin-top: 5px; }
+.alims-tool-confirm { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; padding-top: 7px; border-top: 1px solid var(--dsw-alias-border-l1); }
+.alims-tool-confirm-note { display: flex; align-items: flex-start; gap: 5px; padding: 5px 6px; border-radius: 5px; background: var(--alims-warn-bg); border: 1px solid var(--alims-warn-border); color: var(--alims-warn); }
+.alims-tool-confirm-note div { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.alims-tool-confirm-note strong { font-size: 9px; }
+.alims-tool-confirm-note span { font-size: 8px; color: var(--dsw-alias-label-secondary); }
+.alims-tool-confirm-list { display: flex; flex-direction: column; gap: 4px; }
+.alims-tool-confirm-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 4px 5px; border: 1px solid var(--dsw-alias-border-l1); border-radius: 6px; background: var(--dsw-alias-bg-layer-2); }
+.alims-tool-confirm-row > div { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.alims-tool-confirm-row strong { font-size: 9px; }
+.alims-tool-confirm-row span { font-size: 8.5px; color: var(--dsw-alias-label-secondary); }
+.alims-tool-confirm-row small { font-size: 7.5px; color: var(--dsw-alias-label-secondary); font-family: ui-monospace, monospace; overflow-wrap: anywhere; }
+.alims-tool-confirm-row .alims-btn { font-size: 9px; padding: 4px 7px; white-space: nowrap; }
+.alims-tool-confirm-result { display: flex; align-items: flex-start; gap: 6px; margin-top: 8px; padding: 6px 7px; border-radius: 6px; border: 1px solid var(--alims-ok-border); background: var(--alims-ok-bg); color: var(--alims-ok); }
+.alims-tool-confirm-result div { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.alims-tool-confirm-result strong { font-size: 9.5px; }
+.alims-tool-confirm-result span { font-size: 8.5px; color: var(--dsw-alias-label-secondary); }
+.alims-tool-confirm-result small { font-size: 8px; color: var(--dsw-alias-label-secondary); }
+.alims-plan-confirm-state { display: flex; align-items: center; gap: 6px; margin-top: 8px; padding: 6px 7px; border-radius: 6px; border: 1px solid var(--alims-warn-border); background: var(--alims-warn-bg); color: var(--alims-warn); }
+.alims-plan-confirm-state.is-confirmed { border-color: var(--alims-ok-border); background: var(--alims-ok-bg); color: var(--alims-ok); }
+.alims-plan-confirm-text { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.alims-plan-confirm-text strong { font-size: 9.5px; }
+.alims-plan-confirm-text span { font-size: 8.5px; color: var(--dsw-alias-label-secondary); }
+.alims-plan-confirm-state .alims-btn { font-size: 9.5px; padding: 4px 7px; white-space: nowrap; }
+.alims-project-order-note { font-size: 9px; color: var(--dsw-alias-label-secondary); line-height: 1.4; padding: 5px 7px; border-left: 2px solid var(--alims-action); background: var(--alims-brand-bg); border-radius: 0 4px 4px 0; }
+.alims-testplan-card.is-selected { border-color: var(--alims-brand); box-shadow: 0 0 0 1px var(--alims-brand) inset, 0 4px 12px rgba(37, 99, 235, .1); background: linear-gradient(135deg, var(--alims-brand-bg), var(--dsw-alias-bg-layer-1) 66%); }
+.alims-testplan-selected { display: flex; align-items: center; gap: 6px; padding: 6px 7px; border: 1px solid var(--alims-brand-border); background: var(--alims-brand-bg); border-radius: 6px; color: var(--alims-brand); }
+.alims-testplan-selected-body { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.alims-testplan-selected-body strong { font-size: 9.5px; }
+.alims-testplan-selected-body span { font-size: 8.5px; color: var(--dsw-alias-label-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.alims-testplan-preview { display: flex; align-items: center; gap: 5px; padding: 7px; border: 1px dashed var(--dsw-alias-border-l1); border-radius: 6px; font-size: 8.5px; color: var(--dsw-alias-label-secondary); }
+.alims-testplan-preview span { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.alims-testplan-plan-list { display: flex; flex-direction: column; gap: 2px; border-top: 1px solid var(--dsw-alias-border-l1); padding-top: 5px; }
+.alims-testplan-plan-row { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto 30px; gap: 5px; align-items: center; font-size: 8px; }
+.alims-testplan-plan-task { font-weight: 650; color: var(--alims-action); }
+.alims-testplan-plan-time { color: var(--dsw-alias-label-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.alims-testplan-plan-hours { text-align: right; color: var(--dsw-alias-label-secondary); }
+.alims-link:disabled, .alims-link.is-current { opacity: .65; cursor: default; }
+.alims-template-matrix-card { background: linear-gradient(135deg, var(--alims-brand-bg), var(--dsw-alias-bg-layer-1) 74%); border-color: var(--alims-brand-border); }
+.alims-template-matrix { display: flex; flex-direction: column; gap: 5px; }
+.alims-template-matrix-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 5px 8px; align-items: start; padding: 5px 0; border-bottom: 1px solid var(--dsw-alias-border-l1); }
+.alims-template-matrix-row:last-of-type { border-bottom: 0; }
+.alims-template-matrix-name { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.alims-template-matrix-name strong { font-size: 9px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.alims-template-matrix-name span { font-size: 7.5px; color: var(--dsw-alias-label-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.alims-template-matrix-projects { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 3px; }
+.alims-template-project-chip { border: 1px solid var(--alims-action-border); background: var(--alims-action); color: #fff; border-radius: 4px; padding: 2px 5px; font-size: 7.5px; cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; gap: 2px; }
+.alims-template-project-chip:hover { background: var(--alims-action-hover); }
+.alims-template-project-chip small { font-size: 7px; opacity: .85; }
+.alims-template-matrix-count { font-size: 7.5px; color: var(--dsw-alias-label-secondary); white-space: nowrap; text-align: right; }
+.alims-template-map-card { border-color: var(--alims-brand-border); }
+.alims-template-map-list { display: flex; flex-direction: column; gap: 4px; }
+.alims-template-map-row { display: grid; grid-template-columns: minmax(0, 1fr) 138px auto; gap: 5px; align-items: center; padding: 4px 0; border-bottom: 1px solid var(--dsw-alias-border-l1); }
+.alims-template-map-row:last-child { border-bottom: 0; }
+.alims-template-map-task { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.alims-template-map-task strong { font-size: 8.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.alims-template-map-task span { font-size: 7.5px; color: var(--dsw-alias-label-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.alims-template-map-select { width: 138px; font-size: 8px; padding: 2px 3px; }
+.alims-template-map-row .alims-link { font-size: 8px; padding: 2px 4px; white-space: nowrap; }
+.alims-inline-note.is-warn { color: var(--alims-warn); }
+.alims-tool-drafts { display: flex; flex-direction: column; gap: 4px; margin-top: 7px; }
+.alims-tool-drafts-label { font-size: 8px; font-weight: 700; letter-spacing: .3px; color: var(--dsw-alias-label-secondary); text-transform: uppercase; }
+.alims-tool-draft { display: flex; flex-direction: column; gap: 2px; padding: 5px 6px; border: 1px solid var(--dsw-alias-border-l1); border-radius: 6px; background: var(--dsw-alias-bg-layer-2); }
+.alims-tool-draft > div { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.alims-tool-draft strong { font-size: 9px; }
+.alims-tool-draft span { font-size: 8px; color: var(--dsw-alias-label-secondary); }
+.alims-tool-draft small { font-size: 8px; color: var(--alims-warn); }
 @keyframes alims-spin { to { transform: rotate(360deg); } }
 @keyframes alims-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 @media (max-width: 380px) {
@@ -633,12 +815,23 @@
         { id: 'impact', label: '影响', icon: 'alert' },
         { id: 'resources', label: '资源', icon: 'cube' },
         { id: 'analytics', label: '分析', icon: 'chart' },
+        { id: 'custom', label: '自定义', icon: 'grid' },
         { id: 'audit', label: '审计', icon: 'clock' },
       ];
+      const LimsContext = React.createContext(null);
+      const PIN_VIEWS = [
+        { id: 'dashboard', label: '概览' },
+        { id: 'projects', label: '项目' },
+        { id: 'schedule', label: '排程' },
+        { id: 'impact', label: '影响' },
+        { id: 'analytics', label: '分析' },
+        { id: 'resources', label: '资源' },
+        { id: 'audit', label: '审计' },
+      ];
       const ROLES = {
-        lab: { label: '实验人员', short: 'Lab', pages: ['dashboard', 'projects', 'tasks', 'schedule', 'resources', 'impact'], defaultPage: 'dashboard' },
-        lead: { label: 'TM / TL', short: 'Lead', pages: ['dashboard', 'projects', 'tasks', 'schedule', 'impact', 'resources', 'analytics', 'audit'], defaultPage: 'schedule' },
-        ops: { label: '运营负责人', short: 'Ops', pages: ['dashboard', 'projects', 'schedule', 'impact', 'resources', 'analytics', 'audit'], defaultPage: 'analytics' },
+        lab: { label: '实验人员', short: 'Lab', pages: ['dashboard', 'projects', 'tasks', 'schedule', 'resources', 'impact', 'custom'], defaultPage: 'dashboard' },
+        lead: { label: 'TM / TL', short: 'Lead', pages: ['dashboard', 'projects', 'tasks', 'schedule', 'impact', 'resources', 'analytics', 'custom', 'audit'], defaultPage: 'schedule' },
+        ops: { label: '运营负责人', short: 'Ops', pages: ['dashboard', 'projects', 'schedule', 'impact', 'resources', 'analytics', 'custom', 'audit'], defaultPage: 'analytics' },
       };
       const PRIORITY = {
         Urgent: { label: '紧急', tone: 'error', rank: 0 },
@@ -833,8 +1026,122 @@
         );
       }
 
-      function Card({ children, className, style, onClick }) {
-        return h('div', { className: cx('alims-card', className), style, onClick }, children);
+      const TITLE_CLASSES = [
+        'alims-agent-title',
+        'alims-impact-hero-title',
+        'alims-impact-task-title',
+        'alims-detail-title',
+        'alims-project-title',
+        'alims-project-group-title',
+        'alims-personal-title',
+        'alims-testplan-title',
+        'alims-explain-title',
+      ];
+      const CARD_TITLE_BY_CLASS = {
+        'alims-agent-card': 'Agent 协作入口',
+        'alims-personal-view': '我的下周安排',
+        'alims-ops-focus': '运营关注',
+        'alims-impact-form': '设备停机影响分析',
+        'alims-impact-hero': '停机影响',
+        'alims-impact-task': '受影响任务',
+        'alims-project-hero': '项目详情',
+        'alims-project-group': '模板分组',
+        'alims-detail-hero': '任务详情',
+        'alims-testplan-card': '测试计划',
+        'alims-plan-summary': '当前方案摘要',
+        'alims-schedule-toolbar': '排程工具',
+        'alims-revise-card': '调整条件并重排',
+        'alims-explain-card': '资源可用性',
+        'alims-bottleneck': '主要瓶颈',
+        'alims-compare-card': '变更前后对比',
+        'alims-overview-card': '资源排程总览',
+        'alims-widget-picker-card': '卡片库',
+        'alims-widget-card': '共享卡片',
+      };
+
+      function flattenNodeText(node) {
+        if (node === null || node === undefined || typeof node === 'boolean') return '';
+        if (typeof node === 'string' || typeof node === 'number') return String(node);
+        if (Array.isArray(node)) return node.map(flattenNodeText).join('');
+        if (React.isValidElement(node)) return flattenNodeText(node.props?.children);
+        return '';
+      }
+
+      function findCardTitle(node, depth = 0) {
+        if (!node || depth > 4) return '';
+        if (Array.isArray(node)) {
+          for (const child of node) {
+            const found = findCardTitle(child, depth + 1);
+            if (found) return found;
+          }
+          return '';
+        }
+        if (!React.isValidElement(node)) return '';
+        if (node.type === SectionTitle) {
+          return flattenNodeText(node.props?.title).trim();
+        }
+        const className = typeof node.props?.className === 'string' ? node.props.className : '';
+        if (className && TITLE_CLASSES.some((token) => className.split(/\s+/).includes(token))) {
+          const text = flattenNodeText(node.props?.children).trim();
+          if (text) return text;
+        }
+        return findCardTitle(node.props?.children, depth + 1);
+      }
+
+      function cardTitleFromClass(className) {
+        if (!className) return '';
+        const tokens = String(className).split(/\s+/);
+        for (const token of tokens) if (CARD_TITLE_BY_CLASS[token]) return CARD_TITLE_BY_CLASS[token];
+        return '';
+      }
+
+      function Card({ children, className, style, onClick, cardId, title }) {
+        const autoId = React.useId ? React.useId() : 'card';
+        const id = cardId || autoId;
+        const derivedTitle = title || findCardTitle(children) || cardTitleFromClass(className) || '卡片';
+        const [collapsed, setCollapsed] = useState(() => {
+          try {
+            return typeof localStorage !== 'undefined' && localStorage.getItem(`alims.card.${id}`) === '1';
+          } catch {
+            return false;
+          }
+        });
+        const toggle = (event) => {
+          event.stopPropagation();
+          setCollapsed((value) => {
+            const next = !value;
+            try {
+              if (typeof localStorage !== 'undefined') localStorage.setItem(`alims.card.${id}`, next ? '1' : '0');
+            } catch {
+              /* storage can be unavailable */
+            }
+            return next;
+          });
+        };
+        return h(
+          'div',
+          { className: cx('alims-card', collapsed && 'is-collapsed', className), style, onClick, 'data-card-id': cardId || undefined },
+          h(
+            'button',
+            {
+              type: 'button',
+              className: 'alims-card-collapse',
+              title: collapsed ? `展开「${derivedTitle}」` : `折叠「${derivedTitle}」`,
+              'aria-label': collapsed ? `展开 ${derivedTitle}` : `折叠 ${derivedTitle}`,
+              'aria-expanded': !collapsed,
+              onClick: toggle,
+            },
+            h(Icon, { name: 'chevron', size: 11, style: { transform: collapsed ? 'rotate(-90deg)' : 'rotate(90deg)' } }),
+          ),
+          collapsed
+            ? h(
+                'div',
+                { className: 'alims-card-collapsed', role: 'button', tabIndex: 0, title: `展开「${derivedTitle}」`, onClick: toggle },
+                h('span', { className: 'alims-card-collapsed-title' }, derivedTitle),
+                h('small', null, '点击展开'),
+              )
+            : children,
+        );
       }
 
       function SectionTitle({ title, meta, action }) {
@@ -946,6 +1253,121 @@
         return h('div', { className: 'alims-tool-list' }, rows);
       }
 
+      function PlanConfirmActions({ plans, task }) {
+        const [busy, setBusy] = useState(null);
+        const [result, setResult] = useState(null);
+        const [error, setError] = useState(null);
+        if (!plans || plans.length === 0) return null;
+        const confirm = async (planId) => {
+          setBusy(planId);
+          setError(null);
+          try {
+            const data = await api('/api/lims/confirm', { method: 'POST', body: { planId } });
+            setResult(data);
+          } catch (failure) {
+            setError(failure.message);
+          } finally {
+            setBusy(null);
+          }
+        };
+        if (result) {
+          return h(
+            'div',
+            { className: 'alims-tool-confirm-result' },
+            h(Icon, { name: 'check', size: 13 }),
+            h(
+              'div',
+              null,
+              h('strong', null, '已模拟确认'),
+              h('span', null, `${result.plan?.id || ''} · ${result.plan?.startLabel || ''} → ${result.plan?.endLabel || ''}`),
+              h('small', null, `资源占用 ${result.allocations ?? 0} 条 · 审计 ${result.audit?.id || '已写入'} · 右侧排程已更新`),
+            ),
+          );
+        }
+        return h(
+          'div',
+          { className: 'alims-tool-confirm' },
+          h(
+            'div',
+            { className: 'alims-tool-confirm-note' },
+            h(Icon, { name: 'info', size: 12 }),
+            h('div', null, h('strong', null, '当前是候选方案，尚未确认'), h('span', null, '方案已写入 MongoDB；确认后才占用资源并写入审计。')),
+          ),
+          h(
+            'div',
+            { className: 'alims-tool-confirm-list' },
+            plans.map((plan) =>
+              h(
+                'div',
+                { key: plan.id, className: 'alims-tool-confirm-row' },
+                h('div', null, h('strong', null, plan.strategyLabel || plan.id), h('span', null, `${plan.startLabel || '—'} → ${plan.endLabel || '—'}`), h('small', null, plan.id)),
+                h(
+                  'button',
+                  {
+                    className: 'alims-btn alims-btn-primary',
+                    disabled: Boolean(busy) || plan.status === 'confirmed' || plan.status === 'superseded' || plan.status === 'needs_review',
+                    onClick: () => confirm(plan.id),
+                  },
+                  plan.status === 'confirmed' ? '已确认' : plan.status === 'superseded' ? '已替代' : plan.status === 'needs_review' ? '需审核' : busy === plan.id ? '确认中…' : '确认此方案',
+                ),
+              ),
+            ),
+          ),
+          error ? h('div', { className: 'alims-tool-error' }, error) : null,
+        );
+      }
+
+      function TaskDraftActions({ projectId, drafts }) {
+        const [busy, setBusy] = useState(false);
+        const [created, setCreated] = useState(null);
+        const [error, setError] = useState(null);
+        if (!drafts || drafts.length === 0) return null;
+        const canCreate = drafts.every((draft) => draft.templateId && draft.dueDate && Number(draft.effortHours) > 0);
+        const create = async () => {
+          setBusy(true);
+          setError(null);
+          try {
+            const data = await api('/api/lims/task-drafts', { method: 'POST', body: { projectId, drafts, actor: 'user' } });
+            setCreated(data);
+          } catch (failure) {
+            setError(failure.message);
+          } finally {
+            setBusy(false);
+          }
+        };
+        if (created) {
+          return h(
+            'div',
+            { className: 'alims-tool-confirm-result' },
+            h(Icon, { name: 'check', size: 13 }),
+            h(
+              'div',
+              null,
+              h('strong', null, `已创建 ${created.created?.length ?? 0} 个任务`),
+              h('span', null, (created.created ?? []).map((task) => `${task.id} ${task.name}`).join('；')),
+              h('small', null, '右侧项目页已更新；可以继续生成测试计划或排程。'),
+            ),
+          );
+        }
+        return h(
+          'div',
+          { className: 'alims-tool-confirm' },
+          h(
+            'div',
+            { className: 'alims-tool-confirm-note' },
+            h(Icon, { name: 'info', size: 12 }),
+            h('div', null, h('strong', null, '草稿尚未写入任务'), h('span', null, '确认后才写入 raw_tasks 并建立模板映射；创建后才能排程。')),
+          ),
+          h(
+            'div',
+            { className: 'alims-tool-confirm-row' },
+            h('div', null, h('strong', null, `${drafts.length} 个草稿待创建`), h('span', null, drafts.map((draft) => draft.name).join('；'))),
+            h('button', { className: 'alims-btn alims-btn-primary', disabled: busy || !canCreate, onClick: create }, busy ? '创建中…' : '创建这些任务（模拟）'),
+          ),
+          error ? h('div', { className: 'alims-tool-error' }, error) : null,
+        );
+      }
+
       function LimsToolView({ phase, block, toolName }) {
         if (phase !== 'result') {
           return h(
@@ -1037,6 +1459,67 @@
             ),
           );
         }
+        if (meta.kind === 'requests') {
+          return h(
+            ToolCard,
+            { icon: 'list', title: '测试请求', subtitle: `${meta.requests?.length ?? 0} 条` },
+            h(
+              ToolList,
+              {
+                rows: (meta.requests ?? []).map((request) =>
+                  h('div', { key: request.id, className: 'alims-tool-row is-block' }, h('div', null, h('strong', null, request.name), h('span', null, `${request.id} · ${request.templateId ?? '—'} ${request.templateName ?? ''} · ${request.sampleCount} 样品 · 交期 ${request.dueAt ?? '—'}`)), h(Pill, { tone: priorityInfo(request.priority).tone }, request.priority)),
+                ),
+              },
+            ),
+          );
+        }
+        if (meta.kind === 'taskdrafts') {
+          const drafts = meta.drafts ?? [];
+          return h(
+            ToolCard,
+            { icon: 'spark', title: 'Request → Task 拆解', subtitle: meta.project ? `${meta.project.id} · ${meta.project.name}` : '' },
+            h('div', { className: 'alims-tool-note' }, `request：${meta.requestText || '—'}`),
+            meta.template ? h('div', { className: 'alims-tool-note' }, `模板：${meta.template.id} ${meta.template.name}（方法代码 ${meta.template.methodCode}）`) : h('div', { className: 'alims-tool-note is-late' }, '未确定模板，创建前需先指定。'),
+            h('div', { className: 'alims-tool-note' }, meta.recommendation === 'use_existing' ? '建议优先复用已有任务；如确实要新增，再创建草稿。' : (meta.matches ?? []).length === 0 ? '未匹配到已有任务，建议创建草稿并补齐字段。' : '已有任务匹配度一般；可复用或创建草稿。'),
+            (meta.matches ?? []).length > 0
+              ? h(
+                  'div',
+                  { className: 'alims-tool-drafts' },
+                  h('div', { className: 'alims-tool-drafts-label' }, '已有任务匹配'),
+                  h(
+                    ToolList,
+                    {
+                      rows: (meta.matches ?? []).map((match) =>
+                        h('div', { key: match.taskId, className: 'alims-tool-row' }, h('div', null, h('strong', null, match.name), h('span', null, `${match.taskId} · ${match.templateId ?? '—'} · ${match.reason}`)), h(Pill, { tone: match.confidence === 'high' ? 'ok' : match.confidence === 'medium' ? 'warn' : 'idle' }, match.confidence)),
+                      ),
+                    },
+                  ),
+                )
+              : null,
+            h(
+              'div',
+              { className: 'alims-tool-drafts' },
+              h('div', { className: 'alims-tool-drafts-label' }, '任务草稿（只读，尚未写入）'),
+              drafts.map((draft, index) =>
+                h(
+                  'div',
+                  { key: draft.draftId ?? index, className: 'alims-tool-draft' },
+                  h('div', null, h('strong', null, draft.name), h('span', null, `${draft.templateId ?? '无模板'} ${draft.templateName ?? ''} · ${draft.priority} · 交期 ${draft.dueDate}${draft.estimatedDue ? '（估算）' : ''} · ${draft.effortHours}h${draft.estimatedEffort ? '（估算）' : ''}`)),
+                  (draft.missing ?? []).length > 0 ? h('small', null, `缺口：${draft.missing.join('；')}`) : null,
+                ),
+              ),
+            ),
+            h(TaskDraftActions, { projectId: meta.project?.id, drafts }),
+          );
+        }
+        if (meta.kind === 'taskscreated') {
+          return h(
+            ToolCard,
+            { icon: 'check', title: '任务已创建', subtitle: `${meta.created?.length ?? 0} 个`, tone: 'ok' },
+            h(ToolList, { rows: (meta.created ?? []).map((task) => h('div', { key: task.id, className: 'alims-tool-row' }, h('div', null, h('strong', null, task.name), h('span', null, `${task.id} · ${task.templateId} · ${task.dueDate} · ${task.effortHours}h`)), h(Pill, { tone: 'ok' }, '已创建'))) }),
+            h('div', { className: 'alims-tool-note' }, '右侧项目页已更新；继续生成测试计划或候选方案。'),
+          );
+        }
         if (meta.kind === 'plans') {
           return h(
             ToolCard,
@@ -1047,12 +1530,14 @@
               (meta.plans ?? []).map((plan) => h('div', { key: plan.id, className: 'alims-tool-plan' }, h('div', { className: 'alims-tool-plan-head' }, h('strong', null, plan.strategyLabel), h(Pill, { tone: plan.status === 'feasible' ? 'ok' : plan.status === 'at_risk' ? 'warn' : plan.status === 'needs_review' ? 'warn' : 'error' }, plan.statusLabel)), h('div', { className: 'alims-tool-plan-score' }, plan.score, h('small', null, '分')), h('div', { className: 'alims-tool-plan-meta' }, `${plan.startLabel} → ${plan.endLabel}`), h('div', { className: 'alims-tool-plan-meta' }, `${plan.resources?.equipment?.name ?? '—'} + ${plan.resources?.person?.name ?? '—'}`))),
             ),
             (meta.diagnostics ?? []).length > 0 ? h('div', { className: 'alims-tool-error' }, meta.diagnostics.map((item) => item.text).join('；')) : null,
+            h(PlanConfirmActions, { plans: meta.plans, task: meta.task }),
           );
         }
         if (meta.kind === 'revision') {
           const comparison = meta.comparison;
           if (!comparison) return h(ToolCard, { icon: 'refresh', title: '重排', subtitle: meta.task?.name || '' }, h('div', { className: 'alims-muted' }, '没有旧方案可对比。'));
           const delta = comparison.completionDeltaHours;
+          const confirmPlans = (meta.plans ?? []).length > 0 ? meta.plans : comparison.after?.id ? [comparison.after] : [];
           return h(
             ToolCard,
             { icon: 'refresh', title: '重排前后对比', subtitle: meta.task ? `${meta.task.id} · ${meta.task.name}` : '' },
@@ -1073,6 +1558,7 @@
             (comparison.resourceChanges ?? []).length > 0
               ? h(ToolList, { rows: comparison.resourceChanges.map((change) => h('div', { key: change.role, className: 'alims-tool-row' }, h('span', { className: 'alims-tool-dot' }), h('div', null, h('strong', null, change.label), h('span', null, `${change.from || '—'} → ${change.to || '—'}`)))) })
               : null,
+            h(PlanConfirmActions, { plans: confirmPlans, task: meta.task }),
           );
         }
         if (meta.kind === 'analytics') {
@@ -1178,6 +1664,9 @@
         'lims_list_projects',
         'lims_get_project',
         'lims_generate_test_plan',
+        'lims_list_requests',
+        'lims_prepare_task_draft',
+        'lims_create_task_draft',
       ];
       const LIMS_ANSWER_CARD_KEY = 'lims-answer-cards';
       const SURFACE_EVENT_TYPES = new Set(['system/message', 'developer/message', 'user/message', 'assistant/message', 'tool/result']);
@@ -1258,6 +1747,219 @@
           'div',
           { className: 'alims-turn-cards' },
           cards.map((card) => h(LimsToolView, { key: card.callId, phase: 'result', toolName: card.toolName, block: { meta: card.meta, content: [] } })),
+        );
+      }
+
+      // --------------------------------------------------------- shared widgets
+      function WidgetOverviewContent() {
+        const state = useApi('/api/lims/overview');
+        if (state.loading && !state.data) return h(Loading, { label: '读取概览…' });
+        if (state.error) return h(ErrorBox, { message: state.error, onRetry: state.reload });
+        const data = state.data;
+        if (!data) return null;
+        return h(
+          'div',
+          { className: 'alims-widget-body' },
+          h(
+            'div',
+            { className: 'alims-stats' },
+            h(StatTile, { label: '待排任务', value: data.stats.openTasks, unit: '项', foot: `${data.stats.totalTasks} 项任务`, tone: 'brand', icon: 'list' }),
+            h(StatTile, { label: '需关注', value: data.stats.riskTasks, unit: '项', foot: `${data.stats.reviewTasks} 项待审核`, tone: 'warn', icon: 'alert' }),
+            h(StatTile, { label: '设备可用', value: `${data.stats.equipmentAvailable}/${data.stats.equipmentTotal}`, foot: `${data.stats.spacesAvailable} 个空间`, tone: 'ok', icon: 'cube' }),
+            h(StatTile, { label: '14 天负荷', value: data.stats.equipmentUtilization, unit: '%', foot: `${data.stats.totalLoadHours ?? 0}h`, tone: 'brand', icon: 'chart' }),
+          ),
+          (data.alerts ?? []).slice(0, 2).map((alert, index) => h('div', { key: index, className: 'alims-widget-alert' }, h(Icon, { name: 'alert', size: 11 }), h('span', null, alert.title), h('small', null, alert.detail))),
+        );
+      }
+
+      function WidgetResourceContent() {
+        const state = useApi('/api/lims/resource-schedule');
+        if (state.loading && !state.data) return h(Loading, { label: '读取资源排程…' });
+        if (state.error) return h(ErrorBox, { message: state.error, onRetry: state.reload });
+        const data = state.data;
+        if (!data) return null;
+        return h(
+          'div',
+          { className: 'alims-widget-body' },
+          h('div', { className: 'alims-widget-summary' }, `本周 ${data.summary.schedules} 条 · ${data.summary.resources} 个资源 · ${data.summary.withoutPlan} 个任务未生成`),
+          (data.resources ?? []).slice(0, 4).map((resource) =>
+            h('div', { key: resource.id, className: 'alims-widget-row' }, h('span', { className: 'alims-widget-dot', style: { background: resource.kind === 'equipment' ? '#1d4ed8' : resource.kind === 'person' ? '#0f766e' : '#b45309' } }), h('strong', null, resource.name), h('small', null, `${resource.segments.length} 个时段`)),
+          ),
+        );
+      }
+
+      function WidgetAnalyticsContent() {
+        const state = useApi('/api/lims/analytics');
+        if (state.loading && !state.data) return h(Loading, { label: '读取分析…' });
+        if (state.error) return h(ErrorBox, { message: state.error, onRetry: state.reload });
+        const data = state.data;
+        if (!data) return null;
+        return h(
+          'div',
+          { className: 'alims-widget-body' },
+          h(
+            'div',
+            { className: 'alims-widget-kpis' },
+            h('div', null, h('span', null, '综合利用率'), h('strong', null, `${data.summary.equipmentUtilization}%`)),
+            h('div', null, h('span', null, '风险任务'), h('strong', null, data.summary.tasksAtRisk)),
+            h('div', null, h('span', null, '不可用设备'), h('strong', null, data.summary.blockedEquipment)),
+          ),
+          data.bottleneck ? h('div', { className: 'alims-widget-callout' }, h(Icon, { name: 'target', size: 12 }), h('span', null, data.bottleneck.text)) : null,
+          (data.riskTasks ?? []).slice(0, 3).map((task) => h('div', { key: task.id, className: 'alims-widget-row' }, h('span', { className: 'alims-widget-dot is-warn' }), h('strong', null, task.name), h('small', null, `${task.daysLeft} 天 · ${task.loadPct}%`))),
+        );
+      }
+
+      function WidgetAuditContent() {
+        const state = useApi('/api/lims/audit');
+        if (state.loading && !state.data) return h(Loading, { label: '读取审计…' });
+        if (state.error) return h(ErrorBox, { message: state.error, onRetry: state.reload });
+        return h(
+          'div',
+          { className: 'alims-widget-body' },
+          (state.data?.events ?? []).slice(0, 5).map((event) =>
+            h('div', { key: event.id, className: 'alims-widget-row' }, h('span', { className: 'alims-widget-dot' }), h('strong', null, event.summary), h('small', null, fmtDateTime(event.at))),
+          ),
+        );
+      }
+
+      function WidgetProjectsContent() {
+        const state = useApi('/api/lims/projects');
+        if (state.loading && !state.data) return h(Loading, { label: '读取项目…' });
+        if (state.error) return h(ErrorBox, { message: state.error, onRetry: state.reload });
+        return h(
+          'div',
+          { className: 'alims-widget-body' },
+          (state.data?.projects ?? []).slice(0, 4).map((project) =>
+            h('div', { key: project.id, className: 'alims-widget-row' }, h('span', { className: 'alims-widget-dot' }), h('strong', null, project.name), h('small', null, `${project.taskCount} 个任务 · ${project.effortHours}h`)),
+          ),
+        );
+      }
+
+      const WIDGET_DEFS = [
+        { id: 'overview-kpis', title: '概览 KPI', icon: 'grid', content: WidgetOverviewContent },
+        { id: 'resource-week', title: '资源排程摘要', icon: 'calendar', content: WidgetResourceContent },
+        { id: 'analytics-bottleneck', title: '瓶颈与风险', icon: 'target', content: WidgetAnalyticsContent },
+        { id: 'audit-recent', title: '最近审计', icon: 'clock', content: WidgetAuditContent },
+        { id: 'projects-summary', title: '项目摘要', icon: 'layer', content: WidgetProjectsContent },
+      ];
+
+      function WidgetShell({ widget, mode = 'custom', view, onRemove, onMoveUp, onMoveDown }) {
+        const ctx = React.useContext(LimsContext);
+        const content = widget.content;
+        return h(
+          Card,
+          { cardId: `widget-${widget.id}`, title: widget.title, className: 'alims-widget-card' },
+          h(SectionTitle, {
+            title: widget.title,
+            meta: mode === 'custom' ? '共享卡片' : `固定于${PIN_VIEWS.find((item) => item.id === view)?.label ?? view}`,
+            action: h(
+              'div',
+              { className: 'alims-widget-actions' },
+              mode === 'custom'
+                ? h(
+                    React.Fragment,
+                    null,
+                    h('button', { className: 'alims-icon-btn', title: '上移', onClick: onMoveUp }, h(Icon, { name: 'chevron', size: 10, style: { transform: 'rotate(-90deg)' } })),
+                    h('button', { className: 'alims-icon-btn', title: '下移', onClick: onMoveDown }, h(Icon, { name: 'chevron', size: 10, style: { transform: 'rotate(90deg)' } })),
+                  )
+                : null,
+              h(
+                'select',
+                {
+                  className: 'alims-select alims-widget-select',
+                  value: '',
+                  title: '固定到其他视图 / 取消固定',
+                  onChange: (event) => {
+                    if (event.target.value) ctx?.togglePin(widget.id, event.target.value);
+                  },
+                },
+                h('option', { value: '' }, '固定到…'),
+                PIN_VIEWS.map((item) => h('option', { key: item.id, value: item.id }, item.label)),
+              ),
+              h('button', { className: 'alims-link', onClick: () => ctx?.sendToChat(widget.title) }, '聊天'),
+              h('button', { className: 'alims-icon-btn', title: '移除', onClick: () => (mode === 'custom' ? onRemove?.(widget.id) : ctx?.removePin(widget.id, view)) }, h(Icon, { name: 'x', size: 10 })),
+            ),
+          }),
+          h(content),
+        );
+      }
+
+      function PinnedWidgets({ view }) {
+        const ctx = React.useContext(LimsContext);
+        const ids = ctx?.pinned?.[view] ?? [];
+        const widgets = ids.map((id) => WIDGET_DEFS.find((item) => item.id === id)).filter(Boolean);
+        if (widgets.length === 0) return null;
+        return h(
+          'div',
+          { className: 'alims-pinned-widgets' },
+          h('div', { className: 'alims-pinned-label' }, '来自卡片库'),
+          widgets.map((widget) => h(WidgetShell, { key: widget.id, widget, mode: 'pinned', view })),
+        );
+      }
+
+      function CustomView() {
+        const ctx = React.useContext(LimsContext);
+        const [selected, setSelected] = useState(() => {
+          try {
+            const raw = typeof localStorage !== 'undefined' && localStorage.getItem('alims.custom.widgets');
+            return raw ? JSON.parse(raw) : ['overview-kpis', 'resource-week', 'analytics-bottleneck'];
+          } catch {
+            return ['overview-kpis', 'resource-week', 'analytics-bottleneck'];
+          }
+        });
+        const save = (next) => {
+          setSelected(next);
+          try {
+            if (typeof localStorage !== 'undefined') localStorage.setItem('alims.custom.widgets', JSON.stringify(next));
+          } catch {
+            /* storage can be unavailable */
+          }
+        };
+        const toggle = (id) => save(selected.includes(id) ? selected.filter((item) => item !== id) : [...selected, id]);
+        const move = (index, delta) => {
+          const next = [...selected];
+          const target = index + delta;
+          if (target < 0 || target >= next.length) return;
+          [next[index], next[target]] = [next[target], next[index]];
+          save(next);
+        };
+        const remove = (id) => save(selected.filter((item) => item !== id));
+        return h(
+          'div',
+          { className: 'alims-page' },
+          h(
+            Card,
+            { className: 'alims-widget-picker-card' },
+            h(SectionTitle, { title: '卡片库', meta: '选择卡片组成自定义视图；可固定到任意视图，或把卡片主题发送到聊天' }),
+            h(
+              'div',
+              { className: 'alims-widget-picker' },
+              WIDGET_DEFS.map((widget) =>
+                h(
+                  'button',
+                  { key: widget.id, className: cx('alims-widget-chip', selected.includes(widget.id) && 'is-active'), onClick: () => toggle(widget.id) },
+                  h(Icon, { name: widget.icon, size: 11 }),
+                  widget.title,
+                ),
+              ),
+            ),
+            h('div', { className: 'alims-inline-note' }, '固定后卡片会出现在对应页面底部；同一张卡片可固定到多个视图。'),
+          ),
+          selected.length === 0
+            ? h(Empty, { icon: 'grid', title: '自定义视图为空', detail: '从卡片库选择卡片开始组合。' })
+            : selected.map((id, index) => {
+                const widget = WIDGET_DEFS.find((item) => item.id === id);
+                if (!widget) return null;
+                return h(WidgetShell, {
+                  key: id,
+                  widget,
+                  mode: 'custom',
+                  onRemove: remove,
+                  onMoveUp: () => move(index, -1),
+                  onMoveDown: () => move(index, 1),
+                });
+              }),
+          h('div', { className: 'alims-inline-note' }, '聊天按钮会把卡片主题插入聊天输入框；回答区可继续用同一组业务卡片（工具卡片、资源卡、项目卡等）呈现结果。'),
         );
       }
 
@@ -1382,6 +2084,131 @@
         );
       }
 
+      const TASK_COLOR_PALETTE = ['#1d4ed8', '#0f766e', '#b45309', '#7c3aed', '#be123c', '#0369a1', '#4d7c0f', '#a16207'];
+      function colorForTask(taskId) {
+        let hash = 0;
+        for (const char of String(taskId || 'task')) hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
+        return TASK_COLOR_PALETTE[hash % TASK_COLOR_PALETTE.length];
+      }
+      function clockToMinutes(value) {
+        const [hours, minutes] = String(value || '00:00').split(':').map(Number);
+        return (hours || 0) * 60 + (minutes || 0);
+      }
+      function shortDayLabel(day) {
+        return String(day || '').slice(5).replace('-', '/');
+      }
+      function segmentSpan(segments, dayKeys) {
+        const dayIndex = new Map(dayKeys.map((key, index) => [key, index]));
+        let start = null;
+        let end = null;
+        let first = null;
+        let last = null;
+        let totalHours = 0;
+        for (const segment of segments || []) {
+          const index = dayIndex.get(segment.day);
+          if (index === undefined) continue;
+          const segmentStart = index * 1440 + clockToMinutes(segment.start);
+          let segmentEnd = index * 1440 + clockToMinutes(segment.end);
+          if (segmentEnd <= segmentStart) segmentEnd += 1440;
+          if (start === null || segmentStart < start) {
+            start = segmentStart;
+            first = segment;
+          }
+          if (end === null || segmentEnd > end) {
+            end = segmentEnd;
+            last = segment;
+          }
+          totalHours += Number(segment.hours) || 0;
+        }
+        if (start === null || end === null) return null;
+        return { start, end, first, last, totalHours: Math.round(totalHours * 10) / 10, segments };
+      }
+      function spanText(span) {
+        if (!span) return '';
+        const first = `${shortDayLabel(span.first.day)} ${span.first.start}`;
+        const last = `${shortDayLabel(span.last.day)} ${span.last.end}`;
+        return `${first} → ${last}`;
+      }
+      function spanShortLabel(span) {
+        if (!span) return '';
+        return span.first.day === span.last.day
+          ? `${span.first.start}–${span.last.end}`
+          : `${shortDayLabel(span.first.day)} ${span.first.start}–${shortDayLabel(span.last.day)} ${span.last.end}`;
+      }
+      function assignLanes(bars) {
+        const laneEnds = [];
+        bars.sort((a, b) => a.span.start - b.span.start);
+        for (const bar of bars) {
+          let lane = laneEnds.findIndex((end) => end <= bar.span.start);
+          if (lane < 0) {
+            lane = laneEnds.length;
+            laneEnds.push(0);
+          }
+          laneEnds[lane] = bar.span.end;
+          bar.lane = lane;
+        }
+        return Math.max(1, laneEnds.length);
+      }
+      function GanttTrack({ days, bars }) {
+        const laneCount = Math.max(1, ...(bars || []).map((bar) => (bar.lane || 0) + 1));
+        const height = Math.max(30, 8 + laneCount * 22);
+        const total = Math.max(1, days.length * 1440);
+        return h(
+          'div',
+          { className: 'alims-timeline-track', style: { height } },
+          h(
+            'div',
+            { className: 'alims-timeline-grid', style: { gridTemplateColumns: `repeat(${days.length}, minmax(0, 1fr))` } },
+            days.map((day) => h('div', { key: day.key, className: 'alims-timeline-day' })),
+          ),
+          (bars || []).map((bar) => {
+            const left = Math.max(0, Math.min(100, (bar.span.start / total) * 100));
+            const right = Math.max(0, Math.min(100, (bar.span.end / total) * 100));
+            const width = Math.max(0.7, right - left);
+            return h(
+              'div',
+              {
+                key: bar.key,
+                className: 'alims-timeline-bar',
+                style: { left: `${left}%`, width: `${width}%`, top: 4 + (bar.lane || 0) * 22, height: 20, background: bar.color, borderColor: bar.color },
+                title: bar.title,
+              },
+              h('span', { className: 'alims-timeline-bar-label' }, bar.label),
+              width > 12 && bar.subLabel ? h('small', null, bar.subLabel) : null,
+            );
+          }),
+        );
+      }
+      function GanttTimeline({ days, rows, labelWidth = 112, corner = '资源 / 日期' }) {
+        return h(
+          'div',
+          { className: 'alims-timeline' },
+          h(
+            'div',
+            { className: 'alims-timeline-header', style: { gridTemplateColumns: `${labelWidth}px 1fr` } },
+            h('div', { className: 'alims-timeline-corner' }, corner),
+            h(
+              'div',
+              { className: 'alims-timeline-days', style: { gridTemplateColumns: `repeat(${days.length}, minmax(0, 1fr))` } },
+              days.map((day) => h('div', { key: day.key, className: 'alims-timeline-day-head' }, h('span', null, day.label), h('small', null, day.weekday))),
+            ),
+          ),
+          rows.map((row) =>
+            h(
+              'div',
+              { key: row.key, className: 'alims-timeline-row', style: { gridTemplateColumns: `${labelWidth}px 1fr` } },
+              h(
+                'div',
+                { className: 'alims-timeline-label' },
+                h('span', { className: 'alims-timeline-label-main' }, row.dotColor ? h('i', { className: 'alims-timeline-dot', style: { background: row.dotColor } }) : null, row.label),
+                row.sub ? h('small', null, row.sub) : null,
+              ),
+              h(GanttTrack, { days, bars: row.bars }),
+            ),
+          ),
+        );
+      }
+
       function TestPlanTimeline({ testPlan }) {
         const [weekOffset, setWeekOffset] = useState(0);
         useEffect(() => {
@@ -1409,10 +2236,28 @@
             weekday: `周${['日', '一', '二', '三', '四', '五', '六'][date.getDay()]}`,
           };
         });
-        const lookup = new Map();
-        for (const row of rows) {
-          for (const segment of row.segments) lookup.set(`${row.taskId}|${segment.day}`, segment);
-        }
+        const dayKeys = visibleDays.map((day) => day.key);
+        const ganttRows = rows.map((row) => {
+          const span = segmentSpan(row.segments, dayKeys);
+          const bar = span
+            ? {
+                key: row.taskId,
+                span,
+                lane: 0,
+                color: colorForTask(row.taskId),
+                label: row.taskId,
+                subLabel: spanShortLabel(span),
+                title: `${row.name}｜${spanText(span)}｜${span.totalHours}h`,
+              }
+            : null;
+          return {
+            key: row.taskId,
+            label: row.name,
+            sub: `${row.taskId} · ${row.segments.length} 个执行日`,
+            dotColor: colorForTask(row.taskId),
+            bars: bar ? [bar] : [],
+          };
+        });
         return h(
           'div',
           { className: 'alims-testplan-timeline' },
@@ -1430,42 +2275,22 @@
                 )
               : h('span', { className: 'alims-gantt-weeklabel' }, '默认显示 1 周'),
           ),
-          h(
-            'div',
-            { className: 'alims-testplan-grid', style: { gridTemplateColumns: `112px repeat(${visibleDays.length}, minmax(42px, 1fr))` } },
-            h('div', { className: 'alims-testplan-corner' }, '任务 / 日期'),
-            visibleDays.map((day) => h('div', { key: day.key, className: 'alims-testplan-day' }, h('span', null, day.label), h('small', null, day.weekday.replace('周', '')))),
-            rows.map((row) =>
-              [
-                h('div', { key: `${row.taskId}-label`, className: 'alims-testplan-label' }, h('span', null, row.name), h('small', null, `${row.taskId} · ${row.segments.length} 天`)),
-                ...visibleDays.map((day) => {
-                  const segment = lookup.get(`${row.taskId}|${day.key}`);
-                  const color = row.priority === 'Urgent' ? '#b91c1c' : row.priority === 'High' ? '#b45309' : row.priority === 'Low' ? '#475569' : '#1d4ed8';
-                  return h(
-                    'div',
-                    { key: `${row.taskId}-${day.key}`, className: 'alims-testplan-cell' },
-                    segment
-                      ? h(
-                          'div',
-                          { className: 'alims-testplan-bar', style: { background: color, borderColor: color }, title: `${row.name} ${segment.start}-${segment.end}` },
-                          h('span', null, segment.start),
-                          h('span', null, segment.end),
-                          h('small', null, `${segment.hours}h`),
-                        )
-                      : null,
-                  );
-                }),
-              ],
-            ),
-          ),
+          h(GanttTimeline, { days: visibleDays, rows: ganttRows, labelWidth: 112, corner: '任务 / 日期' }),
+          h('div', { className: 'alims-gantt-hint' }, '每行一条连续条：跨天任务按首次开始到末次结束画一条，不再拆成多个日块。'),
         );
       }
 
       function ProjectsPage({ initialProjectId, initialTestPlanId, onOpenTask, showToast }) {
         const projects = useApi('/api/lims/projects');
+        const templates = useApi('/api/lims/templates');
         const [projectId, setProjectId] = useState(initialProjectId || null);
         const [testPlanId, setTestPlanId] = useState(initialTestPlanId || null);
         const [busyGroup, setBusyGroup] = useState(null);
+        const [mappingDraft, setMappingDraft] = useState({});
+        const [mappingSaving, setMappingSaving] = useState(null);
+        useEffect(() => {
+          setMappingDraft({});
+        }, [projectId]);
         useEffect(() => {
           if (initialProjectId) {
             setProjectId(initialProjectId);
@@ -1497,6 +2322,34 @@
             setBusyGroup(null);
           }
         };
+        const selectTestPlan = (plan) => {
+          if (plan.id === selectedTestPlan?.id) {
+            showToast('已是当前测试计划', 'info', plan.id);
+            return;
+          }
+          setTestPlanId(plan.id);
+          showToast('已选中测试计划', 'ok', `${plan.id} · ${plan.templateName} · ${plan.summary.scheduled}/${plan.summary.taskCount} 已排`);
+        };
+        const saveMapping = async (task) => {
+          const templateId = mappingDraft[task.id] ?? task.templateId ?? '';
+          setMappingSaving(task.id);
+          try {
+            await api('/api/lims/task-template', { method: 'POST', body: { taskId: task.id, templateId: templateId || null, actor: 'workspace' } });
+            showToast('模板映射已更新', 'ok', `${task.id} → ${templateId || '自动匹配'}；项目分组会重新计算。`);
+            setMappingDraft((previous) => {
+              const next = { ...previous };
+              delete next[task.id];
+              return next;
+            });
+            setTestPlanId(null);
+            detail.reload();
+            templates.reload();
+          } catch (error) {
+            showToast('修改模板映射失败', 'error', error.message);
+          } finally {
+            setMappingSaving(null);
+          }
+        };
 
         if (!projectId) {
           if (projects.loading && !projects.data) return h('div', { className: 'alims-page' }, h(Loading, { label: '正在读取项目…' }));
@@ -1506,6 +2359,48 @@
             'div',
             { className: 'alims-page' },
             h(SectionTitle, { title: '项目', meta: `${list.length} 个项目 · 点击进入任务与测试计划` }),
+            h(
+              Card,
+              { className: 'alims-template-matrix-card' },
+              h(SectionTitle, { title: '模板 × 项目', meta: `${templates.data?.templates?.length ?? 0} 个模板 · 关系通过任务上的 templateId 关联` }),
+              templates.loading && !templates.data
+                ? h(Loading, { label: '正在读取模板关系…' })
+                : h(
+                    'div',
+                    { className: 'alims-template-matrix' },
+                    (templates.data?.templates ?? []).map((template) =>
+                      h(
+                        'div',
+                        { key: template.id, className: 'alims-template-matrix-row' },
+                        h(
+                          'div',
+                          { className: 'alims-template-matrix-name' },
+                          h('strong', null, template.name),
+                          h('span', null, `${template.id} · ${template.methodCode} · 设备 ${template.requiredEquipmentType}`),
+                        ),
+                        h(
+                          'div',
+                          { className: 'alims-template-matrix-projects' },
+                          (template.projects ?? []).length === 0
+                            ? h('span', { className: 'alims-muted' }, '暂无项目')
+                            : (template.projects ?? []).map((project) =>
+                                h(
+                                  'button',
+                                  { key: project.id, className: 'alims-template-project-chip', onClick: () => { setProjectId(project.id); setTestPlanId(null); } },
+                                  project.name,
+                                  h('small', null, ` ${project.taskCount}`),
+                                ),
+                              ),
+                        ),
+                        h('span', { className: 'alims-template-matrix-count' }, `${template.taskCount} 任务`),
+                      ),
+                    ),
+                    h('div', { className: 'alims-inline-note' }, '一个项目可以有多个模板分组；一个模板也可以被多个项目复用。点项目 chip 进入项目。'),
+                    (templates.data?.unmatchedTasks ?? []).length > 0
+                      ? h('div', { className: 'alims-inline-note is-warn' }, `未匹配模板：${templates.data.unmatchedTasks.map((task) => task.id).join('、')}`)
+                      : null,
+                  ),
+            ),
             h(
               'div',
               { className: 'alims-project-list' },
@@ -1533,6 +2428,7 @@
                 ),
               ),
             ),
+            h(PinnedWidgets, { view: 'projects' }),
           );
         }
 
@@ -1562,6 +2458,47 @@
             ),
           ),
           h(
+            Card,
+            { className: 'alims-template-map-card' },
+            h(SectionTitle, { title: '模板映射', meta: '任务 → 模板；修改后项目分组与后续测试计划重新计算' }),
+            templates.loading && !templates.data
+              ? h(Loading, { label: '正在读取模板…' })
+              : h(
+                  'div',
+                  { className: 'alims-template-map-list' },
+                  (project.tasks ?? []).map((task) => {
+                    const value = mappingDraft[task.id] ?? task.templateOverrideId ?? '';
+                    return h(
+                      'div',
+                      { key: task.id, className: 'alims-template-map-row' },
+                      h(
+                        'div',
+                        { className: 'alims-template-map-task' },
+                        h('strong', null, task.name),
+                        h('span', null, `${task.id} · 当前 ${task.templateName || '未匹配'}${task.templateId ? ` (${task.templateId})` : ''}${task.templateOverrideId ? ' · 手动' : ' · 自动'}`),
+                      ),
+                      h(
+                        'select',
+                        {
+                          className: 'alims-select alims-template-map-select',
+                          value,
+                          onChange: (event) => setMappingDraft((previous) => ({ ...previous, [task.id]: event.target.value })),
+                        },
+                        h('option', { value: '' }, '自动匹配（按方法推断）'),
+                        (templates.data?.templates ?? []).map((template) => h('option', { key: template.id, value: template.id }, `${template.name} (${template.id})`)),
+                      ),
+                      h(
+                        'button',
+                        { className: 'alims-link', disabled: mappingSaving === task.id, onClick: () => saveMapping(task) },
+                        mappingSaving === task.id ? '保存中…' : '保存映射',
+                      ),
+                    );
+                  }),
+                ),
+            h('div', { className: 'alims-inline-note' }, '模板 ID（如 TPL-004）是系统分组键；方法代码（如 MAT-TEN-01）是 SOP/方法编号。模板决定测试计划分组与模板时长；任务的设备/资质字段仍以任务需求为准。修改写入 task_template_overrides，不修改 CSV。'),
+          ),
+          h('div', { className: 'alims-project-order-note' }, '生成顺序：优先级 Urgent → High → Normal → Low；同一优先级按交期早 → 晚。逐个任务生成，资源冲突向后顺延。'),
+          h(
             'div',
             { className: 'alims-project-groups' },
             (project.groups || []).map((group) =>
@@ -1571,10 +2508,10 @@
                 h(
                   'div',
                   { className: 'alims-project-group-head' },
-                  h('div', null, h('div', { className: 'alims-project-group-title' }, group.templateName), h('div', { className: 'alims-project-group-sub' }, `${group.methodCode} · ${group.tasks.length} 个任务 · ${group.effortHours}h${group.reviewCount ? ` · ${group.reviewCount} 项待审核` : ''}`)),
+                  h('div', null, h('div', { className: 'alims-project-group-title' }, group.templateName), h('div', { className: 'alims-project-group-sub' }, `${group.templateId ?? group.key} · 方法代码 ${group.methodCode} · ${group.tasks.length} 个任务 · ${group.effortHours}h${group.reviewCount ? ` · ${group.reviewCount} 项待审核` : ''} · 按优先级→交期逐个排`)),
                   h(
                     'button',
-                    { className: 'alims-btn alims-btn-primary', disabled: busyGroup === group.key, onClick: () => generate(group) },
+                    { className: 'alims-btn alims-btn-primary', title: '按优先级 → 交期排序，逐个排程并避开资源冲突', disabled: busyGroup === group.key, onClick: () => generate(group) },
                     h(Icon, { name: busyGroup === group.key ? 'refresh' : 'layer', size: 12, style: busyGroup === group.key ? { animation: 'alims-spin 1s linear infinite' } : undefined }),
                     busyGroup === group.key ? '排程中…' : '生成测试计划',
                   ),
@@ -1601,31 +2538,77 @@
                 'div',
                 { className: 'alims-project-testplans' },
                 h(SectionTitle, { title: '测试计划', meta: `${testPlans.length} 个 · 多个任务按模板排成一组` }),
-                testPlans.map((plan) =>
-                  h(
+                selectedTestPlan
+                  ? h(
+                      'div',
+                      { className: 'alims-testplan-selected' },
+                      h(Icon, { name: 'check', size: 12 }),
+                      h(
+                        'div',
+                        { className: 'alims-testplan-selected-body' },
+                        h('strong', null, `当前选中：${selectedTestPlan.id}`),
+                        h('span', null, `${selectedTestPlan.templateName} · ${selectedTestPlan.startLabel} → ${selectedTestPlan.endLabel} · ${selectedTestPlan.totalHours}h`),
+                      ),
+                      h(Pill, { tone: 'brand' }, `${selectedTestPlan.summary.scheduled}/${selectedTestPlan.summary.taskCount} 已排`),
+                    )
+                  : null,
+                testPlans.map((plan) => {
+                  const selected = plan.id === selectedTestPlan?.id;
+                  return h(
                     Card,
-                    { key: plan.id, className: cx('alims-testplan-card', plan.id === selectedTestPlan?.id && 'is-selected') },
+                    { key: plan.id, className: cx('alims-testplan-card', selected && 'is-selected') },
                     h(
                       'div',
                       { className: 'alims-testplan-head' },
                       h('div', null, h('div', { className: 'alims-testplan-title' }, plan.templateName), h('div', { className: 'alims-testplan-sub' }, `${plan.id} · ${plan.startLabel} → ${plan.endLabel} · ${plan.totalHours}h`)),
                       h('div', { className: 'alims-chip-row' },
+                        selected ? h(Pill, { tone: 'ok', dot: true }, '当前选中') : null,
                         h(Pill, { tone: 'ok' }, `${plan.summary.scheduled}/${plan.summary.taskCount} 已排`),
                         plan.summary.late > 0 ? h(Pill, { tone: 'error' }, `${plan.summary.late} 项晚于交期`) : null,
                         plan.summary.unscheduled > 0 ? h(Pill, { tone: 'warn' }, `${plan.summary.unscheduled} 项阻塞`) : null,
                       ),
                     ),
-                    h(TestPlanTimeline, { testPlan: plan }),
+                    selected
+                      ? h(TestPlanTimeline, { testPlan: plan })
+                      : h(
+                          'div',
+                          { className: 'alims-testplan-preview' },
+                          h(Icon, { name: 'calendar', size: 12 }),
+                          h('span', null, '选中此计划后展开时间轴与任务方案明细'),
+                          h(Pill, { tone: 'idle' }, `${plan.summary.scheduled}/${plan.summary.taskCount}`),
+                        ),
+                    selected && (plan.plans ?? []).length > 0
+                      ? h(
+                          'div',
+                          { className: 'alims-testplan-plan-list' },
+                          h('div', { className: 'alims-field-label' }, '任务方案明细'),
+                          plan.plans.map((item) =>
+                            h(
+                              'div',
+                              { key: item.id, className: 'alims-testplan-plan-row' },
+                              h('span', { className: 'alims-testplan-plan-task' }, `${item.taskId}`),
+                              h('span', { className: 'alims-testplan-plan-time' }, `${item.startLabel} → ${item.endLabel}`),
+                              h(Pill, { tone: item.status === 'confirmed' ? 'ok' : 'idle' }, item.status === 'confirmed' ? '已确认' : item.statusLabel || '候选'),
+                              h('span', { className: 'alims-testplan-plan-hours' }, `${item.totalHours}h`),
+                            ),
+                          ),
+                        )
+                      : null,
                     h(
                       'div',
                       { className: 'alims-testplan-actions' },
-                      h('span', { className: 'alims-inline-note' }, '测试计划按项目/模板分组；每个任务的方案仍可单独进入排程页确认。'),
-                      h('button', { className: 'alims-link', onClick: () => { setTestPlanId(plan.id); } }, '选中此计划'),
+                      h('span', { className: 'alims-inline-note' }, '测试计划是 draft 分组；每个任务的方案仍可单独进入排程页确认。'),
+                      h(
+                        'button',
+                        { className: cx('alims-link', selected && 'is-current'), disabled: selected, onClick: () => selectTestPlan(plan), 'aria-pressed': selected },
+                        selected ? '当前选中' : '选中此计划',
+                      ),
                     ),
-                  ),
-                ),
+                  );
+                }),
               )
             : null,
+          h(PinnedWidgets, { view: 'projects' }),
         );
       }
 
@@ -1744,25 +2727,28 @@
         );
       }
 
-      function Dashboard({ overview, loading, error, reload, onNavigate, onOpenTask, onGenerate, onExplain, role, roleConfig }) {
+      function Dashboard({ overview, loading, error, reload, onNavigate, onOpenTask, onGenerate, onConfirm, onExplain, role, roleConfig, agentResult, busy }) {
         if (loading && !overview) return h(Loading, null);
         if (error && !overview) return h(ErrorBox, { message: error, onRetry: reload });
         if (!overview) return null;
         const stats = overview.stats || {};
         const tasks = overview.tasks || [];
         const alerts = overview.alerts || [];
-        const equipment = [...(overview.equipment || [])].sort((a, b) => b.loadShare - a.loadShare);
-        const top = [...tasks].sort((a, b) => {
-          const risk = { high: 0, medium: 1, low: 2 };
-          return (risk[a.risk] ?? 3) - (risk[b.risk] ?? 3) || (PRIORITY[a.priority]?.rank ?? 4) - (PRIORITY[b.priority]?.rank ?? 4);
-        }).slice(0, 3);
+        const totalTasks = stats.totalTasks ?? tasks.length;
+        const scheduledTasks = stats.scheduledTasks ?? tasks.filter((task) => task.scheduled).length;
+        const unscheduledTasks = stats.unscheduledTasks ?? Math.max(0, totalTasks - scheduledTasks);
+        const riskRank = { high: 0, medium: 1, low: 2 };
+        const taskRank = (task) => (riskRank[task.risk] ?? 3) * 10 + (PRIORITY[task.priority]?.rank ?? 4);
+        const top = [...tasks].sort((a, b) => taskRank(a) - taskRank(b)).slice(0, 3);
+        const unplanned = tasks.filter((task) => !task.scheduled).sort((a, b) => taskRank(a) - taskRank(b));
+        const agentTask = unplanned.find((task) => !task.review) || unplanned[0] || top[0] || null;
         return h(
           'div',
           { className: 'alims-page' },
           h(
             'div',
             { className: 'alims-stats' },
-            h(StatTile, { label: '待排任务', value: stats.openTasks, unit: '项', foot: `${stats.totalTasks} 项任务中`, tone: 'brand', icon: 'list' }),
+            h(StatTile, { label: '已有方案 / 未生成', value: `${scheduledTasks} / ${unscheduledTasks}`, unit: '项', foot: `共 ${stats.openTasks ?? totalTasks} 项进行中`, tone: 'brand', icon: 'list' }),
             h(StatTile, { label: '需关注', value: stats.riskTasks, unit: '项', foot: `${stats.reviewTasks} 项待方法审核`, tone: 'warn', icon: 'alert' }),
             h(StatTile, { label: '设备可用', value: `${stats.equipmentAvailable}/${stats.equipmentTotal}`, foot: `${stats.spacesAvailable} 个空间可用`, tone: 'ok', icon: 'cube' }),
             h(StatTile, { label: '14 天负荷', value: stats.equipmentUtilization, unit: '%', foot: `${stats.totalLoadHours ?? 0}h 已占用`, tone: 'brand', icon: 'chart' }),
@@ -1782,14 +2768,48 @@
             h(
               'div',
               { className: 'alims-prompt' },
-              h('span', { className: 'alims-prompt-quote' }, '“帮我安排 TASK-2005，优先保证交付日期，给我两个备选方案。”'),
+              h(
+                'span',
+                { className: 'alims-prompt-quote' },
+                agentTask
+                  ? `“帮我安排 ${agentTask.id}（${agentTask.name}），优先保证 ${agentTask.dueLabel} 交期，给我两个备选方案。”`
+                  : '当前没有待处理任务。',
+              ),
             ),
+            h('div', { className: 'alims-agent-note' }, `还有 ${unscheduledTasks} 项任务没有活动方案；点击会真实写入 MongoDB，并刷新概览覆盖率和资源排程。`),
             h(
               'div',
               { className: 'alims-agent-actions' },
-              h('button', { className: 'alims-btn alims-btn-primary', onClick: () => onGenerate('TASK-2005') }, h(Icon, { name: 'play', size: 12 }), '生成 TASK-2005 方案'),
+              h(
+                'button',
+                { className: 'alims-btn alims-btn-primary', disabled: !agentTask || busy, onClick: () => agentTask && onGenerate(agentTask.id) },
+                h(Icon, { name: 'play', size: 12 }),
+                agentTask ? `生成 ${agentTask.id} 方案` : '没有待排任务',
+              ),
               h('button', { className: 'alims-btn alims-btn-ghost', onClick: () => onNavigate('schedule') }, '打开排程工作区', h(Icon, { name: 'arrow', size: 12 })),
             ),
+            agentResult
+              ? h(
+                  'div',
+                  { className: cx('alims-agent-result', agentResult.pending ? 'is-pending' : agentResult.plans?.length || agentResult.confirmed ? 'is-ok' : 'is-error') },
+                  h(Icon, { name: agentResult.pending ? 'refresh' : agentResult.plans?.length || agentResult.confirmed ? 'check' : 'alert', size: 13, style: agentResult.pending ? { animation: 'alims-spin 1s linear infinite' } : undefined }),
+                  h(
+                    'div',
+                    { className: 'alims-agent-result-body' },
+                    h('strong', null, agentResult.pending ? `正在为 ${agentResult.taskId} 生成候选方案…` : agentResult.confirmed ? '已模拟确认' : agentResult.plans?.length ? `MongoDB 已写入 ${agentResult.plans.length} 个候选方案 · 尚未确认` : '没有生成可行方案'),
+                    h('span', null, agentResult.pending ? '确定性引擎正在计算；完成后显示写入结果和确认按钮。' : agentResult.confirmed ? `${agentResult.confirmed.planId} · 审计 ${agentResult.confirmed.audit?.id || '已写入'} · 资源占用 ${agentResult.confirmed.allocations ?? 0} 条` : `${agentResult.taskId} ${agentResult.taskName || ''}${agentResult.plans?.length ? ` · ${agentResult.plans.map((plan) => plan.id).join(' / ')}` : agentResult.error ? ` · ${agentResult.error}` : agentResult.diagnostics?.[0]?.text ? ` · ${agentResult.diagnostics[0].text}` : ''}`),
+                    h('small', null, agentResult.pending ? fmtDateTime(agentResult.at) : agentResult.confirmed ? '右侧排程与概览已更新。' : `已有方案 ${agentResult.scheduledBefore ?? '—'} → ${agentResult.scheduledAfter ?? '—'} · ${fmtDateTime(agentResult.at)}${agentResult.workspaceRevision ? ` · workspace rev ${agentResult.workspaceRevision}` : ''} · 确认后才占用资源`),
+                  ),
+                  agentResult.pending
+                    ? null
+                    : agentResult.confirmed
+                      ? null
+                      : agentResult.plans?.length
+                        ? h('button', { className: 'alims-btn alims-btn-primary', disabled: busy || agentResult.plans[0].status === 'needs_review' || agentResult.plans[0].status === 'superseded', onClick: () => onConfirm?.(agentResult.plans[0].id) }, agentResult.plans[0].status === 'needs_review' ? '需审核' : '确认方案 1（模拟）')
+                        : null,
+                  agentResult.pending ? null : h('button', { className: 'alims-link', onClick: () => onNavigate('schedule') }, '去排程选择'),
+                )
+              : null,
           ),
           h(
             Card,
@@ -1803,7 +2823,7 @@
                   'div',
                   { key: task.id, className: 'alims-focus-row', onClick: () => onOpenTask(task.id) },
                   h('span', { className: cx('alims-prio-dot', `is-${priorityInfo(task.priority).tone}`) }),
-                  h('div', { className: 'alims-focus-main' }, h('div', { className: 'alims-focus-name' }, task.name), h('div', { className: 'alims-focus-meta' }, `${task.id} · ${task.projectName} · ${fmtDate(task.dueDate, true)} 交期`)),
+                  h('div', { className: 'alims-focus-main' }, h('div', { className: 'alims-focus-name' }, task.name), h('div', { className: 'alims-focus-meta' }, `${task.id} · ${task.projectName} · ${task.scheduled ? '已有方案' : '未生成方案'} · ${fmtDate(task.dueDate, true)} 交期`)),
                   h(Pill, { tone: task.risk === 'high' ? 'error' : task.risk === 'medium' ? 'warn' : 'idle' }, task.risk === 'high' ? '高延误风险' : task.risk === 'medium' ? '需关注' : '正常'),
                   h(Icon, { name: 'chevron', size: 12, style: { color: 'var(--dsw-alias-label-secondary)' } }),
                 ),
@@ -1843,21 +2863,40 @@
           h(
             Card,
             null,
-            h(SectionTitle, { title: '设备负荷', meta: '未来 14 天负荷占比', action: h('button', { className: 'alims-link', onClick: () => onNavigate('resources') }, '资源明细') }),
+            h(SectionTitle, { title: '方案覆盖', meta: `已有方案 ${scheduledTasks} · 未生成 ${unscheduledTasks}`, action: h('button', { className: 'alims-link', onClick: () => onNavigate('schedule') }, '去排程') }),
             h(
               'div',
-              { className: 'alims-load-list' },
-              equipment.slice(0, 5).map((item) =>
-                h(
-                  'div',
-                  { key: item.id, className: 'alims-load-row' },
-                  h('div', { className: 'alims-load-name' }, h('span', null, item.name), h('span', { className: 'alims-load-id' }, item.id)),
-                  h('div', { className: 'alims-load-bar' }, h(Bar, { value: item.loadShare, tone: item.blocked ? 'error' : 'brand', height: 7 })),
-                  h('span', { className: 'alims-load-value' }, `${item.loadShare}%`),
-                  h('span', { className: 'alims-load-hours' }, fmtHours(item.used)),
-                ),
+              { className: 'alims-coverage' },
+              h(
+                'div',
+                { className: 'alims-coverage-bar' },
+                h('span', { className: 'is-scheduled', style: { width: `${totalTasks > 0 ? (scheduledTasks / totalTasks) * 100 : 0}%` } }),
+                h('span', { className: 'is-unplanned', style: { width: `${totalTasks > 0 ? (unscheduledTasks / totalTasks) * 100 : 0}%` } }),
+              ),
+              h(
+                'div',
+                { className: 'alims-coverage-legend' },
+                h('span', null, h('i', { className: 'is-scheduled' }), `已有方案 ${scheduledTasks}`),
+                h('span', null, h('i', { className: 'is-unplanned' }), `未生成 ${unscheduledTasks}`),
               ),
             ),
+            unplanned.length > 0
+              ? h(
+                  'div',
+                  { className: 'alims-coverage-list' },
+                  unplanned.slice(0, 3).map((task) =>
+                    h(
+                      'div',
+                      { key: task.id, className: 'alims-coverage-row' },
+                      h('span', { className: 'alims-coverage-id' }, task.id),
+                      h('span', { className: 'alims-coverage-name' }, task.name),
+                      task.review ? h(Pill, { tone: 'warn' }, '需审核') : h(Pill, { tone: priorityInfo(task.priority).tone }, priorityInfo(task.priority).label),
+                      h('button', { className: 'alims-link', disabled: busy || task.review, onClick: () => onGenerate(task.id) }, task.review ? '需审核' : '生成方案'),
+                    ),
+                  ),
+                )
+              : h('div', { className: 'alims-inline-note' }, '所有任务都已有活动方案。'),
+            h('div', { className: 'alims-coverage-note' }, '“已有方案”= MongoDB 中未替代、含执行时段的方案；确认前不计入已占用负荷。设备负荷图在「分析」页。'),
           ),
           h(
             Card,
@@ -1877,6 +2916,7 @@
               ),
             ),
           ),
+          h(PinnedWidgets, { view: 'dashboard' }),
         );
       }
 
@@ -2168,26 +3208,53 @@
         const totalWeeks = Math.max(1, Math.ceil(totalDays / 7));
         const safeOffset = Math.min(weekOffset, totalWeeks - 1);
         const windowStart = addDayKey(first, safeOffset * 7);
-        const windowDays = Array.from({ length: 7 }, (_, index) => addDayKey(windowStart, index));
+        const visibleDays = Array.from({ length: 7 }, (_, index) => {
+          const key = addDayKey(windowStart, index);
+          const date = new Date(`${key}T12:00:00+08:00`);
+          return {
+            key,
+            label: key.slice(5).replace('-', '/'),
+            weekday: `周${['日', '一', '二', '三', '四', '五', '六'][date.getDay()]}`,
+          };
+        });
         const rows = [
-          { key: 'equipment', label: plan.resources.equipment.name, sub: plan.resources.equipment.id, color: '#1d4ed8' },
-          { key: 'person', label: plan.resources.person.name, sub: plan.resources.person.id, color: '#0f766e' },
+          { key: 'equipment', label: plan.resources.equipment.name, sub: plan.resources.equipment.id, color: '#1d4ed8', id: plan.resources.equipment.id },
+          { key: 'person', label: plan.resources.person.name, sub: plan.resources.person.id, color: '#0f766e', id: plan.resources.person.id },
         ];
-        if (plan.resources.space) rows.push({ key: 'space', label: plan.resources.space.name, sub: plan.resources.space.id, color: '#b45309' });
-        const lookup = new Map();
-        for (const segment of segments) {
-          for (const key of ['equipment', 'person', 'space']) {
-            const id = key === 'equipment' ? segment.equipmentId : key === 'person' ? segment.personId : segment.spaceId;
-            if (id) lookup.set(`${key}|${segment.day}`, segment);
-          }
-        }
+        if (plan.resources.space) rows.push({ key: 'space', label: plan.resources.space.name, sub: plan.resources.space.id, color: '#b45309', id: plan.resources.space.id });
+        const visibleKeys = visibleDays.map((day) => day.key);
+        const ganttRows = rows.map((row) => {
+          const rowSegments = segments.filter((segment) => {
+            const id = row.key === 'equipment' ? segment.equipmentId : row.key === 'person' ? segment.personId : segment.spaceId;
+            return id === row.id;
+          });
+          const span = segmentSpan(rowSegments, visibleKeys);
+          const bar = span
+            ? {
+                key: row.key,
+                span,
+                lane: 0,
+                color: row.color,
+                label: span.first.day === span.last.day ? `${span.first.start}–${span.last.end}` : `${shortDayLabel(span.first.day)} ${span.first.start}–${shortDayLabel(span.last.day)} ${span.last.end}`,
+                subLabel: `${span.totalHours}h`,
+                title: `${row.label}｜${spanText(span)}｜${span.totalHours}h`,
+              }
+            : null;
+          return {
+            key: row.key,
+            label: row.label,
+            sub: row.sub,
+            dotColor: row.color,
+            bars: bar ? [bar] : [],
+          };
+        });
         return h(
           'div',
           { className: 'alims-gantt' },
           h(
             'div',
             { className: 'alims-gantt-pager' },
-            h('span', { className: 'alims-gantt-range' }, `${fmtDate(`${windowDays[0]}T12:00:00+08:00`)}–${fmtDate(`${windowDays[6]}T12:00:00+08:00`)}`),
+            h('span', { className: 'alims-gantt-range' }, `${visibleDays[0].label}–${visibleDays[6].label}`),
             totalWeeks > 1
               ? h(
                   'div',
@@ -2198,43 +3265,14 @@
                 )
               : h('span', { className: 'alims-gantt-weeklabel' }, '默认显示 1 周'),
           ),
-          h(
-            'div',
-            { className: 'alims-gantt-grid', style: { gridTemplateColumns: '92px repeat(7, minmax(42px, 1fr))' } },
-            h('div', { className: 'alims-gantt-corner' }, '资源 / 日期'),
-            windowDays.map((day) => h('div', { key: day, className: 'alims-gantt-day' }, h('span', null, day.slice(5).replace('-', '/')), h('small', null, ['日', '一', '二', '三', '四', '五', '六'][new Date(`${day}T12:00:00+08:00`).getDay()]))),
-            rows.map((row) =>
-              [
-                h('div', { key: `${row.key}-label`, className: 'alims-gantt-label' }, h('span', { className: 'alims-gantt-dot', style: { background: row.color } }), h('span', null, row.label), h('small', null, row.sub)),
-                ...windowDays.map((day) => {
-                  const segment = lookup.get(`${row.key}|${day}`);
-                  if (!segment) return h('div', { key: `${row.key}-${day}`, className: 'alims-gantt-cell' });
-                  return h(
-                    'div',
-                    { key: `${row.key}-${day}`, className: 'alims-gantt-cell' },
-                    h(
-                      'div',
-                      {
-                        className: 'alims-gantt-bar',
-                        style: { background: row.color, borderColor: row.color },
-                        title: `${segment.dateLabel} ${segment.start}-${segment.end}`,
-                      },
-                      h('span', { className: 'alims-gantt-bar-time' }, segment.start),
-                      h('span', { className: 'alims-gantt-bar-time' }, segment.end),
-                      h('small', null, `${segment.hours}h`),
-                    ),
-                  );
-                }),
-              ],
-            ),
-          ),
+          h(GanttTimeline, { days: visibleDays, rows: ganttRows, labelWidth: 92, corner: '资源 / 日期' }),
           h(
             'div',
             { className: 'alims-gantt-legend' },
             h('span', null, h('i', { style: { background: '#1d4ed8' } }), '设备'),
             h('span', null, h('i', { style: { background: '#0f766e' } }), '人员'),
             plan.resources.space ? h('span', null, h('i', { style: { background: '#b45309' } }), '空间') : null,
-            h('span', { className: 'alims-gantt-assumption' }, '按每日剩余容量错峰；现有占用从工作时段起点扣减'),
+            h('span', { className: 'alims-gantt-assumption' }, '连续条从首次开始跨到末次结束；按每日剩余容量错峰'),
           ),
         );
       }
@@ -2342,32 +3380,114 @@
         );
       }
 
-      function ResourceScheduleGantt({ initialWeekStart }) {
+      function ActionBanner({ feedback, onAudit, onDismiss }) {
+        if (!feedback) return null;
+        return h(
+          'div',
+          { className: cx('alims-action-banner', feedback.ok ? 'is-ok' : 'is-error') },
+          h('span', { className: 'alims-action-icon' }, h(Icon, { name: feedback.ok ? 'check' : 'alert', size: 15 })),
+          h(
+            'div',
+            { className: 'alims-action-body' },
+            h('div', { className: 'alims-action-title' }, feedback.title),
+            h('div', { className: 'alims-action-detail' }, feedback.detail),
+            h('div', { className: 'alims-action-time' }, `${fmtDateTime(feedback.at)} · MongoDB 已写入`),
+          ),
+          feedback.audit || onAudit ? h('button', { className: 'alims-link', onClick: onAudit }, '查看审计') : null,
+          h('button', { className: 'alims-icon-btn', title: '关闭', onClick: onDismiss }, h(Icon, { name: 'x', size: 11 })),
+        );
+      }
+
+      function ResourceScheduleGantt({ initialWeekStart, refreshKey = 0 }) {
         const [weekStart, setWeekStart] = useState(initialWeekStart || null);
+        const [viewMode, setViewMode] = useState('gantt');
+        const [weekCount, setWeekCount] = useState(1);
         useEffect(() => {
           if (initialWeekStart) setWeekStart(initialWeekStart);
         }, [initialWeekStart]);
-        const state = useApi(weekStart ? `/api/lims/resource-schedule?weekStart=${encodeURIComponent(weekStart)}` : '/api/lims/resource-schedule');
+        const query = `/api/lims/resource-schedule?weekCount=${weekCount}${weekStart ? `&weekStart=${encodeURIComponent(weekStart)}` : ''}`;
+        const state = useApi(query, [refreshKey, weekCount]);
         if (state.loading && !state.data) return h(Card, { className: 'alims-overview-card' }, h(Loading, { label: '正在汇总多条排程…' }));
         if (state.error) return h(Card, { className: 'alims-overview-card' }, h(ErrorBox, { message: state.error, onRetry: state.reload }));
         const data = state.data;
         if (!data) return null;
         const days = data.days ?? [];
-        const byResourceDay = new Map();
+        const dayKeys = days.map((day) => day.key);
+        const kindColor = { equipment: '#1d4ed8', person: '#0f766e', space: '#b45309' };
+        const resourceRows = (data.resources ?? []).map((resource) => {
+          const groups = new Map();
+          for (const segment of resource.segments ?? []) {
+            if (!groups.has(segment.taskId)) groups.set(segment.taskId, { taskId: segment.taskId, taskName: segment.taskName, priority: segment.priority, segments: [] });
+            groups.get(segment.taskId).segments.push(segment);
+          }
+          const bars = [];
+          for (const group of groups.values()) {
+            const span = segmentSpan(group.segments, dayKeys);
+            if (!span) continue;
+            bars.push({
+              key: `${resource.id}-${group.taskId}`,
+              span,
+              color: colorForTask(group.taskId),
+              label: group.taskId,
+              subLabel: spanShortLabel(span),
+              title: `${group.taskName}｜${spanText(span)}｜${span.totalHours}h`,
+            });
+          }
+          assignLanes(bars);
+          return {
+            key: resource.id,
+            label: resource.name,
+            sub: `${resource.id} · ${resource.type}`,
+            dotColor: kindColor[resource.kind] ?? '#1d4ed8',
+            bars,
+          };
+        });
+        const blocksByDay = new Map(days.map((day) => [day.key, []]));
+        const blockMap = new Map();
         for (const resource of data.resources ?? []) {
           for (const segment of resource.segments ?? []) {
-            const key = `${resource.id}|${segment.day}`;
-            if (!byResourceDay.has(key)) byResourceDay.set(key, []);
-            byResourceDay.get(key).push(segment);
+            const key = `${segment.taskId}|${segment.day}|${segment.start}|${segment.end}`;
+            if (!blockMap.has(key)) {
+              blockMap.set(key, {
+                key,
+                taskId: segment.taskId,
+                taskName: segment.taskName,
+                priority: segment.priority,
+                day: segment.day,
+                start: segment.start,
+                end: segment.end,
+                hours: segment.hours,
+                startMin: segment.startMin,
+                resources: [],
+              });
+            }
+            const block = blockMap.get(key);
+            if (!block.resources.some((item) => item.name === resource.name)) block.resources.push({ name: resource.name, kind: resource.kind });
           }
         }
-        const kindColor = { equipment: '#1d4ed8', person: '#0f766e', space: '#b45309' };
+        for (const block of blockMap.values()) {
+          if (blocksByDay.has(block.day)) blocksByDay.get(block.day).push(block);
+        }
+        for (const blocks of blocksByDay.values()) blocks.sort((a, b) => a.startMin - b.startMin);
+        const weeks = [];
+        for (let index = 0; index < days.length; index += 7) weeks.push(days.slice(index, index + 7));
+        const metaPrefix = data.weekCount === 2 ? '两周' : '本周';
+        const switchView = (mode) => {
+          setViewMode(mode);
+          setWeekCount(mode === 'calendar' ? 2 : 1);
+        };
         return h(
           Card,
           { className: 'alims-overview-card' },
           h(SectionTitle, {
             title: '资源排程总览（多条）',
-            meta: `本周 ${data.summary.schedules} 条 · 已有方案 ${data.summary.withPlan} 个任务 · 未生成 ${data.summary.withoutPlan}`,
+            meta: `${metaPrefix} ${data.summary.schedules} 条 · 已有方案 ${data.summary.withPlan} 个任务 · 未生成 ${data.summary.withoutPlan}`,
+            action: h(
+              'div',
+              { className: 'alims-viewtoggle' },
+              h('button', { type: 'button', className: viewMode === 'gantt' ? 'is-active' : '', onClick: () => switchView('gantt') }, '甘特'),
+              h('button', { type: 'button', className: viewMode === 'calendar' ? 'is-active' : '', onClick: () => switchView('calendar') }, '日历'),
+            ),
           }),
           h(
             'div',
@@ -2376,59 +3496,66 @@
             h(
               'div',
               { className: 'alims-gantt-pager-actions' },
-              h('button', { className: 'alims-icon-btn', title: '上一周', onClick: () => setWeekStart(addDayKey(data.weekStart, -7)) }, h(Icon, { name: 'chevron', size: 11, style: { transform: 'rotate(180deg)' } })),
+              h('button', { className: 'alims-icon-btn', title: '上一窗口', onClick: () => setWeekStart(addDayKey(data.weekStart, -(data.weekCount || 1) * 7)) }, h(Icon, { name: 'chevron', size: 11, style: { transform: 'rotate(180deg)' } })),
               h('span', null, data.weekLabel),
-              h('button', { className: 'alims-icon-btn', title: '下一周', onClick: () => setWeekStart(addDayKey(data.weekStart, 7)) }, h(Icon, { name: 'chevron', size: 11 })),
+              h('button', { className: 'alims-icon-btn', title: '下一窗口', onClick: () => setWeekStart(addDayKey(data.weekStart, (data.weekCount || 1) * 7)) }, h(Icon, { name: 'chevron', size: 11 })),
             ),
           ),
           (data.resources ?? []).length === 0
-            ? h(Empty, { icon: 'calendar', title: '本周还没有已生成的排程', detail: '先为任务生成候选方案，或选择其他周。' })
-            : h(
-                'div',
-                { className: 'alims-overview-scroll' },
-                h(
+            ? h(Empty, { icon: 'calendar', title: '当前窗口还没有已生成的排程', detail: '先为任务生成候选方案，或切换上一/下一窗口。' })
+            : viewMode === 'calendar'
+              ? h(
                   'div',
-                  { className: 'alims-overview-grid', style: { gridTemplateColumns: `112px repeat(${days.length}, minmax(42px, 1fr))` } },
-                  h('div', { className: 'alims-overview-corner' }, '资源 / 日期'),
-                  days.map((day) => h('div', { key: day.key, className: 'alims-overview-day' }, h('span', null, day.label), h('small', null, day.weekday.replace('周', '')))),
-                  (data.resources ?? []).map((resource) =>
-                    [
-                      h('div', { key: `${resource.id}-label`, className: 'alims-overview-label' }, h('span', { className: 'alims-gantt-dot', style: { background: kindColor[resource.kind] ?? '#1d4ed8' } }), h('span', null, resource.name), h('small', null, `${resource.id} · ${resource.type}`)),
-                      ...days.map((day) => {
-                        const segments = byResourceDay.get(`${resource.id}|${day.key}`) ?? [];
-                        return h(
-                          'div',
-                          { key: `${resource.id}-${day.key}`, className: 'alims-overview-cell' },
-                          segments
-                            .sort((a, b) => a.startMin - b.startMin)
-                            .map((segment) =>
-                              h(
-                                'div',
-                                {
-                                  key: `${segment.planId}-${segment.day}`,
-                                  className: 'alims-overview-bar',
-                                  style: { background: kindColor[resource.kind] ?? '#1d4ed8' },
-                                  title: `${segment.taskId} ${segment.taskName}｜${segment.start}–${segment.end}`,
-                                },
-                                h('span', null, segment.taskId),
-                                h('span', null, `${segment.start}–${segment.end}`),
-                                h('small', null, `${segment.hours}h`),
-                              ),
+                  { className: 'alims-calendar-two-weeks' },
+                  weeks.map((week, weekIndex) =>
+                    h(
+                      'div',
+                      { key: week[0]?.key ?? weekIndex, className: 'alims-cal-week' },
+                      h('div', { className: 'alims-cal-week-head' }, h('strong', null, `第 ${weekIndex + 1} 周`), h('span', null, `${week[0]?.label ?? ''}–${week[week.length - 1]?.label ?? ''}`)),
+                      h(
+                        'div',
+                        { className: 'alims-cal-week-grid' },
+                        week.map((day) =>
+                          h(
+                            'div',
+                            { key: day.key, className: 'alims-cal-day' },
+                            h(
+                              'div',
+                              { className: 'alims-cal-day-head' },
+                              h('span', null, day.label),
+                              h('small', null, day.weekday),
+                              (blocksByDay.get(day.key) ?? []).length > 0 ? h('em', null, `${(blocksByDay.get(day.key) ?? []).length} 段`) : null,
                             ),
-                        );
-                      }),
-                    ],
+                            (blocksByDay.get(day.key) ?? []).length === 0
+                              ? h('div', { className: 'alims-cal-empty' }, '—')
+                              : (blocksByDay.get(day.key) ?? []).map((block) =>
+                                  h(
+                                    'div',
+                                    {
+                                      key: block.key,
+                                      className: 'alims-cal-block',
+                                      style: { background: colorForTask(block.taskId) },
+                                      title: `${block.taskId} ${block.taskName}｜${block.start}–${block.end}｜${block.resources.map((item) => item.name).join(' / ')}`,
+                                    },
+                                    h('span', { className: 'alims-cal-block-time' }, `${block.start}–${block.end}`),
+                                    h('span', { className: 'alims-cal-block-task' }, block.taskId),
+                                    h('small', { className: 'alims-cal-block-hours' }, `${block.hours}h`),
+                                  ),
+                                ),
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-              ),
+                )
+              : h(GanttTimeline, { days, rows: resourceRows, labelWidth: 112, corner: '资源 / 日期' }),
           h(
             'div',
             { className: 'alims-overview-footer' },
-            h('span', null, h('i', { style: { background: '#1d4ed8' } }), '设备'),
-            h('span', null, h('i', { style: { background: '#0f766e' } }), '人员'),
-            h('span', null, h('i', { style: { background: '#b45309' } }), '空间'),
+            (data.tasks ?? []).slice(0, 6).map((task) => h('span', { key: task.id }, h('i', { style: { background: colorForTask(task.id) } }), task.id)),
             h('span', { className: 'alims-overview-note' }, data.note),
           ),
+          h('div', { className: 'alims-gantt-hint' }, viewMode === 'gantt' ? '甘特：跨天任务画一条连续条，按首次开始到末次结束；同一资源多个任务自动分泳道。' : '日历：默认两周，两行各一周；每天可堆叠多个时间段色块。'),
           (data.withoutPlanTasks ?? []).length > 0
             ? h(
                 'div',
@@ -2440,7 +3567,7 @@
         );
       }
 
-      function SchedulePage({ tasks, equipment, taskId, plans, selectedPlanId, comparison, onSelectTask, onGenerate, onRevise, onSelectPlan, onClearComparison, onConfirm, busy, toast }) {
+      function SchedulePage({ tasks, equipment, taskId, plans, selectedPlanId, comparison, actionFeedback, scheduleRefresh, onAudit, onDismissFeedback, onSelectTask, onGenerate, onRevise, onSelectPlan, onClearComparison, onConfirm, busy, toast }) {
         const [localTask, setLocalTask] = useState(taskId || 'TASK-2005');
         const autoTried = useRef(false);
         useEffect(() => {
@@ -2535,7 +3662,7 @@
             ),
           ),
           task?.review ? h('div', { className: 'alims-callout is-warn' }, h(Icon, { name: 'alert', size: 13 }), h('div', null, h('strong', null, '非标准方法'), '：该任务会产生“需审核”方案，确认按钮会被引擎拒绝，直到人工完成方法审核。')) : null,
-          h(ResourceScheduleGantt, { initialWeekStart: selected?.segments?.[0]?.day }),
+          h(ResourceScheduleGantt, { initialWeekStart: selected?.segments?.[0]?.day, refreshKey: scheduleRefresh }),
           plans.length === 0
             ? h(Empty, {
                 icon: 'calendar',
@@ -2564,6 +3691,24 @@
                   ),
                   h(
                     'div',
+                    { className: cx('alims-plan-confirm-state', selected.status === 'confirmed' ? 'is-confirmed' : 'is-pending') },
+                    h(Icon, { name: selected.status === 'confirmed' ? 'check' : 'info', size: 12 }),
+                    h(
+                      'div',
+                      { className: 'alims-plan-confirm-text' },
+                      h('strong', null, selected.status === 'confirmed' ? '已模拟确认' : '候选方案 · 尚未确认'),
+                      h('span', null, selected.status === 'confirmed' ? '资源占用与审计已写入；无需再次确认。' : '方案已写入 MongoDB，但尚未占用资源；点右侧按钮确认后才生效。'),
+                    ),
+                    selected.status === 'confirmed'
+                      ? null
+                      : h(
+                          'button',
+                          { className: 'alims-btn alims-btn-primary', disabled: busy || selected.status === 'needs_review', onClick: () => onConfirm(selected.id) },
+                          selected.status === 'needs_review' ? '需审核' : '确认此方案',
+                        ),
+                  ),
+                  h(
+                    'div',
                     { className: 'alims-plan-kpis' },
                     h('div', null, h('span', null, '预计完成'), h('strong', null, fmtDateTime(selected.endAt))),
                     h('div', null, h('span', null, '交期余量'), h('strong', { className: selected.dueMarginHours < 0 ? 'is-late' : 'is-ok' }, fmtMargin(selected.dueMarginHours))),
@@ -2589,6 +3734,7 @@
                     h('button', { className: 'alims-btn alims-btn-primary', disabled: busy || selected.status === 'confirmed' || selected.status === 'needs_review', onClick: () => onConfirm(selected.id) }, h(Icon, { name: selected.status === 'confirmed' ? 'check' : 'play', size: 12 }), selected.status === 'confirmed' ? '已模拟确认' : '确认并提交（模拟）'),
                     h('span', { className: 'alims-inline-note' }, '确认前会重新校验设备状态、人员容量与冲突；原型不写生产系统。'),
                   ),
+                  h(ActionBanner, { feedback: actionFeedback, onAudit, onDismiss: onDismissFeedback }),
                 ),
                 h(
                   Card,
@@ -2633,11 +3779,12 @@
                   : null,
               )
             : null,
+          h(PinnedWidgets, { view: 'schedule' }),
         );
       }
 
       // ----------------------------------------------------------------- impact
-      function ImpactPage({ initialEquipmentId, initialDate, onOpenTask, onGenerate, showToast }) {
+      function ImpactPage({ initialEquipmentId, initialDate, onOpenTask, onGenerate, onAudit, showToast }) {
         const resources = useApi('/api/lims/resources');
         const [equipmentId, setEquipmentId] = useState(initialEquipmentId || 'EQ-007');
         const [date, setDate] = useState(initialDate || '2026-10-28');
@@ -2646,6 +3793,7 @@
         const [busy, setBusy] = useState(false);
         const [error, setError] = useState(null);
         const [recorded, setRecorded] = useState(false);
+        const [feedback, setFeedback] = useState(null);
 
         const load = useCallback(async (nextEquipmentId, nextDate) => {
           setBusy(true);
@@ -2679,9 +3827,16 @@
             });
             setImpact(data.impact);
             setRecorded(true);
+            setFeedback({
+              ok: true,
+              at: new Date().toISOString(),
+              title: '停机事件已写入 MongoDB',
+              detail: `${data.downtime?.id || `${equipmentId}|${date}`} · 受影响 ${data.impact?.summary?.affected ?? 0} 个任务 · 可重排 ${data.impact?.summary?.replannable ?? 0} 个 · 完成推迟 ${data.impact?.summary?.delayed ?? 0} 个`,
+            });
             showToast('已登记停机并完成影响分析', 'ok', data.workspace?.message || '');
           } catch (failure) {
             setError(failure.message);
+            setFeedback({ ok: false, at: new Date().toISOString(), title: '登记停机失败', detail: failure.message });
           } finally {
             setBusy(false);
           }
@@ -2693,9 +3848,11 @@
             await api(`/api/lims/downtime?equipmentId=${encodeURIComponent(equipmentId)}&date=${encodeURIComponent(date)}`, { method: 'DELETE' });
             setImpact(null);
             setRecorded(false);
+            setFeedback({ ok: true, at: new Date().toISOString(), title: '已撤销停机窗口', detail: `${equipmentId} · ${date} · 受影响任务恢复为正常可用性` });
             showToast('已撤销停机窗口', 'ok', '受影响任务将恢复为正常可用性。');
           } catch (failure) {
             setError(failure.message);
+            setFeedback({ ok: false, at: new Date().toISOString(), title: '撤销停机失败', detail: failure.message });
           } finally {
             setBusy(false);
           }
@@ -2753,6 +3910,7 @@
             h('div', { className: 'alims-inline-note' }, '停机作为设备当日的硬可用性阻断写入 MongoDB；重排仍会检查人员资质、设备状态、校准与时间冲突。'),
             error ? h(ErrorBox, { message: error }) : null,
           ),
+          h(ActionBanner, { feedback, onAudit, onDismiss: () => setFeedback(null) }),
           impact
             ? h(
                 'div',
@@ -2853,6 +4011,7 @@
                 h('div', { className: 'alims-disclaimer' }, '影响分析是原型估算：现有负荷只有每日小时数，前后时间按每日 08:00 起排展示；正式方案需使用分钟级资源日历。'),
               )
             : null,
+          h(PinnedWidgets, { view: 'impact' }),
         );
       }
 
@@ -3000,6 +4159,7 @@
               ),
             ),
           ),
+          h(PinnedWidgets, { view: 'resources' }),
         );
       }
 
@@ -3143,6 +4303,7 @@
                 )
               : null,
           ),
+          h(PinnedWidgets, { view: 'analytics' }),
         );
       }
 
@@ -3180,6 +4341,7 @@
             ),
           ),
           h('div', { className: 'alims-disclaimer' }, '原型审计记录保存在 MongoDB；正式系统需接入权限、审批、版本快照与保留策略。'),
+          h(PinnedWidgets, { view: 'audit' }),
         );
       }
 
@@ -3222,6 +4384,17 @@
         const [plans, setPlans] = useState([]);
         const [selectedPlanId, setSelectedPlanId] = useState(null);
         const [comparison, setComparison] = useState(null);
+        const [actionFeedback, setActionFeedback] = useState(null);
+        const [agentResult, setAgentResult] = useState(null);
+        const [scheduleRefresh, setScheduleRefresh] = useState(0);
+        const [pinned, setPinned] = useState(() => {
+          try {
+            const raw = typeof localStorage !== 'undefined' && localStorage.getItem('alims.pinned');
+            return raw ? JSON.parse(raw) : {};
+          } catch {
+            return {};
+          }
+        });
         const [workspace, setWorkspace] = useState(null);
         const [impactTarget, setImpactTarget] = useState(null);
         const [projectTarget, setProjectTarget] = useState(null);
@@ -3255,6 +4428,46 @@
             } catch {
               showToast('无法写入聊天输入框', 'error', '请先打开聊天输入框。');
             }
+          }
+        }, [inputActions, showToast]);
+        const togglePin = useCallback((widgetId, view) => {
+          setPinned((previous) => {
+            const next = { ...previous };
+            const list = new Set(next[view] || []);
+            if (list.has(widgetId)) list.delete(widgetId);
+            else list.add(widgetId);
+            next[view] = [...list];
+            try {
+              if (typeof localStorage !== 'undefined') localStorage.setItem('alims.pinned', JSON.stringify(next));
+            } catch {
+              /* storage can be unavailable */
+            }
+            return next;
+          });
+        }, []);
+        const removePin = useCallback((widgetId, view) => {
+          setPinned((previous) => {
+            const next = { ...previous, [view]: (previous[view] || []).filter((id) => id !== widgetId) };
+            try {
+              if (typeof localStorage !== 'undefined') localStorage.setItem('alims.pinned', JSON.stringify(next));
+            } catch {
+              /* storage can be unavailable */
+            }
+            return next;
+          });
+        }, []);
+        const sendToChat = useCallback((title) => {
+          const phrase = `请结合当前“${title}”卡片，说明关键发现和下一步建议。`;
+          try {
+            if (inputActions && typeof inputActions.captureInsertion === 'function' && typeof inputActions.insertText === 'function') {
+              const span = inputActions.captureInsertion();
+              if (!inputActions.insertText(phrase, span)) inputActions.setDraft(phrase);
+            } else if (inputActions) {
+              inputActions.setDraft(phrase);
+            }
+            showToast('已把卡片主题加入聊天输入框', 'ok', phrase);
+          } catch {
+            showToast('无法写入聊天输入框', 'error', '请先打开聊天输入框。');
           }
         }, [inputActions, showToast]);
         const roleConfig = ROLES[role] || ROLES.lead;
@@ -3332,28 +4545,77 @@
         }, [showToast]);
 
         const generatePlans = useCallback(
-          async (id) => {
+          async (id, options = {}) => {
             setBusy(true);
             setTaskId(id);
+            const beforeTask = (overview?.tasks || []).find((task) => task.id === id);
+            const beforeScheduled = overview?.stats?.scheduledTasks ?? null;
+            if (options.page === 'dashboard') {
+              setAgentResult({
+                taskId: id,
+                taskName: beforeTask?.name || id,
+                plans: [],
+                pending: true,
+                at: new Date().toISOString(),
+                scheduledBefore: beforeScheduled,
+                scheduledAfter: beforeScheduled,
+              });
+            }
             try {
-              const data = await api('/api/lims/plans', { method: 'POST', body: { taskId: id } });
-              setPlans(data.plans || []);
-              setSelectedPlanId(data.plans?.[0]?.id || null);
+              const data = await api('/api/lims/plans', {
+                method: 'POST',
+                body: {
+                  taskId: id,
+                  page: options.page === 'dashboard' ? 'dashboard' : undefined,
+                  actor: options.actor || 'workspace',
+                },
+              });
+              const planList = data.plans || [];
+              setPlans(planList);
+              setSelectedPlanId(planList[0]?.id || null);
               setComparison(null);
-              setPage('schedule');
-              if (data.plans?.length) {
-                showToast(`已生成 ${data.plans.length} 个候选方案`, 'ok', data.plans.map((plan) => `${plan.id} ${plan.strategyLabel} · ${plan.score} 分`).join('\n'));
+              setActionFeedback(null);
+              setScheduleRefresh((value) => value + 1);
+              if (options.page === 'dashboard') {
+                setAgentResult({
+                  taskId: id,
+                  taskName: data.task?.name || planList[0]?.taskName || beforeTask?.name || id,
+                  plans: planList,
+                  diagnostics: data.diagnostics || [],
+                  at: new Date().toISOString(),
+                  scheduledBefore: beforeScheduled,
+                  scheduledAfter: beforeScheduled === null ? null : beforeScheduled + (beforeTask?.scheduled ? 0 : planList.length > 0 ? 1 : 0),
+                  workspaceRevision: data.workspace?.revision ?? null,
+                });
+                setPage('dashboard');
+              } else {
+                setPage('schedule');
+              }
+              if (planList.length) {
+                showToast(`已生成 ${planList.length} 个候选方案`, 'ok', planList.map((plan) => `${plan.id} ${plan.strategyLabel} · ${plan.score} 分`).join('\n'));
               } else {
                 showToast('没有可行方案', 'error', (data.diagnostics || []).map((item) => item.text).join('\n'));
               }
               loadOverview();
             } catch (error) {
+              if (options.page === 'dashboard') {
+                setAgentResult({
+                  taskId: id,
+                  taskName: beforeTask?.name || id,
+                  plans: [],
+                  diagnostics: [{ text: error.message }],
+                  at: new Date().toISOString(),
+                  scheduledBefore: beforeScheduled,
+                  scheduledAfter: beforeScheduled,
+                  error: error.message,
+                });
+              }
               showToast('生成方案失败', 'error', error.message);
             } finally {
               setBusy(false);
             }
           },
-          [loadOverview, showToast],
+          [loadOverview, overview, showToast],
         );
 
         const revisePlans = useCallback(
@@ -3368,6 +4630,8 @@
               setPlans(data.plans || []);
               setSelectedPlanId(data.plans?.[0]?.id || null);
               setComparison(data.comparison || null);
+              setActionFeedback(null);
+              setScheduleRefresh((value) => value + 1);
               setPage('schedule');
               if (data.comparison) {
                 const delta = data.comparison.completionDeltaHours;
@@ -3393,11 +4657,30 @@
           async (planId) => {
             setBusy(true);
             try {
-              await api('/api/lims/confirm', { method: 'POST', body: { planId } });
+              const data = await api('/api/lims/confirm', { method: 'POST', body: { planId } });
               setPlans((previous) => previous.map((plan) => (plan.id === planId ? { ...plan, status: 'confirmed', statusLabel: '已模拟确认' } : plan)));
+              setActionFeedback({
+                ok: true,
+                at: new Date().toISOString(),
+                title: data.alreadyConfirmed ? '该方案此前已确认' : '已模拟确认排程',
+                detail: `${planId} · 写入 ${data.allocations ?? 0} 条资源占用 · 审计事件已记录${data.audit?.id ? `（${data.audit.id}）` : ''}`,
+                audit: data.audit,
+              });
+              setAgentResult((previous) =>
+                previous && previous.plans?.some((plan) => plan.id === planId)
+                  ? { ...previous, confirmed: { planId, allocations: data.allocations ?? 0, audit: data.audit ?? null } }
+                  : previous,
+              );
+              setScheduleRefresh((value) => value + 1);
               showToast('已模拟确认排程', 'ok', '资源占用与审计已写入 MongoDB；未写入生产系统。');
               loadOverview();
             } catch (error) {
+              setActionFeedback({
+                ok: false,
+                at: new Date().toISOString(),
+                title: '确认被拒绝',
+                detail: `${error.message}${error.data?.conflicts ? `：${error.data.conflicts.join('；')}` : ''}`,
+              });
               showToast('确认被拒绝', 'error', error.message + (error.data?.conflicts ? `\n${error.data.conflicts.join('\n')}` : ''));
             } finally {
               setBusy(false);
@@ -3438,6 +4721,7 @@
           setPlans([]);
           setSelectedPlanId(null);
           setComparison(null);
+          setActionFeedback(null);
         }, []);
 
         return h(
@@ -3445,10 +4729,27 @@
           { className: 'alims-root' },
           h(TopBar, { page, setPage, connected, workspace, role, onRoleChange: changeRole, menuItems }),
           h(
-            'div',
-            { className: 'alims-body' },
+            LimsContext.Provider,
+            { value: { inputActions, showToast, pinned, togglePin, removePin, sendToChat, setPage } },
+            h(
+              'div',
+              { className: 'alims-body' },
             page === 'dashboard'
-              ? h(Dashboard, { overview, loading: overviewLoading, error: overviewError, reload: loadOverview, onNavigate: setPage, onOpenTask: openTask, onGenerate: generatePlans, onExplain: explainResource, role, roleConfig })
+              ? h(Dashboard, {
+                  overview,
+                  loading: overviewLoading,
+                  error: overviewError,
+                  reload: loadOverview,
+                  onNavigate: setPage,
+                  onOpenTask: openTask,
+                  onGenerate: (id) => generatePlans(id, { page: 'dashboard', actor: 'agent' }),
+                  onConfirm: confirmPlan,
+                  onExplain: explainResource,
+                  role,
+                  roleConfig,
+                  agentResult,
+                  busy,
+                })
               : null,
             page === 'projects'
               ? h(ProjectsPage, {
@@ -3476,6 +4777,10 @@
                   plans,
                   selectedPlanId,
                   comparison,
+                  actionFeedback,
+                  scheduleRefresh,
+                  onAudit: () => setPage('audit'),
+                  onDismissFeedback: () => setActionFeedback(null),
                   onSelectTask: selectTask,
                   onGenerate: generatePlans,
                   onRevise: revisePlans,
@@ -3492,12 +4797,15 @@
                   initialDate: impactTarget?.date,
                   onOpenTask: openTask,
                   onGenerate: generatePlans,
+                  onAudit: () => setPage('audit'),
                   showToast,
                 })
               : null,
             page === 'resources' ? h(ResourcePage, { explainId, onExplain: explainResource, refreshKey: overview?.stats?.totalLoadHours || 0 }) : null,
             page === 'analytics' ? h(AnalyticsPage, { onSimulate: runSimulate, simulate, simulateBusy, onReferenceEquipment: referenceEquipment }) : null,
+            page === 'custom' ? h(CustomView, null) : null,
             page === 'audit' ? h(AuditPage, null) : null,
+            ),
           ),
           h(Toast, { toast, onClose: () => setToast(null) }),
         );

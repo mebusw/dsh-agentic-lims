@@ -1,0 +1,21 @@
+import { MongoClient } from 'mongodb';
+import { buildRoutes } from '../lib/routes.js';
+import { seedDatabase } from '../lib/seed.js';
+const client = await MongoClient.connect('mongodb://127.0.0.1:27018');
+const db = client.db('agentic_lims_test_agent');
+await db.dropDatabase();
+await seedDatabase(db, { force: true });
+const routes = buildRoutes({ db, config: { demoNow: '2026-10-27T08:00:00+08:00' } });
+const call = async (path, body) => {
+  const route = routes.find((r) => r.path === path && r.methods.includes(body ? 'POST' : 'GET'));
+  const res = await route.fetch(new Request(`http://x${path}`, body ? { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) } : {}));
+  return { status: res.status, data: await res.json() };
+};
+const generated = await call('/api/lims/plans', { taskId: 'TASK-2003', page: 'dashboard', actor: 'agent' });
+const workspace = await db.collection('workspace').findOne({ _id: 'default' });
+const overview = await call('/api/lims/overview');
+console.log('plans', generated.status, generated.data.plans?.length, generated.data.plans?.map((p) => p.id));
+console.log('workspace page', workspace.page, 'planIds', workspace.planIds);
+console.log('overview', overview.data.stats.scheduledTasks, overview.data.stats.unscheduledTasks, overview.data.tasks.find((t) => t.id === 'TASK-2003')?.scheduled);
+await db.dropDatabase();
+await client.close();

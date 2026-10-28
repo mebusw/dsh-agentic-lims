@@ -214,11 +214,51 @@ function renderDowntime(value) {
   return lines.join('\n');
 }
 
+function renderRequests(value) {
+  const lines = [`测试请求（${value.requests?.length ?? 0}）`];
+  for (const request of value.requests ?? []) {
+    lines.push(`- ${request.id} ${request.name}｜${request.templateId ?? '—'} ${request.templateName ?? ''}｜${request.priority}｜${request.sampleCount} 样品｜交期 ${request.dueAt ?? '—'}｜${request.ruleStatus}`);
+  }
+  return lines.join('\n');
+}
+
+function renderTaskDrafts(value) {
+  const lines = [
+    `Request → Task 拆解：${value.project?.id ?? ''} ${value.project?.name ?? ''}`,
+    `request：${value.requestText || '—'}`,
+    `模板：${value.template ? `${value.template.id} ${value.template.name}（方法代码 ${value.template.methodCode}）` : '未确定'}`,
+  ];
+  if ((value.matches ?? []).length > 0) {
+    lines.push('已有任务匹配：');
+    for (const match of value.matches) {
+      lines.push(`- ${match.taskId} ${match.name}｜${match.templateId ?? '—'}｜置信度 ${match.confidence}｜${match.reason}`);
+    }
+  }
+  lines.push('任务草稿（尚未写入）：');
+  for (const draft of value.drafts ?? []) {
+    lines.push(`- ${draft.name}｜模板 ${draft.templateId ?? '—'}｜优先级 ${draft.priority}｜交期 ${draft.dueDate}${draft.estimatedDue ? '（估算）' : ''}｜${draft.effortHours}h${draft.estimatedEffort ? '（估算）' : ''}`);
+    if ((draft.missing ?? []).length > 0) lines.push(`  缺口：${draft.missing.join('；')}`);
+  }
+  lines.push(`建议：${value.recommendation === 'use_existing' ? '优先复用已有任务' : value.recommendation === 'create_draft' ? '确认后创建草稿任务' : '需要人工确认模板/字段'}`);
+  lines.push('确认后才调用 lims_create_task_draft；当前没有写入任务。');
+  return lines.join('\n');
+}
+
+function renderCreatedTasks(value) {
+  const lines = [`已创建任务（${value.created?.length ?? 0}）`];
+  for (const task of value.created ?? []) {
+    lines.push(`- ${task.id} ${task.name}｜${task.templateId}｜交期 ${task.dueDate}｜${task.effortHours}h`);
+  }
+  lines.push(`项目：${value.projectId}`);
+  return lines.join('\n');
+}
+
 function renderProjects(value) {
   const lines = [`项目（${value.projects?.length ?? 0}）`];
   for (const project of value.projects ?? []) {
     lines.push(`- ${project.id} ${project.name}｜${project.taskCount} 个任务｜${project.effortHours}h｜交期 ${project.dueFromLabel}–${project.dueToLabel}`);
-    lines.push(`  模板：${(project.templateNames ?? []).join('、') || '—'}｜风险 ${project.riskCount}｜测试计划 ${project.testPlanCount}`);
+    const templateText = (project.templates ?? []).map((template) => `${template.templateId ?? template.key} ${template.templateName}`).join('、') || (project.templateNames ?? []).join('、') || '—';
+    lines.push(`  模板：${templateText}｜风险 ${project.riskCount}｜测试计划 ${project.testPlanCount}`);
   }
   return lines.join('\n');
 }
@@ -230,7 +270,7 @@ function renderProject(value) {
     `任务 ${project.taskCount} 个｜总工作量 ${project.effortHours}h｜交期 ${project.dueFromLabel}–${project.dueToLabel}｜待审核 ${project.reviewCount}`,
   ];
   for (const group of value.groups ?? []) {
-    lines.push(`模板分组：${group.templateName}（${group.methodCode}），${group.tasks.length} 个任务，${group.effortHours}h`);
+    lines.push(`模板分组：${group.templateId ?? group.key} ${group.templateName}（方法代码 ${group.methodCode}），${group.tasks.length} 个任务，${group.effortHours}h`);
     for (const task of group.tasks) {
       lines.push(`- ${task.id} ${task.name}｜${task.priority}｜${task.dueLabel}｜${task.effortHours}h｜${task.review ? '需审核' : '可排程'}`);
     }
@@ -451,6 +491,110 @@ export function buildTools(store, routes) {
       },
     },
     {
+      name: 'lims_list_requests',
+      description:
+        '列出测试请求（test_requests）及其模板、优先级、样品数、交期和规则状态。用户给一个模糊 request、需要先看有哪些请求可拆解时调用。',
+      parameters: schema({}, []),
+      output: {
+        ...OUTPUT,
+        render: (_args, value) => text(renderRequests(value)),
+        presentationMeta: withMeta('requests', (value) => ({ requests: (value.requests ?? []).slice(0, 8) })),
+      },
+      async execute() {
+        const { data } = await call('/api/lims/requests');
+        return data;
+      },
+    },
+    {
+      name: 'lims_prepare_task_draft',
+      description:
+        '把略微模糊的测试 request 拆解为“已有任务匹配 + 新任务草稿”。只读，不写入任务；会返回模板、匹配依据、置信度、缺失字段和建议。用户说“先拆解 request/task 对应关系”时调用。',
+      parameters: schema(
+        {
+          projectId: { type: 'string', description: '项目 ID，例如 PRJ-1001' },
+          requestText: { type: 'string', description: '原始模糊 request，例如“下周把拉伸和耐久测试排掉，优先保交期”' },
+          requestId: { type: 'string', description: '可选：test_requests 的 request_id' },
+          templateId: { type: 'string', description: '可选：候选模板 ID，例如 TPL-004' },
+          name: { type: 'string', description: '可选：草稿任务名称' },
+          method: { type: 'string', description: '可选：草稿测试方法' },
+          priority: { type: 'string', description: '可选：Urgent/High/Normal/Low' },
+          dueDate: { type: 'string', description: '可选：交期 YYYY-MM-DD' },
+          effortHours: { type: 'number', description: '可选：预计工作量小时' },
+        },
+        ['projectId'],
+      ),
+      output: {
+        ...OUTPUT,
+        render: (_args, value) => text(renderTaskDrafts(value)),
+        presentationMeta: withMeta('taskdrafts', (value) => ({
+          project: value.project,
+          requestText: value.requestText,
+          template: value.template,
+          matches: value.matches,
+          drafts: value.drafts,
+          recommendation: value.recommendation,
+        })),
+      },
+      async execute(args) {
+        const { data } = await call('/api/lims/task-draft/prepare', {
+          projectId: args.projectId,
+          requestText: args.requestText,
+          requestId: args.requestId,
+          templateId: args.templateId,
+          name: args.name,
+          method: args.method,
+          priority: args.priority,
+          dueDate: args.dueDate,
+          effortHours: args.effortHours,
+          actor: 'agent',
+        });
+        return data;
+      },
+    },
+    {
+      name: 'lims_create_task_draft',
+      description:
+        '在用户明确确认后，把 task draft 写入 raw_tasks 并建立模板映射。只应在用户说“创建这些任务/确认草稿”后调用；创建后再用 lims_generate_test_plan 或 lims_generate_plans 排程。',
+      parameters: schema(
+        {
+          projectId: { type: 'string', description: '项目 ID' },
+          drafts: {
+            type: 'array',
+            description: '草稿任务数组',
+            items: {
+              type: 'object',
+              properties: {
+                name: { type: 'string' },
+                method: { type: 'string' },
+                templateId: { type: 'string' },
+                priority: { type: 'string' },
+                dueDate: { type: 'string' },
+                requestedStart: { type: 'string' },
+                effortHours: { type: 'number' },
+                elapsedDays: { type: 'number' },
+                qualifications: { type: 'array', items: { type: 'string' } },
+                equipmentIds: { type: 'array', items: { type: 'string' } },
+                spaceIds: { type: 'array', items: { type: 'string' } },
+                requestId: { type: 'string' },
+              },
+              required: ['name', 'templateId', 'dueDate', 'effortHours'],
+              additionalProperties: true,
+            },
+          },
+        },
+        ['projectId', 'drafts'],
+      ),
+      output: {
+        ...OUTPUT,
+        render: (_args, value) => text(renderCreatedTasks(value)),
+        presentationMeta: withMeta('taskscreated', (value) => ({ projectId: value.projectId, created: value.created })),
+      },
+      async execute(args) {
+        const { data } = await call('/api/lims/task-drafts', { projectId: args.projectId, drafts: args.drafts, actor: 'agent' });
+        return data;
+      },
+    },
+    {
       name: 'lims_generate_plans',
       description:
         '为指定任务运行确定性排程引擎，生成 1-5 个满足硬约束的候选方案，并自动把右侧边栏切换到「排程」页展示甘特图、约束校验和方案对比。不要自己编造时间或设备组合，必须使用本工具的结果。',
@@ -520,7 +664,22 @@ export function buildTools(store, routes) {
       output: {
         ...OUTPUT,
         render: (_args, value) => text(renderRevision(value)),
-        presentationMeta: withMeta('revision', (value) => ({ task: value.task, comparison: value.comparison })),
+        presentationMeta: withMeta('revision', (value) => ({
+          task: value.task,
+          comparison: value.comparison,
+          plans: (value.plans ?? []).map((plan) => ({
+            id: plan.id,
+            strategyLabel: plan.strategyLabel,
+            status: plan.status,
+            statusLabel: plan.statusLabel,
+            score: plan.score,
+            startLabel: plan.startLabel,
+            endLabel: plan.endLabel,
+            dueMarginHours: plan.dueMarginHours,
+            resources: plan.resources,
+            risks: (plan.risks ?? []).slice(0, 2),
+          })),
+        })),
       },
       async execute(args) {
         const { data } = await call('/api/lims/plans', {

@@ -1,13 +1,13 @@
 ﻿request_id,order_id,template_id,test_request_name,priority,requested_at,due_at,sample_count,request_summary,rule_status
-REQ-1001,ORD-7001,TPL-001,HPLC Assay - Standard,Routine,2026-10-27 12:00,2026-10-30 17:00,2,Assay sample batch A,New
-REQ-1002,ORD-7002,TPL-001,HPLC Assay - Standard,Urgent,2026-10-27 10:00,2026-10-28 17:00,4,Urgent release testing,New
-REQ-1003,ORD-7003,TPL-002,GC Residual Solvent,Routine,2026-10-27 12:00,2026-10-30 17:00,3,Residual solvent batch B,New
-REQ-1004,ORD-7004,TPL-003,Balance Verification,Routine,2026-10-27 12:00,2026-10-29 17:00,2,Balance check set,New
-REQ-1005,ORD-7005,TPL-004,Tensile Strength Test,Urgent,2026-10-27 09:00,2026-10-28 17:00,5,Material qualification lot,New
-REQ-1006,ORD-7006,TPL-005,Stability Chamber Loading,Routine,2026-10-27 12:00,2026-11-03 17:00,2,Stability study placement,New
-REQ-1007,ORD-7007,TPL-006,Non-standard Method Validation,High,2026-10-27 12:00,2026-10-30 17:00,2,New method validation,NeedsReview
-REQ-1008,ORD-7008,TPL-001,HPLC Assay - Standard,Routine,2026-10-27 12:00,2026-10-29 17:00,2,Assay sample batch C,New
-REQ-1009,ORD-7009,TPL-002,GC Residual Solvent,Urgent,2026-10-27 08:00,2026-10-28 17:00,3,Urgent residual solvent check,New
-REQ-1010,ORD-7010,TPL-004,Tensile Strength Test,Routine,2026-10-27 12:00,2026-10-30 17:00,4,Material test lot D,New
-REQ-1011,ORD-7011,TPL-003,Balance Verification,Routine,2026-10-27 12:00,2026-10-30 17:00,1,Balance check set B,New
-REQ-1012,ORD-7012,TPL-006,Non-standard Method Validation,Urgent,2026-10-27 09:00,2026-10-29 17:00,1,Urgent validation request,NeedsReview
+REQ-1001,ORD-7001,TPL-001,HPLC Assay - Standard HPLC 标准含量,Routine,2026-10-27 12:00,2026-10-30 17:00,2,Assay sample batch A,New
+REQ-1002,ORD-7002,TPL-001,HPLC Assay - Standard HPLC 标准含量,Urgent,2026-10-27 10:00,2026-10-28 17:00,4,Urgent release testing,New
+REQ-1003,ORD-7003,TPL-002,GC Residual Solvent GC 残留溶剂,Routine,2026-10-27 12:00,2026-10-30 17:00,3,Residual solvent batch B,New
+REQ-1004,ORD-7004,TPL-003,Balance Verification 天平校验,Routine,2026-10-27 12:00,2026-10-29 17:00,2,Balance check set,New
+REQ-1005,ORD-7005,TPL-004,Tensile Strength Test 拉伸强度,Urgent,2026-10-27 09:00,2026-10-28 17:00,5,Material qualification lot,New
+REQ-1006,ORD-7006,TPL-005,Stability Chamber Loading 稳定性箱装载,Routine,2026-10-27 12:00,2026-11-03 17:00,2,Stability study placement,New
+REQ-1007,ORD-7007,TPL-006,Non-standard Method Validation 非标方法验证,High,2026-10-27 12:00,2026-10-30 17:00,2,New method validation,NeedsReview
+REQ-1008,ORD-7008,TPL-001,HPLC Assay - Standard HPLC 标准含量,Routine,2026-10-27 12:00,2026-10-29 17:00,2,Assay sample batch C,New
+REQ-1009,ORD-7009,TPL-002,GC Residual Solvent GC 残留溶剂,Urgent,2026-10-27 08:00,2026-10-28 17:00,3,Urgent residual solvent check,New
+REQ-1010,ORD-7010,TPL-004,Tensile Strength Test 拉伸强度,Routine,2026-10-27 12:00,2026-10-30 17:00,4,Material test lot D,New
+REQ-1011,ORD-7011,TPL-003,Balance Verification 天平校验,Routine,2026-10-27 12:00,2026-10-30 17:00,1,Balance check set B,New
+REQ-1012,ORD-7012,TPL-006,Non-standard Method Validation 非标方法验证,Urgent,2026-10-27 09:00,2026-10-29 17:00,1,Urgent validation request,NeedsReview

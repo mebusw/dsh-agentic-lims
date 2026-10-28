@@ -1,0 +1,11 @@
+import { MongoClient } from 'mongodb';
+import { buildRoutes } from '../lib/routes.js';
+const client = await MongoClient.connect('mongodb://127.0.0.1:27018');
+const db = client.db('agentic_lims');
+const routes = buildRoutes({ db, config: { demoNow: '2026-10-27T08:00:00+08:00' } });
+const route = routes.find((r) => r.path === '/api/lims/overview' && r.methods.includes('GET'));
+const res = await route.fetch(new Request('http://x/api/lims/overview'));
+const data = await res.json();
+console.log(res.status, { openTasks: data.stats.openTasks, totalTasks: data.stats.totalTasks, scheduled: data.stats.scheduledTasks, unscheduled: data.stats.unscheduledTasks });
+console.log(data.tasks.map((t) => `${t.id}:${t.scheduled ? '有方案' : '未生成'}`).join(' | '));
+await client.close();

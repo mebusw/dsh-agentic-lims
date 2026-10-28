@@ -121,7 +121,7 @@ function normalizeAllocation(row) {
   };
 }
 
-export function buildDomain(raw) {
+export function buildDomain(raw, templateOverrides = {}) {
   const persons = raw.persons.map(normalizePerson);
   const resources = raw.equipment.map(normalizeResource);
   const equipment = resources.filter((resource) => resource.kind === 'equipment');
@@ -175,6 +175,7 @@ export function buildDomain(raw) {
       status: row.status,
       template,
       templateId: template?.id ?? null,
+      templateOverrideId: null,
       requirements: {
         equipmentIds: explicitEquipmentIds,
         equipmentType,
@@ -185,6 +186,21 @@ export function buildDomain(raw) {
       },
     };
   });
+  for (const task of tasks) {
+    const overrideId = templateOverrides instanceof Map ? templateOverrides.get(task.id) : templateOverrides[task.id];
+    if (!overrideId) continue;
+    const template = templateById.get(overrideId);
+    if (!template) continue;
+    task.template = template;
+    task.templateId = template.id;
+    task.templateOverrideId = template.id;
+    task.requirements.prepMinutes = template.prepMinutes;
+    task.requirements.estimatedTestMinutes = template.testMinutes;
+    if (!task.requirements.equipmentIds.length && template.requiredEquipmentType) {
+      const match = equipment.find((item) => item.type.toLowerCase() === String(template.requiredEquipmentType).toLowerCase());
+      if (match) task.requirements.equipmentType = match.type;
+    }
+  }
   const taskById = new Map(tasks.map((item) => [item.id, item]));
 
   const activities = raw.activities.map(normalizeActivity);
