@@ -1,115 +1,272 @@
 # dsh-agentic-lims
 
-一个跑在 **DeepSeek Harness（DSH）右侧边栏**里的 Agentic LIMS 可行性 demo。
+一个跑在 **DeepSeek Harness（DSH）右侧边栏**里的 Agentic LIMS 可行性 demo：MongoDB 存模拟实验室数据，确定性引擎判定排程可行性，聊天里的 Agent 通过 `lims_*` 工具排程、解释约束、分析停机影响。
 
 - **形态**：DSH 插件（Host + Client 两半），不是独立网站。
-- **界面**：DSH 右侧边栏 tab，顶部一级菜单（概览 / 项目 / 任务 / 排程 / 影响 / 资源 / 分析 / 审计）+ 角色视图（实验人员 / TM-TL / 运营），内置方案对比、甘特图、约束校验、负荷报表。
-- **对话**：DSH 原生聊天框；Agent 通过 `lims_*` 工具读取数据、运行确定性排程引擎，并驱动右侧工作区切页。
-- **数据**：MongoDB（`127.0.0.1:27018/agentic_lims`），模拟数据包 CSV 原样导入 `raw_*` 集合。
+- **界面**：DSH 右侧边栏 tab，一级菜单（概览 / 项目 / 任务 / 排程 / 影响 / 资源 / 分析 / 自定义 / 审计）+ 角色视图（实验人员 / TM-TL / 运营），内置方案对比、甘特图、约束校验、负荷报表。
+- **对话**：DSH 原生聊天框；Agent 通过 `lims_*` 工具读数据、跑引擎，并驱动右侧工作区切页。
+- **数据**：MongoDB（默认 `127.0.0.1:27018/agentic_lims`），模拟数据包 CSV 原样导入 `raw_*` 集合。
 - **规则**：硬约束由代码校验（设备能力、资质、校准、冲突、工作时段、前处理空间），模型只做理解与解释。
 
-## 先看这里
+---
 
-| 文档 | 内容 |
-|---|---|
-| [插件 README](agentic-lims/README.md) | 安装、演示脚本、数据与引擎假设、目录说明 |
-| [产品设计方案](</Users/jacky/Library/CloudStorage/坚果云-jackyshen@uperform.cn/优普丰大文件(默认不同步到本地)/03 咨询服务/0214 施耐德中高压电气/202610 实验室排程萃取/00 售前和前期沟通/AI-Native-智能实验室预约与排程系统-设计方案.md>) | 原始产品策略与交互架构 |
-| [模拟数据说明](</Users/jacky/Library/CloudStorage/坚果云-jackyshen@uperform.cn/优普丰大文件(默认不同步到本地)/03 咨询服务/0214 施耐德中高压电气/202610 实验室排程萃取/00 售前和前期沟通/LIMS排程原型-模拟数据包/README.md>) | 领域模型、A–F 场景、硬/软约束 |
+## 环境要求
 
-## 快速开始
+| 组件 | 版本 | 用途 |
+|---|---|---|
+| [DSH](https://www.npmjs.com/package/@deepseek-ai/dsh) | `0.2.x` 及以上 | 提供右侧边栏、插件加载与对话 |
+| Node.js | ≥ 20 | DSH 与插件的运行时 |
+| pnpm | ≥ 9 | DSH 用它安装插件（`dsh plugin` 只是 pnpm 的包装） |
+| MongoDB | 7 或 8，或 Docker | 存模拟数据、方案、审计、停机事件 |
+
+macOS / Linux 均验证过；Windows 建议在 WSL 里跑。
+
+---
+
+## 安装（三步）
+
+### 第 1 步：安装 DSH
 
 ```bash
-# 1. 启动本地 MongoDB（数据目录在 workspace 内）
-./agentic-lims/scripts/start-mongo.sh
-
-# 2. 安装插件（在 DSH 中执行）
-#    plugin_manager install_bundle { "target": "/Users/jacky/work/dsh-agentic-lims/agentic-lims" }
-
-# 3. 刷新 DSH Web 页面，右侧边栏会打开「智能实验室」
+npm install -g @deepseek-ai/dsh
+dsh web
 ```
 
-如果右侧边栏没出现，点击聊天标题栏右侧的烧瓶图标；或在右侧边栏的 “+” 指南里选择「智能实验室」。
+浏览器打开 <http://127.0.0.1:3080>，按首次启动引导配好模型凭据（能正常对话即可）。
+这一步没跑通之前，插件是装不进去的 —— 插件最终是挂到 DSH 的某个 profile 上的。
+
+### 第 2 步：取插件代码
+
+```bash
+git clone https://github.com/mebusw/dsh-agentic-lims.git
+cd dsh-agentic-lims
+```
+
+### 第 3 步：一键设置
+
+```bash
+./setup.sh
+```
+
+脚本按顺序做四件事，每步都会打印结果，可重复执行：
+
+1. **启动 MongoDB** —— 起在本机 `27018`，数据目录放在仓库内的 `.data/mongodb`（不污染系统数据目录，也不和常见的 `27017` 打架）。本机没有 `mongod` 但有 Docker 时，自动改起 `mongo:7` 容器。
+2. **装插件依赖** —— `agentic-lims` 只依赖一个 `mongodb` 驱动，`npm install --omit=dev` 几秒钟。
+3. **导入演示数据** —— 把 `agentic-lims/data/*.csv` 导入 `raw_*` 集合，并把工作区重置到概览页。
+4. **装进 DSH** —— 执行 `dsh plugin --profile web add ./agentic-lims`，把插件连同 `dsh.profile.bundles` 一起写进 profile。
+
+装完**重启 `dsh web`**并刷新页面，右侧边栏会出现「智能实验室 / Agentic LIMS」tab。找不到的话，点聊天标题栏右侧的烧瓶图标，或在右侧边栏的「+」指南里选它。
+
+#### 常用参数
+
+```bash
+./setup.sh                      # 默认：装进 web profile，导入干净数据
+./setup.sh --demo               # 导入完整演示数据（预置停机事件、测试计划、候选方案）
+./setup.sh --profile lims       # 装进别的 profile
+./setup.sh --skip-plugin        # 只准备 MongoDB 和数据，不动 DSH
+./setup.sh --help               # 全部选项
+```
+
+---
+
+## 安装到底改了哪些东西
+
+想核对或手工复现，就是这么四步（`setup.sh` 做的事完全等价）：
+
+```bash
+# 1) MongoDB
+./agentic-lims/scripts/start-mongo.sh
+
+# 2) 依赖
+(cd agentic-lims && npm install --omit=dev)
+
+# 3) 演示数据
+(cd agentic-lims && node scripts/reset-demo-data.mjs)
+
+# 4) 装插件（= pnpm link + 写入 bundle 列表）
+dsh plugin --profile web add "$PWD/agentic-lims"
+```
+
+这些文件进的是仓库和 DSH home，不会碰系统目录：
+
+| 位置 | 内容 |
+|---|---|
+| `<repo>/.data/mongodb` | MongoDB 数据文件（已在 `.gitignore`） |
+| `<repo>/.data/logs/mongod.log` | mongod 日志 |
+| `<repo>/agentic-lims/node_modules` | 唯一的运行时依赖 `mongodb` |
+| `$DSH_HOME/profiles/web/package.json` | 依赖 `@local/agentic-lims` + `dsh.profile.bundles` |
+
+---
+
+## 配置
+
+插件在 **DSH 启动时**读环境变量，所以要在启动 `dsh web` 的同一个 shell 里 `export`（或写进 shell 的 rc 文件）：
+
+| 环境变量 | 默认值 | 说明 |
+|---|---|---|
+| `AGENTIC_LIMS_MONGO_URI` | `mongodb://127.0.0.1:27018` | 插件连的 MongoDB |
+| `AGENTIC_LIMS_DB` | `agentic_lims` | 数据库名 |
+| `AGENTIC_LIMS_MONGO_PORT` | `27018` | `start-mongo.sh` 起的端口 |
+| `AGENTIC_LIMS_MONGO_DBPATH` | `<repo>/.data/mongodb` | 数据目录 |
+| `AGENTIC_LIMS_MONGOD` | 自动探测 | 指定 `mongod` 可执行文件 |
+| `AGENTIC_LIMS_MONGO_IMAGE` | `mongo:7` | Docker 兜底时用的镜像 |
+| `DSH_PROFILE` | `web` | `setup.sh` 默认装进的 profile |
+| `DSH_BIN` | 自动探测 | 指定 `dsh` 可执行文件 |
+
+**用已经在跑的 MongoDB**（比如团队共享的一台，或你自己 `27017` 上的实例）：
+
+```bash
+./setup.sh --skip-mongo
+export AGENTIC_LIMS_MONGO_URI='mongodb://127.0.0.1:27017'
+export AGENTIC_LIMS_DB='agentic_lims'
+dsh web
+```
+
+**换端口**：
+
+```bash
+AGENTIC_LIMS_MONGO_PORT=27019 ./agentic-lims/scripts/start-mongo.sh
+export AGENTIC_LIMS_MONGO_URI='mongodb://127.0.0.1:27019'
+```
+
+也可以不用环境变量，改 profile 的 patch 层（覆盖插件条目配置）：
+
+```yaml
+# $DSH_HOME/profiles/web/cordis.patch.yml
+- id: agentic-lims
+  config:
+    mongoUri: mongodb://127.0.0.1:27019
+    dbName: agentic_lims
+```
+
+> 演示时钟冻结在 `2026-10-27 08:00 (+08:00)`，和模拟数据包日期一致，保证每次演示结果可复现。
+
+---
+
+## 验证安装
+
+1. 右侧边栏出现「智能实验室」tab，顶部有「概览 / 项目 / 任务 / 排程 / 影响 / 资源 / 分析 / 自定义 / 审计」。
+2. 在聊天框问一句：**「今天实验室怎么样？」** —— Agent 应调用 `lims_overview`，右侧切到概览并显示 KPI。
+3. 数据确实进库了：
+
+   ```bash
+   mongosh --port 27018 --quiet --eval 'db.getSiblingDB("agentic_lims").raw_tasks.countDocuments()'
+   # 8
+   ```
+
+4. 不依赖 DSH 也能自测引擎和路由：
+
+   ```bash
+   cd agentic-lims
+   node scripts/check-engine.mjs
+   node scripts/check-routes.mjs
+   ```
+
+---
 
 ## 30 秒演示脚本
 
-在 DSH 聊天框输入：
+在 DSH 聊天框里依次说：
 
-> 帮我安排 TASK-2005，优先保证交付日期，给我两个备选方案，说明风险和资源安排。
+1. **排程**
+   > 帮我安排 TASK-2005，优先保证交付日期，给我两个备选方案，说明风险和资源安排。
 
-预期：
+   Agent 调 `lims_get_task` / `lims_generate_plans`，右侧切「排程」，出现候选方案、甘特图、HC-001…HC-006 约束校验和评分拆解。
 
-1. Agent 调用 `lims_get_task` / `lims_generate_plans`；
-2. 右侧边栏自动切到「排程」；
-3. 出现 2 个候选方案（最快完成 / 负载均衡）、甘特图、HC-001…HC-006 约束校验、评分拆解；
-4. 点「确认并提交（模拟）」写入原型 MongoDB，产生审计事件；
-5. 再输入：
+2. **确认** —— 点候选卡片下方或右侧摘要顶部的**「确认此方案」**。候选方案只是写进 MongoDB，确认后才占资源、写审计。
+
+3. **解释不可用**
    > 为什么 TASK-2003 不能用 EQ-004？有哪些替代设备？
-   
-   Agent 调用 `lims_explain_resource`，右侧切到「资源」并展开不可用原因与替代设备。
-6. 设备停机：
+
+4. **停机影响**
    > EQ-007 明天全天维护，帮我分析受影响的预约并给出重排方案。
 
-   Agent 调用 `lims_analyze_downtime`，登记停机事件、分析受影响任务、给出前后对比，右侧切到「影响」页。
-7. 修改约束重排：
+5. **按新约束重排**
    > 重新安排 TASK-2005，从 10/29 开始，周五下午不要排实验，优先用 EQ-005。
 
-   Agent 调用 `lims_revise_plan`，右侧显示变更前后对比；旧方案标记为「已替代」。
-8. 项目与 Test Plan：
+6. **项目 / 测试计划**
    > 把 PRJ-1001 的 Tensile Strength Test 任务排成一个测试计划。
 
-   Agent 调用 `lims_generate_test_plan`，右侧切到「项目」页，展示项目 → 模板分组 → 多个任务 → 合并时间轴。
-9. 简单数字问题：
+   Agent 调 `lims_generate_test_plan`，右侧切「项目」页，展示项目 → 模板分组 → 多个任务 → 合并时间轴。
+
+7. **简单数字**
    > 周三 EQ-007 有多少个预约？
 
-   Agent 调用 `lims_equipment_bookings`，聊天窗口直接渲染预约卡片。
+   走 `lims_equipment_bookings`，聊天里直接渲染预约卡片。
 
-## 工程结构
+8. **模糊需求先拆解**
+   > 下周把 PRJ-1001 的拉伸和耐久测试排掉，优先保交期，模板用 TPL-004。
 
-```
-agentic-lims/
-├─ index.js              Host 入口：Mongo 连接、路由、工具、系统提示
-├─ client.js             右侧边栏 React UI（无构建，DSH Client 模块）
-├─ cordis.patch.yml      bundle 安装行
-├─ lib/
-│  ├─ model.js           CSV → 领域模型，资质/设备/风险判断
-│  ├─ engine.js          候选方案、硬约束、评分、甘特/分析数据
-│  ├─ routes.js          /api/lims/*（复用 DSH 认证 Fetch 路由）
-│  ├─ tools.js           lims_* 工具
-│  ├─ seed.js            MongoDB seed、workspace、审计、方案存取
-│  ├─ csv.js / util.js   解析与日期工具
-├─ data/                 模拟数据包 CSV/JSON
-├─ scripts/              start-mongo.sh、引擎/路由自测
-├─ locale/               插件标题与描述
-└─ icon.svg              插件图标
+   Agent 先 `lims_list_requests` / `lims_prepare_task_draft` 给出「request 片段 → 项目 → 模板 → 候选 TASK_ID → 依据 → 置信度 → 缺失字段」，你确认后才 `lims_create_task_draft` 写库。
+
+---
+
+## 数据与重置
+
+```bash
+# 干净的演示库（无历史方案、无停机登记）
+(cd agentic-lims && node scripts/reset-demo-data.mjs)
+
+# 完整演示数据（预置 EQ-007 停机、PRJ-1001 测试计划、TASK-2005 候选方案）
+(cd agentic-lims && node scripts/reseed-demo.mjs)
 ```
 
-## 当前验证状态
+两个脚本都认 `AGENTIC_LIMS_MONGO_URI` / `AGENTIC_LIMS_DB`，可以指向别的实例。
 
-- ✅ Host 插件已安装并激活；14 个 `lims_*` 工具已出现在当前 Agent 的工具表中（含项目/Test Plan、设备预约、停机影响、约束重排）。
-- ✅ MongoDB 已连接并完成 seed；`raw_*` 集合含完整模拟数据。
-- ✅ 路由自测通过：overview / projects / test-plan / task / bookings / plans / revise / confirm / explain / analytics / simulate / audit / downtime / impact；停机窗口与已替代方案都会阻断确认。
-- ✅ Client 模块已注册到 `sidebar.right.pane.tab`，并出现在聊天标题栏操作区。
-- ✅ 三种角色视图（实验人员 / TM-TL / 运营）均可渲染；切换角色会调整一级菜单和默认落点。
-- ✅ 项目页与 Test Plan 已生成并持久化；聊天工具结果已接入自定义卡片渲染。
-- ✅ 浏览器端正在每 2.6s 轮询 `/api/lims/workspace`（MongoDB `meta.diagnostics` 可见计数增长），说明右侧 UI 已挂载并持续取数。
-- ⚠️ 受当前环境限制，无法截图或读取浏览器 DOM；最终视觉检查需要你在 DSH 页面刷新后确认。
+---
 
-## 交互细节
+## 目录结构
 
-- 资源排程总览默认 7 天（1 周），超出可翻周；顶部显示「本周 N 条 / 已有方案 X 个任务 / 未生成 Y」。
-- 总览可以同时显示多个任务的排程（设备/人员/空间行）；每个任务只取一个方案，当前选中方案另有单条明细。
-- 甘特条内显示开始/结束时间，深色底 + 白字。
-- 分析页「设备负荷」点击设备名，会把 `关于 XX 设备：` 插入聊天输入框，便于继续追问。
+```
+dsh-agentic-lims/
+├─ setup.sh              一键安装（Mongo → 依赖 → 数据 → 插件）
+├─ agentic-lims/         DSH 插件本体
+│  ├─ index.js           Host 入口：Mongo 连接、路由、工具、系统提示
+│  ├─ client.js          右侧边栏 React UI（无构建，DSH Client 模块）
+│  ├─ cordis.patch.yml   bundle 安装行
+│  ├─ lib/               model / engine / routes / tools / seed / csv / util / drafts
+│  ├─ data/              模拟数据包 CSV/JSON
+│  ├─ scripts/           start-mongo.sh、数据重置、引擎/路由自测
+│  ├─ locale/            插件标题与描述（中/英）
+│  └─ icon.svg           插件图标
+└─ demo/                 演示脚本与讲稿
+```
 
-## 依赖说明
+插件自身的详细说明（角色视图、Test Plan 生成顺序、卡片与折叠、工具清单、引擎假设、已知边界）见 **[agentic-lims/README.md](agentic-lims/README.md)**。
 
-`agentic-lims/node_modules`（仅 `mongodb` 驱动）是本机安装时保留的运行时依赖；DSH 的 bundle 是目录链接安装，请不要删除它。若换机器，在该目录执行 `npm install` 即可。
+---
+
+## 常见问题
+
+**右侧没出现 tab**
+先确认第 4 步装成功了：`cat $DSH_HOME/profiles/web/package.json` 里应有 `"@local/agentic-lims": "link:.../agentic-lims"`，且 `dsh.profile.bundles` 包含它。装完必须**重启 `dsh web`**（无 HMR 时不会热加载）。还不行就点聊天标题栏的烧瓶图标。
+
+**`dsh plugin` 报 `pnpm: command not found`**
+`dsh plugin` 只是把参数转发给 pnpm：`npm i -g pnpm` 后重跑 `./setup.sh --skip-mongo --skip-deps --skip-seed`。
+
+**MongoDB 连不上 / 插件报 2500ms 超时**
+`mongosh --port 27018 --eval 'db.runCommand({ping:1})'` 试一下。连不上就看 `.data/logs/mongod.log`；换端口后记得同步 `AGENTIC_LIMS_MONGO_URI`。
+
+**27018 被占用**
+`AGENTIC_LIMS_MONGO_PORT=27019 ./setup.sh`，并 `export AGENTIC_LIMS_MONGO_URI='mongodb://127.0.0.1:27019'` 再启动 DSH。
+
+**装了但数据是空的**
+插件启动时会自动 `seedDatabase`（幂等），只要 DB 可写就会补上。还是空的就手动跑一次 `reset-demo-data.mjs`，并看 DSH 日志里 `[agentic-lims] ready:` 那行。
+
+**`EPERM` / 权限错误**
+多半是 DSH 的文件沙箱或 `$DSH_HOME` 属主问题。DSH 侧装插件需要 `danger-full-access` 或当场批准；`~/.npm`、`~/.dsh` 属主不对时按报错提示 `chown`。
+
+**Windows**
+`start-mongo.sh` 用的是 bash + `--fork`，请在 WSL 里跑，或直接用 Docker 起 MongoDB 后 `./setup.sh --skip-mongo`。
+
+---
 
 ## 已知边界
 
-- 单机 MongoDB、冻结演示时钟、贪心排程，不是生产优化器。
-- 没有真实权限、审批、生产写入、SSO、回滚；审计只保留原型事件。
-- 甘特图是日粒度资源条，未做分钟级设备时间轴。
-- 停机目前按「设备 + 整天」建模；部分时段停机、跨天停机窗口和分钟级占用尚未实现。
-- Test Plan 目前是 draft，不做批量确认；批量应用/回滚和跨项目联动排程尚未实现。
-- `TASK-2007` 的资质数据本身冲突（无人同时具备 HPLC Level 2 + Sample Prep），原型有意标记「需方法审核」，而不是放宽硬约束。
+- 这是**可验证可行性的 demo**：单机 MongoDB、冻结演示时钟、贪心排程，不是生产优化器。
+- 没有真实权限、审批流、生产写入、SSO 或回滚；审计只保留原型事件，确认永远是「模拟确认」。
+- 排程按「每日小时」建模，甘特图是日粒度资源条，没有分钟级设备时间轴。
+- 停机目前按「设备 + 整天」建模；部分时段停机、跨天窗口未实现。
+- Test Plan 是 draft，不做批量确认。
+- `TASK-2007` 的资质数据本身冲突（无人同时具备 HPLC Level 2 + Sample Prep），原型有意暴露为「需方法审核」，而不是放宽硬约束。
+- 仓库里的模拟数据包为演示用途，与任何真实客户数据无关。
