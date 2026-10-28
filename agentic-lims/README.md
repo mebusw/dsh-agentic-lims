@@ -9,15 +9,17 @@
 
 ## 升级后第一次启动
 
-宿主代码（`index.js` / `lib/*`）变更需要重启 `dsh web` 才会加载；客户端 `client.js` 刷新页面即可。
+宿主代码（`index.js` / `lib/*`）变更需要重启 DSH Web 才会加载；客户端 `client.js` 刷新页面即可。
 
 ```bash
-# 1) 重启 DSH Web（同一个 shell，保留 AGENTIC_LIMS_* 环境变量）
-dsh web
+# 1) 重启承载插件的 profile（本项目演示实例装在 lims profile；装在 web 就把 --profile 换成 web）
+dsh --profile lims web
 # 2) 刷新 http://127.0.0.1:3080
 # 3) 可选：清掉升级前生成的旧候选方案，重新生成带 inputSnapshot 的方案
 (cd agentic-lims && node scripts/reset-demo-data.mjs)
 ```
+
+> 只刷新页面会出现「订单」接口 404：右侧面板会显示「后端插件仍是旧进程」横幅，并提示重启命令；`/api/lims/health` 的 `features` 字段可用来确认新路由已加载。
 
 插件启动时会幂等补齐 `prototype_config` / `sample_status` 集合，不需要手工迁移；旧方案没有 `inputSnapshot`，确认时会跳过样品快照比对，但仍会按当前规则复验设备、资质、容量、停机、样品和 Task Type。
 
