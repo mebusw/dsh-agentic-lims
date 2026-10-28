@@ -43,6 +43,12 @@ function pickPlan(plan) {
     evaluations: plan.evaluations,
     rationale: plan.rationale,
     scoreBreakdown: plan.scoreBreakdown,
+    taskType: plan.taskType,
+    taskTypeLabel: plan.taskTypeLabel,
+    reservation: plan.reservation,
+    sample: plan.sample,
+    ruleVersion: plan.ruleVersion,
+    policyVersion: plan.policyVersion,
   };
 }
 
@@ -78,6 +84,12 @@ function renderTask(value) {
     `资质：${(task.qualifications ?? []).join('、') || '—'}`,
     `设备：${(task.equipmentIds ?? []).join('、') || task.equipmentType || '—'}｜空间：${(task.spaceIds ?? []).join('、') || '—'}`,
   ];
+  if (task.taskType) {
+    lines.push(`Task Type：${task.taskType}（${task.reservationMode === 'exclusive' ? '设备/人员独占' : '按容量共享'}）｜${task.taskTypeReason ?? ''}`);
+  }
+  if (task.sample) lines.push(`样品：${task.sample.statusLabel ?? task.sample.status}${task.sample.note ? `｜${task.sample.note}` : ''}`);
+  if ((task.orderIds ?? []).length > 0) lines.push(`关联订单：${task.orderIds.join('、')}｜Spec：${(task.specIds ?? []).join('、') || '—'}`);
+  if ((task.overriddenFields ?? []).length > 0) lines.push(`已登记变更：${task.overriddenFields.join('、')}（覆盖值来自 change event）`);
   if (task.review) lines.push('注意：非标准方法，需完成方法/资质审核后才能确认。');
   lines.push('候选设备：');
   for (const item of value.candidates?.equipment ?? []) {
@@ -103,6 +115,8 @@ function renderPlans(value) {
         `- ${plan.id} ${plan.strategyLabel}｜${plan.statusLabel}｜${plan.score} 分｜${plan.resources.equipment.name} + ${plan.resources.person.name}${plan.resources.space ? ` + ${plan.resources.space.name}` : ''}`,
       );
       lines.push(`  预计 ${plan.startLabel || plan.startAt} → ${plan.endLabel || plan.endAt}｜交期余量 ${plan.dueMarginHours}h`);
+      if (plan.reservation?.label) lines.push(`  预约规则：${plan.reservation.label}${plan.reservation.confirmed ? '' : '（原型假设，待确认）'}`);
+      if (plan.sample?.readyAt) lines.push(`  样品到位：${plan.sample.statusLabel ?? plan.sample.status} · ${plan.sample.readyAt.slice(5, 16).replace('T', ' ')}`);
       for (const risk of plan.risks ?? []) lines.push(`  风险：${risk.text}`);
     }
     lines.push('请让用户比较方案后在右侧确认；不要在未确认前说已经写入排程。');
@@ -219,6 +233,96 @@ function renderRequests(value) {
   for (const request of value.requests ?? []) {
     lines.push(`- ${request.id} ${request.name}｜${request.templateId ?? '—'} ${request.templateName ?? ''}｜${request.priority}｜${request.sampleCount} 样品｜交期 ${request.dueAt ?? '—'}｜${request.ruleStatus}`);
   }
+  return lines.join('\n');
+}
+
+function sampleText(sample) {
+  if (!sample) return '样品信息未登记';
+  const ready = sample.readyAt ? `，到位 ${sample.readyAt.slice(5, 16).replace('T', ' ')}` : '';
+  return `${sample.statusLabel ?? sample.status}${ready}${sample.confirmed ? '' : '（原型假设，待确认）'}`;
+}
+
+function renderOrders(value) {
+  const lines = [`Test Orders（${value.orders?.length ?? 0}）— 规则版本 ${value.policy?.ruleVersion ?? '—'}（未确认）`];
+  for (const order of value.orders ?? []) {
+    lines.push(
+      `- ${order.id}｜${order.priority}｜交期 ${order.dueLabel ?? '—'}｜${order.sampleCount} 样品｜${order.statusLabel}｜${sampleText(order.sample)}`,
+    );
+    for (const spec of order.specs ?? []) {
+      lines.push(`  Spec ${spec.id}：${spec.templateName}（${spec.methodCode ?? '—'}）｜关联任务 ${spec.linkedTaskId ?? '未关联'}｜${spec.linkBasis}`);
+    }
+  }
+  if ((value.unlinkedTasks ?? []).length > 0) {
+    lines.push('未关联订单的项目任务：');
+    for (const task of value.unlinkedTasks) lines.push(`- ${task.id} ${task.name}｜${task.projectName}｜交期 ${task.dueLabel}｜${sampleText(task.sample)}`);
+  }
+  lines.push('订单 → 任务的关联是原型推断，需与 LIMS 集成后由 TL 确认；右侧「订单」页显示同一份数据。');
+  return lines.join('\n');
+}
+
+function renderOrder(value) {
+  if (value.ok === false) return `订单读取失败：${value.error}`;
+  const order = value.order ?? {};
+  const lines = [
+    `${order.id}｜${order.priority}｜交期 ${order.dueLabel ?? '—'}｜${order.sampleCount} 样品｜${order.statusLabel}`,
+    `样品：${sampleText(order.sample)}；距离交期 ${order.daysLeft ?? '—'} 天`,
+  ];
+  for (const spec of order.specs ?? []) {
+    lines.push(`Spec ${spec.id}：${spec.templateName}｜模板 ${spec.templateId}｜${spec.ruleStatus}｜关联任务 ${spec.linkedTaskId ?? '未关联'}`);
+    lines.push(`  依据：${spec.linkBasis}`);
+  }
+  for (const task of order.tasks ?? []) {
+    lines.push(`- 任务 ${task.id} ${task.name}｜${task.taskType}｜${task.dueLabel}｜${task.effortHours}h｜${sampleText(task.sample)}`);
+  }
+  if ((value.candidates ?? []).length > 0) {
+    lines.push('同模板候选任务（尚未关联）：');
+    for (const task of value.candidates) lines.push(`- ${task.id} ${task.name}｜${task.projectName}｜${task.dueLabel}`);
+  }
+  lines.push('右侧边栏已切到「订单」页。');
+  return lines.join('\n');
+}
+
+function renderChange(value) {
+  if (value.ok === false) return `变更分析失败：${value.error}`;
+  const change = value.change ?? {};
+  const direct = value.direct ?? {};
+  const lines = [
+    `${change.typeLabel}：${change.task?.id} ${change.task?.name}`,
+    `变更：${change.field ?? ''} ${change.fromLabel ?? change.from ?? '—'} → ${change.toLabel ?? change.to ?? '—'}${change.reason ? `（${change.reason}）` : ''}`,
+    `直接影响：${direct.before?.startLabel ?? '—'} → ${direct.before?.endLabel ?? '—'} 变为 ${direct.after?.startLabel ?? '无可行方案'} → ${direct.after?.endLabel ?? '—'}；${direct.reason ?? ''}`,
+  ];
+  if (direct.after) {
+    lines.push(`资源：${direct.after.resources?.equipment?.name} + ${direct.after.resources?.person?.name}｜${direct.after.statusLabel}`);
+  }
+  if ((value.indirect ?? []).length > 0) {
+    lines.push('间接受影响任务：');
+    for (const impact of value.indirect) {
+      lines.push(
+        `- ${impact.taskId} ${impact.taskName}｜${impact.relation}｜${impact.severity}｜${impact.before?.startLabel ?? '—'} → ${impact.before?.endLabel ?? '—'} 变为 ${impact.after?.startLabel ?? '无方案'} → ${impact.after?.endLabel ?? '—'}${impact.deltaHours ? `（${impact.deltaHours > 0 ? '+' : ''}${impact.deltaHours}h）` : ''}`,
+      );
+      lines.push(`  ${impact.reason}`);
+    }
+  } else {
+    lines.push('没有发现连带受影响的任务。');
+  }
+  lines.push(`汇总：受影响 ${value.summary?.affected ?? 0}｜延期 ${value.summary?.late ?? 0}｜阻塞 ${value.summary?.blocked ?? 0}｜规则版本 ${change.ruleVersion ?? '—'}`);
+  for (const item of value.recommendations ?? []) lines.push(`建议：${item}`);
+  lines.push('候选方案尚未确认：确认前应重新生成并校验；右侧边栏已切到「影响」页。');
+  return lines.join('\n');
+}
+
+function renderPolicies(value) {
+  if (value.ok === false) return `规则读取失败：${value.error}`;
+  const lines = [
+    `规则版本：${value.ruleVersion}｜实验室策略 ${value.policyVersion}｜${value.confirmed ? '已确认' : '未确认（原型假设）'}`,
+    `实验室：${value.lab?.name ?? '—'}｜优先级顺序 ${(value.lab?.priorityOrder ?? []).join(' > ')}`,
+  ];
+  for (const [key, rule] of Object.entries(value.taskTypeRules ?? {})) {
+    lines.push(`- ${key}：${rule.description}${rule.exclusive ? '（独占）' : rule.maxConcurrentTasks ? `（同日上限 ${rule.maxConcurrentTasks}）` : ''}`);
+  }
+  lines.push(`样品策略：${value.samplePolicy?.requireInStockBeforeTest ? '未到位不得开始测试' : '允许预排'}；允许提前预留 ${value.samplePolicy?.allowPreReserve ? '是' : '否'}；部分到样 ${value.samplePolicy?.partialBatchAllowed ? '允许分批' : '待确认'}`);
+  for (const item of value.samples ?? []) lines.push(`- ${item.taskId} ${item.taskName}：${sampleText(item.sample)}`);
+  lines.push('以上规则目前是原型默认值，需按 README-升级版 14.15 与 PO / TL 确认后才能作为生产规则。');
   return lines.join('\n');
 }
 
@@ -502,6 +606,108 @@ export function buildTools(store, routes) {
       },
       async execute() {
         const { data } = await call('/api/lims/requests');
+        return data;
+      },
+    },
+    {
+      name: 'lims_list_orders',
+      description:
+        '列出 LIS 测试订单（Test Order）及其测试规范（Spec）、样品到位状态、交期、优先级和原型推断关联的任务。用户问“有哪些订单/订单进度/哪些订单还没拆任务”时调用。右侧边栏会切到「订单」页。',
+      parameters: schema({}, []),
+      output: {
+        ...OUTPUT,
+        render: (_args, value) => text(renderOrders(value)),
+        presentationMeta: withMeta('orders', (value) => ({
+          orders: (value.orders ?? []).slice(0, 6),
+          unlinkedTasks: (value.unlinkedTasks ?? []).slice(0, 4),
+          policy: { ruleVersion: value.policy?.ruleVersion, policyVersion: value.policy?.policyVersion, confirmed: value.policy?.confirmed },
+        })),
+      },
+      async execute() {
+        const { data } = await call('/api/lims/orders');
+        await call('/api/lims/focus', { page: 'orders', message: 'Agent 正在浏览测试订单。', actor: 'agent' });
+        return data;
+      },
+    },
+    {
+      name: 'lims_get_order',
+      description:
+        '读取一个测试订单的完整上下文：Spec 列表、样品到位状态、交期、原型推断关联的任务、同模板候选任务和实验室规则版本。在为新订单排程或判断订单是否已拆任务之前调用。',
+      parameters: schema({ orderId: { type: 'string', description: '订单 ID，例如 ORD-7001' } }, ['orderId']),
+      output: {
+        ...OUTPUT,
+        render: (_args, value) => text(renderOrder(value)),
+        presentationMeta: withMeta('order', (value) => ({
+          order: value.order,
+          candidates: (value.candidates ?? []).slice(0, 4),
+          policy: { ruleVersion: value.policy?.ruleVersion, confirmed: value.policy?.confirmed },
+        })),
+      },
+      async execute(args) {
+        const { data } = await call(`/api/lims/order?orderId=${encodeURIComponent(args.orderId)}`);
+        if (data.ok !== false) {
+          await call('/api/lims/focus', { page: 'orders', orderId: args.orderId, message: `Agent 正在查看订单 ${args.orderId}。`, actor: 'agent' });
+        }
+        return data;
+      },
+    },
+    {
+      name: 'lims_analyze_change',
+      description:
+        '登记一次变更并做影响分析：样品到位时间延迟（sample_delay）、交期变更（due_date）、优先级变更（priority）。会写入原型 sample_status / task_overrides、记录 ChangeEvent，并用确定性引擎重排变更对象和共享设备/人员的相关任务。用户说“样品晚三天到会影响什么/把交期改到 X/调高优先级重新算”时调用。不会自动确认任何方案。',
+      parameters: schema(
+        {
+          type: { type: 'string', enum: ['sample_delay', 'due_date', 'priority'], description: '变更类型' },
+          taskId: { type: 'string', description: '任务 ID，例如 TASK-2005' },
+          value: { type: 'string', description: 'sample_delay 传日期时间（YYYY-MM-DD 或 ISO）；due_date 传 YYYY-MM-DD；priority 传 Urgent/High/Normal/Low' },
+          delayDays: { type: 'integer', description: '可选：sample_delay 时按“在当前到位时间上再加 N 天”计算' },
+          reason: { type: 'string', description: '可选：变更原因，会写入审计与 ChangeEvent' },
+        },
+        ['type', 'taskId'],
+      ),
+      output: {
+        ...OUTPUT,
+        render: (_args, value) => text(renderChange(value)),
+        presentationMeta: withMeta('change', (value) => ({
+          change: value.change,
+          direct: value.direct,
+          indirect: (value.indirect ?? []).slice(0, 3),
+          summary: value.summary,
+          recommendations: value.recommendations,
+        })),
+      },
+      async execute(args) {
+        const { data } = await call('/api/lims/change-impact', {
+          type: args.type,
+          taskId: args.taskId,
+          value: args.value,
+          delayDays: args.delayDays,
+          reason: args.reason,
+          actor: 'agent',
+        });
+        return data;
+      },
+    },
+    {
+      name: 'lims_list_policies',
+      description:
+        '读取实验室排程规则：规则版本、Task Type 预约规则（Prebook 独占 / Test Spec 共享）、样品到位策略、每个任务的样品状态和已登记的变更覆盖。用户问“为什么这个任务不能共享设备/规则是什么/哪些规则还没确认”时调用。',
+      parameters: schema({}, []),
+      output: {
+        ...OUTPUT,
+        render: (_args, value) => text(renderPolicies(value)),
+        presentationMeta: withMeta('policies', (value) => ({
+          ruleVersion: value.ruleVersion,
+          policyVersion: value.policyVersion,
+          confirmed: value.confirmed,
+          lab: value.lab,
+          samplePolicy: value.samplePolicy,
+          taskTypeRules: value.taskTypeRules,
+          samples: (value.samples ?? []).slice(0, 6),
+        })),
+      },
+      async execute() {
+        const { data } = await call('/api/lims/policies');
         return data;
       },
     },

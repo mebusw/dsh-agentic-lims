@@ -2,10 +2,24 @@
 
 把「AI-Native 智能实验室预约与排程」做成一个 DSH 插件：
 
-- **UI 在 DSH 右侧边栏**：顶部一级菜单（概览 / 项目 / 任务 / 排程 / 影响 / 资源 / 分析 / 自定义 / 审计），页面、卡片、甘特图、报表组件都在这里；顶部可切换角色视图（实验人员 / TM-TL / 运营）。
+- **UI 在 DSH 右侧边栏**：顶部一级菜单（概览 / 订单 / 项目 / 任务 / 排程 / 影响 / 资源 / 分析 / 自定义 / 审计），页面、卡片、甘特图、报表组件都在这里；顶部可切换角色视图（实验人员 / TM-TL / 运营）。
 - **聊天就是 DSH 聊天框**：Agent 通过 `lims_*` 工具读取 MongoDB、运行确定性排程引擎，并把右侧工作区切到对应页面。
 - **MongoDB 是后端数据存储**：模拟数据包的 CSV 原样导入 `raw_*` 集合；方案、审计、共享工作区是独立集合。
 - **确定性引擎负责可行性**：硬约束（设备能力、资质、校准、冲突、工作时段、前处理空间）由代码校验，模型只负责理解和解释。
+
+## 升级后第一次启动
+
+宿主代码（`index.js` / `lib/*`）变更需要重启 `dsh web` 才会加载；客户端 `client.js` 刷新页面即可。
+
+```bash
+# 1) 重启 DSH Web（同一个 shell，保留 AGENTIC_LIMS_* 环境变量）
+dsh web
+# 2) 刷新 http://127.0.0.1:3080
+# 3) 可选：清掉升级前生成的旧候选方案，重新生成带 inputSnapshot 的方案
+(cd agentic-lims && node scripts/reset-demo-data.mjs)
+```
+
+插件启动时会幂等补齐 `prototype_config` / `sample_status` 集合，不需要手工迁移；旧方案没有 `inputSnapshot`，确认时会跳过样品快照比对，但仍会按当前规则复验设备、资质、容量、停机、样品和 Task Type。
 
 ## 快速开始
 
@@ -70,7 +84,22 @@ plugin_manager install_bundle { "target": "<repo>/agentic-lims" }
 
    Agent 调用 `lims_equipment_bookings`，聊天窗口直接渲染预约数、占用小时、容量利用率和任务卡片。
 
-Agent 会把方案、甘特图、约束校验、停机影响、项目测试计划和审计写入右侧边栏；确认只写原型 MongoDB，不写生产系统。
+9. **订单 / 规范**
+   > 有哪些测试订单还没拆任务？ORD-7002 的样品到齐了吗？
+
+   Agent 调用 `lims_list_orders` / `lims_get_order`，右侧切到「订单」页：订单 → Spec → 原型推断关联的任务、样品状态、交期风险。订单与任务的关联会明确标注「原型推断，需 TL 确认」。
+
+10. **样品延迟 / 交期变更**
+    > TASK-2005 的样品晚到 10/31，会影响哪些任务？
+
+    Agent 调用 `lims_analyze_change`，写入 ChangeEvent，重排变更对象，并沿共享设备/人员给出直接 + 间接影响。右侧「影响」页会回放同一份分析。
+
+11. **规则与 Task Type**
+    > Prebook 和 Test Spec 的预约规则有什么不同？哪些规则还没确认？
+
+    Agent 调用 `lims_list_policies`，返回规则版本、Task Type 独占/共享规则、样品策略和每个任务的样品状态；所有规则都标记 `confirmed: false`。
+
+Agent 会把方案、甘特图、约束校验、停机影响、订单/样品、变更影响、项目测试计划和审计写入右侧边栏；确认只写原型 MongoDB，不写生产系统。
 
 ## 角色视图
 
@@ -78,9 +107,9 @@ Agent 会把方案、甘特图、约束校验、停机影响、项目测试计�
 
 | 角色 | 一级菜单 | 默认落点 | 专属组件 |
 |---|---|---|---|
-| 实验人员 | 概览 / 任务 / 排程 / 资源 / 影响 | 概览 | 「我的下周安排」：选择人员、7 天工时、活动、资质匹配的可接任务 |
-| TM / TL | 全部 7 个页面 | 排程 | 方案对比、约束校验、停机影响、审计 |
-| 运营负责人 | 概览 / 排程 / 影响 / 资源 / 分析 / 审计 | 分析 | 「运营关注」：瓶颈、风险任务、利用率入口 |
+| 实验人员 | 概览 / 订单 / 项目 / 任务 / 排程 / 资源 / 影响 | 概览 | 「我的下周安排」：选择人员、7 天工时、活动、资质匹配的可接任务 |
+| TM / TL | 全部页面 | 排程 | 方案对比、约束校验、订单/样品、变更影响、审计 |
+| 运营负责人 | 概览 / 订单 / 项目 / 排程 / 影响 / 资源 / 分析 / 审计 | 分析 | 「运营关注」：瓶颈、风险任务、利用率入口 |
 
 角色选择保存在浏览器 localStorage；切换角色时，如果当前页面不属于新角色，会落到该角色的默认页面。
 
@@ -91,6 +120,47 @@ Agent 会把方案、甘特图、约束校验、停机影响、项目测试计�
 - 聊天卡片显示「草稿尚未写入任务」和「创建这些任务（模拟）」；
 - 用户确认后 `lims_create_task_draft` 写 `raw_tasks` + `task_template_overrides`，项目页立刻出现新任务；
 - 新任务可继续用 `lims_generate_test_plan` / `lims_generate_plans` 排程。
+
+## 订单 / 规范 / 样品（README-升级版 14.4、14.8）
+
+- **Test Order** 来自 `test_requests.order_id`，**Test Specification** 对应一条 request（mock 数据里是 1:1），**Test Task** 是项目制 CSV 的任务。三者是不同的业务对象，页面和工具都分开呈现。
+- 项目 CSV 没有订单外键，因此订单 → 任务**只能做原型推断**：同模板 + 交期相差 ≤ 21 天，且一个任务只被一个订单认领。每条关联都带 `linkBasis` 和 `confidence`，UI 与聊天都必须说明「需 TL 确认」。没有匹配到任务的订单显示「待拆解任务」，没有订单的任务显示在「未关联订单的任务」。
+- **样品到位是一等输入**：`sample_status` 集合保存每个任务的 `status / required / available / expectedInStockAt / actualInStockAt`，全部来自 `data/prototype_upgrade.json` 的原型假设（`source: prototype-assumption`、`confirmed: false`）。
+- 引擎新增 **HC-007 样品到位**：实际测试不得早于样品实际/预计到位时间；样品「未到位且没有到位时间」时方案判为不可行；「部分到样」给出警告。
+- 每个方案保存 `inputSnapshot`（样品到位时间、Task Type、规则版本、交期）；确认前会重新比对快照，样品时间变了会拒绝确认并要求重新生成。
+
+## Task Type 与预约规则（14.10）
+
+- `data/prototype_upgrade.json` 定义三类规则：
+  - `Prebook`：设备与人员整日独占，同日同设备不允许其他任务；
+  - `Test Spec`：允许按剩余容量共享，同日上限 2 个任务；
+  - `Non-standard validation`：必须方法审核，同日上限 1 个任务。
+- 引擎新增 **HC-008 Task Type 预约规则**，冲突会给出规则 ID、规则版本和证据。
+- TASK-2001 被配置为 Prebook，TASK-2007 为非标验证，其余默认 Test Spec；这些分配都标记 `confirmed: false`。切换或修改规则只会影响后续方案，历史方案保留自己的 `ruleVersion`。
+- `lims_list_policies` 返回规则版本、Task Type 规则、样品策略、任务分配和样品状态，供「为什么不能共享设备」这类追问使用。
+
+## 变更影响分析（14.7）
+
+「影响」页新增 **订单变更与影响分析** 面板，与 `lims_analyze_change` 工具走同一条 `/api/lims/change-impact`：
+
+| 变更类型 | 写入 | 分析 |
+|---|---|---|
+| `sample_delay` | `sample_status.expectedInStockAt` | 从新到位时间重排变更对象；沿共享设备/人员重排相关任务 |
+| `due_date` | `task_overrides.dueDate` | 交期余量、是否延期；共享资源连锁影响 |
+| `priority` | `task_overrides.priority` | 优先级变更后的可行性与影响 |
+
+- 原始 CSV 不改：变更写入独立集合，`raw_tasks` 仍是导入快照。
+- 每次变更写 `change_events` + `change_impacts` + 审计事件；右侧「影响」页会回放同一次分析的直接/间接影响。
+- 直接/间接影响都由确定性引擎计算：先移除变更对象的旧占用，再铺上新方案，然后逐个重排共享资源上的相关任务。最多展开 3 个间接任务，其余在说明里标注为未展开。
+- 变更分析**不会**自动确认任何方案；确认仍需重新生成候选并走确认前复核。
+
+## 卡片引用到聊天（追问）
+
+- **任意卡片**悬停后右上角出现「引用」按钮：把卡片标题、关键字段和渲染文本整理成 `【引用 · 卡片标题】…` 块，插入 DSH 聊天输入框。
+- **选中文字后**再点「引用」会自动切换为「引用选中」，只带选中内容 + 卡片标题，适合追问某个设备、某个日期或某条约束。
+- 聊天里的 **lims_* 工具卡**同样带「引用」按钮（`ToolCard` 共享 `inputActions`）；回答末尾的卡片也可以直接引用。
+- 引用块包含结构化的 ID（任务、方案、设备、订单、规则版本），Agent 能据此知道用户指的是哪张卡片；系统提示要求把 `【引用 · …】` 当作当前上下文。
+- 卡片折叠状态、角色、固定卡片仍保存在 localStorage；引用本身不写数据库。
 
 ## 项目与 Test Plan
 
@@ -204,14 +274,16 @@ DSH Web
 | `index.js` | Host 入口：Mongo 连接、路由、工具、系统提示 |
 | `client.js` | 右侧边栏 React UI（无构建、通过 DSH Client 模块加载） |
 | `lib/model.js` | CSV → 领域模型、资质/设备/风险判断 |
-| `lib/engine.js` | 候选方案、硬约束校验、评分、甘特/分析数据 |
-| `lib/routes.js` | `/api/lims/*` 路由 |
-| `lib/tools.js` | 17 个 `lims_*` 模型工具与聊天卡片元数据 |
-| `lib/seed.js` | MongoDB seed、工作区、审计、方案、测试计划与停机事件存取 |
+| `lib/upgrade.js` | 订单/Spec 投影、样品到位、Task Type 规则、规则版本 |
+| `lib/engine.js` | 候选方案、硬约束（HC-001…HC-008）、评分、甘特/分析/变更影响 |
+| `lib/routes.js` | `/api/lims/*` 路由（含订单、规则、变更影响） |
+| `lib/tools.js` | 21 个 `lims_*` 模型工具与聊天卡片元数据 |
+| `lib/seed.js` | MongoDB seed、工作区、审计、方案、测试计划、样品、变更事件存取 |
 | `data/` | 模拟数据包原始 CSV/JSON（已复制，便于离线运行） |
 | `scripts/start-mongo.sh` | 启动本地 MongoDB（自动探测 mongod，缺省 Docker 兜底） |
 | `scripts/reset-demo-data.mjs` | 把演示库恢复到干净初始状态（无方案、无停机） |
 | `scripts/check-engine.mjs` | 不依赖 DSH 的引擎自测 |
+| `scripts/check-upgrade.mjs` | 订单/样品/Task Type/变更影响升级自测（临时 DB） |
 | `scripts/check-routes.mjs` | 不依赖 DSH 的 HTTP handler 自测 |
 | `scripts/check-downtime.mjs` | 停机影响引擎自测 |
 | `scripts/check-downtime-routes.mjs` | 停机登记/重排路由自测 |
@@ -226,7 +298,8 @@ DSH Web
 | `scripts/check-template-mapping.mjs` | 模板 × 项目矩阵、任务模板映射修改/重置测试（临时 DB） |
 | `scripts/check-task-draft.mjs` | request → task 草稿创建、项目分组与测试计划测试（临时 DB） |
 | `scripts/check-demo-prompt.mjs` | 测试计划 + 独立任务 Demo 流程测试（临时 DB） |
-| `scripts/check-client-cards.mjs` | 回答末尾卡片（turn tail）自测：插件注册、Turn 投影与卡片筛选，无需浏览器 |
+| `scripts/check-client-cards.mjs` | 回答末尾卡片（turn tail）+ 卡片引用格式自测，无需浏览器 |
+| `scripts/check-ui-render.mjs` | 浏览器冒烟测试：真实 `client.js` 在 headless Chrome 中渲染 概览/订单/影响/排程，验证卡片引用与变更分析（缺浏览器或 React UMD 时自动跳过） |
 
 ## 已知边界
 
@@ -236,5 +309,9 @@ DSH Web
 - 停机目前按「设备 + 整天」建模；部分时段停机、跨天停机窗口和分钟级占用尚未实现。
 - Test Plan 目前是 draft，不做批量确认；批量应用/回滚和跨项目联动排程尚未实现。
 - 页面专属卡片（方案、项目、停机等）依赖页面状态，暂不支持拖拽到其他页面；共享卡片库是当前的自由组合范围。
+- 订单 ↔ 任务的关联是原型推断（同模板 + 交期接近），不是 LIMS 已确认关系；没有真实 `order_id` 外键可用。
+- 样品状态、Task Type 分配和实验室优先级都是 `data/prototype_upgrade.json` 的原型假设，全部 `confirmed: false`；UI 与工具都会这样标注。
+- 变更影响只沿「共享设备 / 共享人员」展开，且最多展开 3 个间接任务；任务依赖、样品批次拆分和跨实验室影响尚未建模。
+- 卡片引用插入的是纯文本引用块，不是 DSH 的结构化 reference chip；追问仍依赖模型读取 `【引用 · …】` 块。
 - 模拟数据包中的 `TASK-2007` 资质数据本身存在冲突（无人同时具备 HPLC Level 2 + Sample Prep），原型有意暴露为「需审核」，而不是自动放宽硬约束。
 - 正式的集成、验证、部署与安全要求需另做评估。

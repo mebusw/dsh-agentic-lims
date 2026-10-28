@@ -42,6 +42,10 @@ const react = {
   useMemo: (factory) => factory(),
   useRef: (value) => ({ current: value }),
   useCallback: (fn) => fn,
+  useContext: (context) => context?._value ?? null,
+  createContext: (value) => ({ _value: value, Provider: 'ContextProvider', Consumer: 'ContextConsumer' }),
+  useId: () => 'test-id',
+  isValidElement: (value) => Boolean(value) && typeof value === 'object' && 'type' in value,
   Fragment: 'Fragment',
 };
 
@@ -56,6 +60,7 @@ globalThis.document = document;
 // ------------------------------------------------------- module loader shim
 let plugin = null;
 globalThis.window = {
+  __AGENTIC_LIMS_TEST__: true,
   __ModuleLoader__: {
     load: ({ factory }) => {
       plugin = factory((request) => {
@@ -148,7 +153,42 @@ check('registers conversation.chat.turnTail', turnTail !== undefined);
 check('turn tail has a stable id', turnTail?.id === '@local/agentic-lims-answer-cards', turnTail?.id);
 check('registers one Turn Definition', registered.definitions.length === 1, registered.definitions.length);
 check('definition kind is lims-answer-cards', registered.definitions[0]?.kind === 'lims-answer-cards', registered.definitions[0]?.kind);
-check('keeps the 14 tool views registered', registered.slots.filter((entry) => entry.name === 'tool.call.toolview').length === 14);
+const internals = globalThis.window.__agenticLimsTest;
+check('exposes the reference helpers for tests', Boolean(internals && internals.buildReference && internals.quoteIntoChat));
+check('registers one tool view per lims tool', registered.slots.filter((entry) => entry.name === 'tool.call.toolview').length === internals.LIMS_TOOL_NAMES.length, registered.slots.filter((entry) => entry.name === 'tool.call.toolview').length);
+check('includes the chapter-14 tools', ['lims_list_orders', 'lims_get_order', 'lims_analyze_change', 'lims_list_policies'].every((name) => internals.LIMS_TOOL_NAMES.includes(name)));
+
+// --------------------------------------------------------- quote references
+console.log('\ncard -> chat references');
+const reference = internals.buildReference({
+  title: '候选方案 TASK-2005',
+  lines: ['TASK-2005 GC residual solvent test', 'PLAN-TASK-2005-1 2026-10-28 10:00 → 2026-10-29 12:00'],
+  selection: '  EQ-005  +  P-002  ',
+  prompt: '请解释为什么不是 P-003。',
+});
+check('reference starts with a stable header', reference.startsWith('【引用 · 候选方案 TASK-2005】'), reference.split('\n')[0]);
+check('reference keeps the structured facts', reference.includes('- TASK-2005 GC residual solvent test') && reference.includes('- PLAN-TASK-2005-1'));
+check('reference normalises the selected text', reference.includes('选中内容：「EQ-005 + P-002」'), reference);
+check('reference keeps the follow-up prompt', reference.trimEnd().endsWith('请解释为什么不是 P-003。'));
+
+const wholeCard = internals.buildReference({ title: '订单 ORD-7002', text: '  ORD-7002\n\n  Urgent   ·  10/28  ' });
+check('whole-card quote collapses whitespace', wholeCard.includes('卡片内容：ORD-7002 Urgent · 10/28'), wholeCard);
+
+let inserted = '';
+const fakeInput = {
+  captureInsertion: () => ({ rev: 1, start: 0, end: 0 }),
+  insertText: (text) => {
+    inserted = text;
+    return true;
+  },
+};
+const quoted = internals.quoteIntoChat(fakeInput, { title: '任务 TASK-2005', lines: ['Urgent'] });
+check('quote inserts into the composer', quoted.ok === true && inserted.startsWith('【引用 · 任务 TASK-2005】') && inserted.endsWith('\n'), inserted);
+
+let draft = '';
+const fallback = internals.quoteIntoChat({ setDraft: (text) => { draft = text; } }, { title: '兜底', lines: ['x'] });
+check('quote falls back to setDraft', fallback.ok === true && draft.includes('【引用 · 兜底】'), draft);
+check('quote without an editor fails safely', internals.quoteIntoChat(null, { title: 'x' }).ok === false);
 
 // ------------------------------------------------------- projection fixtures
 const definition = registered.definitions[0];

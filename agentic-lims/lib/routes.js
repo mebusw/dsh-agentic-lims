@@ -2,26 +2,34 @@
  * Host JSON routes. They sit behind DSH's existing browser authentication fence
  * (`ctx.connection.fetch.register`), so the page uses the same cookie as chat.
  */
-import { analyzeDowntime, buildOverview, comparePlans, computeAnalytics, createEngineContext, equipmentBookings, explainResource, generatePlans, generateTestPlan, projectDetail, projectSummaries, resourcePage, resourceSchedule, taskDetail } from './engine.js';
+import { analyzeChange, analyzeDowntime, buildOverview, comparePlans, computeAnalytics, createEngineContext, equipmentBookings, explainResource, generatePlans, generateTestPlan, projectDetail, projectSummaries, resourcePage, resourceSchedule, taskDetail } from './engine.js';
 import { createTaskDrafts, prepareTaskDrafts } from './drafts.js';
-import { isReviewTask } from './model.js';
+import { isReviewTask, taskSummary } from './model.js';
+import { orderSummary, policyPayload, sampleLeadHours } from './upgrade.js';
 import {
   addAudit,
   addDowntime,
   loadDomain,
   readAudit,
+  readChangeEvents,
+  readChangeImpacts,
   readPlan,
   readPlansByIds,
   readActivePlans,
   readDowntime,
   readPlansForTask,
+  readSampleStatus,
   readTestPlan,
   readTestPlans,
+  readUpgradeConfig,
   readWorkspace,
   removeDowntime,
+  saveChange,
   savePlans,
   saveTestPlan,
   seedDatabase,
+  updateSampleStatus,
+  updateTaskOverride,
   writeWorkspace,
 } from './seed.js';
 import { dateKey, diffHours, formatDate, parseInstant, priorityRank, round1, sum } from './util.js';
@@ -96,7 +104,14 @@ function tasksPayload(domain, ctx, audit) {
         spaceIds: task.requirements.spaceIds,
         qualifications: task.requirements.qualifications,
         readiness: isReviewTask(task) ? 'needs_review' : 'ready',
-        risk: loadPct >= 100 || daysLeft < 0 ? 'high' : loadPct >= 65 || isReviewTask(task) ? 'medium' : 'low',
+        taskType: task.taskType,
+        taskTypeLabel: task.taskTypeLabel,
+        taskTypeConfirmed: task.taskTypeConfirmed === true,
+        reservationMode: task.taskTypeRule?.exclusive ? 'exclusive' : 'shared',
+        sample: task.sample ?? null,
+        orderIds: task.orderIds ?? [],
+        overriddenFields: task.overriddenFields ?? [],
+        risk: loadPct >= 100 || daysLeft < 0 ? 'high' : loadPct >= 65 || isReviewTask(task) || task.sample?.partial ? 'medium' : 'low',
       };
     })
     .sort((a, b) => priorityRank(a.priority) - priorityRank(b.priority) || a.dueDate.localeCompare(b.dueDate));
@@ -192,6 +207,45 @@ async function handleConfirm(db, config, request) {
     return fail('该方案未通过硬约束校验，不能确认', 409, { code: 'infeasible', plan });
   }
   const conflicts = [];
+
+  // Chapter 14.13: a candidate must be re-validated against the latest inputs.
+  const snapshotReady = plan.inputSnapshot ? plan.inputSnapshot.sampleReadyAt ?? null : undefined;
+  const currentReady = task.sample?.readyAt ?? null;
+  if (plan.inputSnapshot && snapshotReady !== currentReady) {
+    conflicts.push(
+      `样品到位时间在方案生成后已变化（${snapshotReady ?? '—'} → ${currentReady ?? '—'}），请重新生成候选方案（HC-007）`,
+    );
+  }
+  if (task.sample?.readyAt) {
+    const ready = parseInstant(task.sample.readyAt);
+    const shifted = new Date(ready.getTime() + 8 * 3600000);
+    const readyDay = dateKey(ready);
+    const readyMin = shifted.getUTCHours() * 60 + shifted.getUTCMinutes();
+    for (const segment of plan.segments) {
+      if (segment.day < readyDay || (segment.day === readyDay && segment.startMin < readyMin)) {
+        conflicts.push(`${segment.dateLabel} ${segment.start} 早于样品到位时间 ${task.sample.readyAt}（HC-007）`);
+      }
+    }
+  }
+  if (plan.ruleVersion && domain.config?.ruleVersion && plan.ruleVersion !== domain.config.ruleVersion) {
+    conflicts.push(`方案使用的规则版本 ${plan.ruleVersion} 与当前 ${domain.config.ruleVersion} 不一致，请重新校验`);
+  }
+  const reservation = task.taskTypeRule ?? null;
+  if (reservation) {
+    for (const segment of plan.segments) {
+      const others = new Set(
+        domain.allocations
+          .filter((item) => item.resourceId === plan.resources.equipment.id && item.date === segment.day && item.taskId !== task.id)
+          .map((item) => item.taskId),
+      );
+      if (reservation.exclusive && others.size > 0) {
+        conflicts.push(`${segment.dateLabel} ${plan.resources.equipment.name} 已被 ${[...others].join('、')} 占用，Prebook 要求整日独占（HC-008）`);
+      } else if (reservation.maxConcurrentTasks && others.size >= reservation.maxConcurrentTasks) {
+        conflicts.push(`${segment.dateLabel} ${plan.resources.equipment.name} 同日任务数已达上限 ${reservation.maxConcurrentTasks}（HC-008）`);
+      }
+    }
+  }
+
   const equipment = domain.equipmentById.get(plan.resources.equipment.id);
   const person = domain.personById.get(plan.resources.person.id);
   if (!equipment || equipment.status !== 'Operational') {
@@ -442,6 +496,139 @@ async function handleDowntime(db, config, request) {
 }
 
 /**
+ * Apply one change event (sample delay / due date / priority), reload the domain
+ * and run the deterministic impact analysis. The change itself is written to
+ * prototype collections only; the raw CSV stays the immutable source snapshot.
+ */
+async function handleChange(db, config, request) {
+  const body = await readBody(request);
+  const type = String(body.type ?? '');
+  const taskId = String(body.taskId ?? '');
+  if (!taskId) return fail('缺少 taskId', 400);
+  if (!['sample_delay', 'due_date', 'priority'].includes(type)) {
+    return fail('type 必须是 sample_delay / due_date / priority', 400);
+  }
+  const domainBefore = await loadDomain(db);
+  const taskBefore = domainBefore.taskById.get(taskId);
+  if (!taskBefore) return fail(`找不到任务 ${taskId}`, 404);
+
+  const ctxBefore = await makeContext(db, domainBefore, config);
+  let field = null;
+  let from = null;
+  let to = null;
+  let samplePatch = null;
+  let overridePatch = null;
+
+  if (type === 'sample_delay') {
+    const currentReady = taskBefore.sample?.readyAt ?? null;
+    let nextInstant = null;
+    if (body.value) {
+      const raw = String(body.value).trim();
+      if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) nextInstant = parseInstant(`${raw}T09:00:00+08:00`);
+      else nextInstant = parseInstant(raw);
+    }
+    if (!nextInstant && body.delayDays !== undefined) {
+      const base = currentReady ? parseInstant(currentReady) : parseInstant(config.demoNow ?? '2026-10-27T08:00:00+08:00');
+      nextInstant = new Date(base.getTime() + (Number(body.delayDays) || 0) * 86400000);
+    }
+    if (!nextInstant) return fail('sample_delay 需要 value（日期/时间）或 delayDays', 400);
+    field = 'sample.expectedInStockAt';
+    from = currentReady;
+    to = nextInstant.toISOString();
+    samplePatch = {
+      status: 'Not in stock',
+      expectedInStockAt: to,
+      actualInStockAt: null,
+      confirmed: false,
+      source: 'change-event',
+      note: body.reason || `样品到位时间变更登记（${to}）`,
+    };
+  } else if (type === 'due_date') {
+    if (!body.value) return fail('due_date 需要 value（YYYY-MM-DD）', 400);
+    const next = parseInstant(body.value);
+    field = 'dueDate';
+    from = dateKey(taskBefore.dueDate);
+    to = dateKey(next);
+    overridePatch = { dueDate: `${to}T00:00:00+08:00`, reason: body.reason ?? '交期变更登记' };
+  } else {
+    if (!['Urgent', 'High', 'Normal', 'Low'].includes(String(body.value ?? ''))) {
+      return fail('priority 需要 Urgent / High / Normal / Low', 400);
+    }
+    field = 'priority';
+    from = taskBefore.priority;
+    to = String(body.value);
+    overridePatch = { priority: to, reason: body.reason ?? '优先级变更登记' };
+  }
+
+  const changeId = `CHG-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 5).toUpperCase()}`;
+  const reason = String(body.reason ?? '');
+  if (type === 'sample_delay') {
+    await updateSampleStatus(db, taskId, { ...samplePatch, actor: body.actor ?? 'workspace' });
+  } else {
+    await updateTaskOverride(db, taskId, { ...overridePatch, actor: body.actor ?? 'workspace' });
+  }
+
+  const domainAfter = await loadDomain(db);
+  const ctxAfter = await makeContext(db, domainAfter, config);
+  const result = analyzeChange(ctxBefore, ctxAfter, { id: changeId, type, taskId, field, from, to, reason });
+  if (!result.found) return fail(`找不到任务 ${taskId}`, 404);
+
+  const changeEvent = {
+    id: changeId,
+    at: new Date().toISOString(),
+    type,
+    typeLabel: result.change.typeLabel,
+    taskId,
+    taskName: taskBefore.name,
+    field,
+    from,
+    to,
+    reason,
+    actor: body.actor ?? 'workspace',
+    ruleVersion: result.change.ruleVersion,
+    policyVersion: result.change.policyVersion,
+    fromLabel: result.change.fromLabel,
+    toLabel: result.change.toLabel,
+    applied: true,
+    summary: result.summary,
+    analysis: result,
+  };
+  await saveChange(db, {
+    change: changeEvent,
+    impacts: [result.direct, ...result.indirect].map((impact) => ({
+      taskId: impact.taskId,
+      taskName: impact.taskName,
+      kind: impact.kind,
+      relation: impact.relation,
+      severity: impact.severity,
+      deltaHours: impact.deltaHours,
+      beforeStart: impact.before?.startLabel ?? null,
+      beforeEnd: impact.before?.endLabel ?? null,
+      afterStart: impact.after?.startLabel ?? null,
+      afterEnd: impact.after?.endLabel ?? null,
+      late: impact.late,
+      explanation: impact.reason,
+    })),
+  });
+  await addAudit(db, {
+    type: 'change_registered',
+    actor: body.actor ?? 'workspace',
+    summary: `${result.change.typeLabel}：${taskBefore.name}（${taskId}）`,
+    detail: `${field}：${from ?? '—'} → ${to}；受影响 ${result.summary.affected} 个任务，可能延期 ${result.summary.late} 个，阻塞 ${result.summary.blocked} 个。${reason ? `原因：${reason}` : ''}`,
+    taskId,
+    data: { changeId, summary: result.summary, ruleVersion: result.change.ruleVersion },
+  });
+  const workspace = await writeWorkspace(db, {
+    page: 'impact',
+    taskId,
+    changeId,
+    message: `已登记${result.change.typeLabel}：${taskBefore.name}；右侧显示变更影响。`,
+    source: body.actor ?? 'workspace',
+  });
+  return json({ ok: true, ...result, changeEvent, workspace });
+}
+
+/**
  * @param {{db: import('mongodb').Db, config: object}} store
  * @returns {{path: string, methods: string[], requestBody: string, fetch: (request: Request) => Promise<Response>}[]}
  */
@@ -554,6 +741,138 @@ export function buildRoutes(store) {
           ruleStatus: request.ruleStatus,
         }));
         return json({ ok: true, requests });
+      }),
+    },
+    {
+      path: '/api/lims/orders',
+      methods: ['GET'],
+      requestBody: 'buffered',
+      fetch: wrap(async () => {
+        const domain = await loadDomain(db);
+        const ctx = await makeContext(db, domain, config);
+        const policy = policyPayload(domain.config);
+        const orders = domain.orders.map((order) => {
+          const summary = orderSummary(order, domain);
+          const daysLeft = order.dueAt ? Math.ceil(diffHours(parseInstant(order.dueAt), ctx.now) / 24) : null;
+          return {
+            ...summary,
+            daysLeft,
+            risk: daysLeft !== null && daysLeft < 1 ? 'high' : daysLeft !== null && daysLeft < 3 ? 'medium' : 'low',
+            linkedCount: order.linkedTaskIds.length,
+          };
+        });
+        const unlinkedTasks = domain.unlinkedTasks.map((task) => {
+          const summary = taskSummary(domain, task, ctx.now);
+          return {
+            id: summary.id,
+            name: summary.name,
+            projectId: summary.projectId,
+            projectName: summary.projectName,
+            priority: summary.priority,
+            dueLabel: summary.dueLabel,
+            effortHours: summary.effortHours,
+            taskType: summary.taskType,
+            sample: summary.sample,
+          };
+        });
+        return json({ ok: true, orders, unlinkedTasks, policy });
+      }),
+    },
+    {
+      path: '/api/lims/order',
+      methods: ['GET'],
+      requestBody: 'buffered',
+      fetch: wrap(async (request) => {
+        const url = new URL(request.url);
+        const orderId = url.searchParams.get('orderId');
+        if (!orderId) return fail('缺少 orderId', 400);
+        const domain = await loadDomain(db);
+        const order = domain.orderById.get(orderId);
+        if (!order) return fail(`找不到订单 ${orderId}`, 404);
+        const ctx = await makeContext(db, domain, config);
+        const summary = orderSummary(order, domain);
+        summary.daysLeft = order.dueAt ? Math.ceil(diffHours(parseInstant(order.dueAt), ctx.now) / 24) : null;
+        const linkedTaskIds = new Set(order.linkedTaskIds);
+        const candidates = domain.tasks
+          .filter((task) => order.specs.some((spec) => spec.templateId === task.templateId) && !linkedTaskIds.has(task.id))
+          .map((task) => ({
+            id: task.id,
+            name: task.name,
+            projectId: task.projectId,
+            projectName: task.projectName,
+            priority: task.priority,
+            dueLabel: formatDate(task.dueDate, true),
+            effortHours: task.effortHours,
+          }));
+        return json({
+          ok: true,
+          order: summary,
+          candidates,
+          linkedTasks: summary.tasks.map((task) => ({
+            ...task,
+            sampleLeadHours: sampleLeadHours(task.sample, ctx.now),
+            reservations: domain.allocations
+              .filter((item) => item.taskId === task.id)
+              .map((item) => ({ day: item.date, type: item.type, resourceId: item.resourceId, personId: item.personId, load: item.load })),
+          })),
+          policy: policyPayload(domain.config),
+        });
+      }),
+    },
+    {
+      path: '/api/lims/policies',
+      methods: ['GET'],
+      requestBody: 'buffered',
+      fetch: wrap(async () => {
+        const [domain, samples, upgrade] = await Promise.all([loadDomain(db), readSampleStatus(db), readUpgradeConfig(db)]);
+        const sampleList = domain.tasks.map((task) => ({
+          taskId: task.id,
+          taskName: task.name,
+          dueLabel: formatDate(task.dueDate, true),
+          sample: task.sample,
+        }));
+        return json({
+          ok: true,
+          ...policyPayload(upgrade),
+          approvedToday: upgrade.confirmed === true,
+          samples: sampleList,
+          overrides: domain.tasks
+            .filter((task) => (task.overriddenFields ?? []).length > 0)
+            .map((task) => ({
+              taskId: task.id,
+              taskName: task.name,
+              priority: task.priority,
+              dueDate: task.dueDate.toISOString(),
+              dueLabel: formatDate(task.dueDate, true),
+              fields: task.overriddenFields,
+            })),
+          sampleStoreCount: Object.keys(samples).length,
+        });
+      }),
+    },
+    {
+      path: '/api/lims/change-impact',
+      methods: ['POST'],
+      requestBody: 'buffered',
+      fetch: wrap((request) => handleChange(db, config, request)),
+    },
+    {
+      path: '/api/lims/change-events',
+      methods: ['GET'],
+      requestBody: 'buffered',
+      fetch: wrap(async (request) => {
+        const url = new URL(request.url);
+        const changeId = url.searchParams.get('changeId');
+        if (changeId) {
+          const [event, impacts] = await Promise.all([
+            db.collection('change_events').findOne({ id: changeId }, { projection: { _id: 0 } }),
+            readChangeImpacts(db, changeId),
+          ]);
+          if (!event) return fail(`找不到变更事件 ${changeId}`, 404);
+          return json({ ok: true, event, impacts });
+        }
+        const events = await readChangeEvents(db, 20);
+        return json({ ok: true, events });
       }),
     },
     {
@@ -858,12 +1177,14 @@ export function buildRoutes(store) {
       requestBody: 'buffered',
       fetch: wrap(async (request) => {
         const body = await readBody(request);
-        const allowed = new Set(['dashboard', 'projects', 'tasks', 'task', 'schedule', 'resources', 'analytics', 'audit']);
+        const allowed = new Set(['dashboard', 'orders', 'projects', 'tasks', 'task', 'schedule', 'impact', 'resources', 'analytics', 'custom', 'audit']);
         if (!allowed.has(body.page)) return fail('无效页面', 400);
         const workspace = await writeWorkspace(db, {
           page: body.page,
           taskId: body.taskId ?? null,
           resourceId: body.resourceId ?? null,
+          orderId: body.orderId ?? null,
+          changeId: body.changeId ?? null,
           message: body.message ?? '',
           source: body.actor ?? 'workspace',
         });

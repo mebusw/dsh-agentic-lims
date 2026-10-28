@@ -36,6 +36,25 @@ import {
 const WORKDAY_LIMIT_HOURS = 8;
 const HORIZON_DAYS = 28;
 
+/** Fallback policy when a domain was built without the chapter-14 upgrade layer. */
+const DEFAULT_TASK_TYPE_RULE = {
+  label: '测试规范（Test Spec）',
+  exclusive: false,
+  shareable: true,
+  maxConcurrentTasks: 2,
+  description: '允许按剩余容量共享设备。',
+};
+
+function taskTypeRule(task) {
+  return task?.taskTypeRule ?? DEFAULT_TASK_TYPE_RULE;
+}
+
+function minutesOfDay(value) {
+  const date = parseInstant(value);
+  const shifted = new Date(date.getTime() + 8 * 3600000);
+  return shifted.getUTCHours() * 60 + shifted.getUTCMinutes();
+}
+
 function isWeekend(dayKey) {
   const date = parseInstant(`${dayKey}T12:00:00+08:00`);
   const weekday = new Date(date.getTime() + 8 * 3600000).getUTCDay();
@@ -102,6 +121,7 @@ export function createEngineContext(domain, now = new Date(), options = {}) {
   }
   return {
     domain,
+    config: domain.config ?? null,
     now: parseInstant(now),
     start,
     days,
@@ -117,6 +137,28 @@ export function createEngineContext(domain, now = new Date(), options = {}) {
 
 function ownLoad(map, taskId, day, resourceId) {
   return map.get(`${taskId}|${day}|${resourceId}`) ?? 0;
+}
+
+/** Distinct other tasks already holding a resource on one day. */
+function resourceDayTasks(ctx, resourceId, day, ignoreTaskId) {
+  const ids = new Set();
+  for (const allocation of ctx.domain.allocations) {
+    if (allocation.resourceId !== resourceId || allocation.date !== day) continue;
+    if (allocation.taskId === ignoreTaskId) continue;
+    ids.add(allocation.taskId);
+  }
+  return ids;
+}
+
+/** People already holding the person on one day, excluding the task under test. */
+function personDayTasks(ctx, personId, day, ignoreTaskId) {
+  const ids = new Set();
+  for (const allocation of ctx.domain.allocations) {
+    if (allocation.personId !== personId || allocation.date !== day) continue;
+    if (allocation.taskId === ignoreTaskId) continue;
+    ids.add(allocation.taskId);
+  }
+  return ids;
 }
 
 function freeCapacity(ctx, task, equipment, person, space, day) {
@@ -160,29 +202,69 @@ function freeCapacity(ctx, task, equipment, person, space, day) {
 function scheduleCombination(ctx, task, equipment, person, space, options = {}) {
   const segments = [];
   let remaining = task.effortHours;
-  const earliest = options.earliestStart ? startOfDay(options.earliestStart) : ctx.now;
+  const policy = taskTypeRule(task);
+  const sample = task.sample ?? null;
+  const sampleReadyAt = sample?.readyAt ? parseInstant(sample.readyAt) : null;
+  const sampleReadyDay = sampleReadyAt ? dateKey(sampleReadyAt) : null;
+  // HC-007: actual testing never starts before the sample is on hand.
+  const sampleBlocks = Boolean(sample?.blocked);
+  const requestedEarliest = options.earliestStart ? startOfDay(options.earliestStart) : ctx.now;
+  const earliest = sampleReadyAt && sampleReadyAt > requestedEarliest ? sampleReadyAt : requestedEarliest;
   const firstDay = dateKey(earliest);
   const dueKey = dateKey(task.dueDate);
   const limitDay = dateKey(addDays(Math.max(startOfDay(task.dueDate), startOfDay(ctx.now)), 10));
   const days = ctx.days.filter((day) => day >= firstDay && day <= limitDay);
   let lastDay = null;
+  let sampleBlockedDays = 0;
+  let policyBlockedDays = 0;
 
   for (const day of days) {
     if (isWeekend(day)) continue;
     if (remaining <= 0) break;
+    if (sampleBlocks) {
+      sampleBlockedDays += 1;
+      continue;
+    }
+    if (sampleReadyDay && day < sampleReadyDay) {
+      sampleBlockedDays += 1;
+      continue;
+    }
     if (!equipmentUsableAt(equipment, day, ctx.downtime)) continue;
     const capacity = freeCapacity(ctx, task, equipment, person, space, day);
     if (capacity.free <= 0.1) continue;
     if (capacity.startMin >= capacity.endMin) continue;
+
+    // HC-008: the task type policy decides whether the resource may be shared.
+    if (policy.exclusive) {
+      const otherEquipment = resourceDayTasks(ctx, equipment.id, day, task.id);
+      const otherPersons = personDayTasks(ctx, person.id, day, task.id);
+      if (otherEquipment.size > 0 || otherPersons.size > 0) {
+        policyBlockedDays += 1;
+        continue;
+      }
+    } else if (policy.maxConcurrentTasks) {
+      const others = resourceDayTasks(ctx, equipment.id, day, task.id);
+      if (others.size >= policy.maxConcurrentTasks) {
+        policyBlockedDays += 1;
+        continue;
+      }
+    }
+
+    let dayStart = capacity.startMin;
+    // Starting on the sample-ready day must also start after the arrival time.
+    if (sampleReadyAt && day === sampleReadyDay) {
+      dayStart = Math.max(dayStart, minutesOfDay(sampleReadyAt));
+    }
     let dayEnd = capacity.endMin;
     if (options.avoidFridayAfternoon && dayLabel(`${day}T12:00:00+08:00`) === '周五') {
       dayEnd = Math.min(dayEnd, 12 * 60);
     }
-    const available = Math.min(remaining, capacity.free, (dayEnd - capacity.startMin) / 60);
+    if (dayStart >= dayEnd) continue;
+    const available = Math.min(remaining, capacity.free, (dayEnd - dayStart) / 60);
     if (available <= 0.1) continue;
     const hours = round1(available);
-    const startMin = Math.round(capacity.startMin);
-    const endMin = Math.round(capacity.startMin + hours * 60);
+    const startMin = Math.round(dayStart);
+    const endMin = Math.round(dayStart + hours * 60);
     segments.push({
       day,
       dateLabel: formatDate(`${day}T12:00:00+08:00`, true),
@@ -260,7 +342,9 @@ function scheduleCombination(ctx, task, equipment, person, space, options = {}) 
     result: capacityOk ? 'pass' : 'fail',
     explanation: capacityOk
       ? `已按每日剩余容量错峰安排，覆盖 ${planDays.length} 个工作日`
-      : '在可执行窗口内无法找到足够的连续容量',
+      : policyBlockedDays > 0
+        ? 'Task Type 预约规则排除了部分日期，剩余窗口内没有足够容量（见 HC-008）'
+        : '在可执行窗口内无法找到足够的连续容量',
   });
   evaluations.push({
     constraintId: 'HC-005',
@@ -282,6 +366,55 @@ function scheduleCombination(ctx, task, equipment, person, space, options = {}) 
         : '任务不需要前处理空间'
       : '任务要求前处理空间，但未找到可用空间',
   });
+
+  // HC-007 — sample readiness is a first-class scheduling input (chapter 14.8).
+  const sampleOk = Boolean(sample) ? !sample.blocks : true;
+  const sampleExplained = sample
+    ? sample.readyAt
+      ? `${sample.statusLabel}${sample.actualInStockAt ? `（实际 ${formatDateTime(sample.actualInStockAt)}）` : `（预计 ${formatDateTime(sample.readyAt)}）`}，测试不早于样品到位时间`
+      : `${sample.statusLabel}，但没有可用的到位时间`
+    : '未登记样品信息，按可执行处理（需 TL 确认）';
+  evaluations.push({
+    constraintId: 'HC-007',
+    ruleId: 'SAMPLE-READY',
+    ruleVersion: ctx.config?.ruleVersion ?? 'LIMS-RULES-2026.10.28',
+    type: 'Hard',
+    name: '样品到位',
+    result: !sample ? 'warn' : sampleOk ? (sample.partial ? 'warn' : 'pass') : 'fail',
+    explanation: sample
+      ? sampleOk
+        ? `${sampleExplained}${sample.partial ? '；部分到样，是否允许分批测试待确认' : ''}`
+        : `${sampleExplained}；样品未到位前不得开始实际测试`
+      : '未登记样品信息，原型按可执行处理，需 TL 确认。',
+    evidence: sample ? { status: sample.status, readyAt: sample.readyAt, source: sample.source, confirmed: sample.confirmed } : null,
+  });
+
+  // HC-008 — Task Type reservation policy (chapter 14.10).
+  const policyOk = policyBlockedDays === 0 || feasible;
+  evaluations.push({
+    constraintId: 'HC-008',
+    ruleId: `TASKTYPE-${String(task.taskType ?? 'default').toUpperCase().replace(/[^A-Z0-9]+/g, '-')}`,
+    ruleVersion: ctx.config?.policyVersion ?? 'LAB-POLICY-2026.10.28',
+    type: 'Hard',
+    name: 'Task Type 预约规则',
+    result: policyOk ? 'pass' : 'fail',
+    explanation: policyOk
+      ? policy.exclusive
+        ? `${policy.label ?? task.taskType}：设备与人员整日独占，${equipment.name} 在计划日没有其他任务占用`
+        : `${policy.label ?? task.taskType}：允许按剩余容量共享${policy.maxConcurrentTasks ? `，同日上限 ${policy.maxConcurrentTasks} 个任务` : ''}`
+      : policy.exclusive
+        ? `${policy.label ?? task.taskType}：要求整日独占，但 ${equipment.name} 在可执行窗口内已有其他任务，找不到可独占工作日`
+        : `${policy.label ?? task.taskType}：同日任务数已达上限 ${policy.maxConcurrentTasks ?? '—'} 个，无法再共享 ${equipment.name}`,
+    evidence: {
+      taskType: task.taskType ?? null,
+      exclusive: Boolean(policy.exclusive),
+      maxConcurrentTasks: policy.maxConcurrentTasks ?? null,
+      blockedDays: policyBlockedDays,
+      source: task.taskTypeSource ?? 'derived',
+      confirmed: task.taskTypeConfirmed === true,
+    },
+  });
+
   if (isReviewTask(task)) {
     evaluations.push({
       constraintId: 'MR-001',
@@ -289,6 +422,24 @@ function scheduleCombination(ctx, task, equipment, person, space, options = {}) 
       name: '方法审核',
       result: 'warn',
       explanation: '任务为非标准方法，需人工确认方法、资质与资源组合',
+    });
+  }
+  if (!policyOk) {
+    evaluations.push({
+      constraintId: 'CL-001',
+      type: 'Hard',
+      name: '预约规则冲突',
+      result: 'fail',
+      explanation: `Task Type 规则不允许与 ${equipment.name} 上的其他任务共享，且窗口内找不到独占工作日`,
+    });
+  }
+  if (sampleBlocks) {
+    evaluations.push({
+      constraintId: 'CL-002',
+      type: 'Hard',
+      name: '样品未到位',
+      result: 'fail',
+      explanation: '样品没有到位时间，无法判断可开始日期；请先补充样品状态',
     });
   }
   if (endAt && endAt > task.dueDate) {
@@ -373,6 +524,35 @@ function scheduleCombination(ctx, task, equipment, person, space, options = {}) 
       equipment: { id: equipment.id, name: equipment.name, type: equipment.type, status: equipment.status },
       person: { id: person.id, name: person.name, qualifications: person.qualifications },
       space: space ? { id: space.id, name: space.name } : null,
+    },
+    taskType: task.taskType ?? null,
+    taskTypeLabel: task.taskTypeLabel ?? policy.label ?? null,
+    reservation: {
+      mode: policy.exclusive ? 'exclusive' : policy.shareable ? 'shared' : 'unknown',
+      label: policy.exclusive ? '设备与人员独占' : `共享（同日上限 ${policy.maxConcurrentTasks ?? '—'} 个任务）`,
+      policyId: task.taskType ?? 'default',
+      confirmed: task.taskTypeConfirmed === true,
+    },
+    sample: sample
+      ? {
+          status: sample.status,
+          statusLabel: sample.statusLabel,
+          readyAt: sample.readyAt,
+          confirmed: sample.confirmed,
+          source: sample.source,
+          note: sample.note,
+        }
+      : null,
+    ruleVersion: ctx.config?.ruleVersion ?? null,
+    policyVersion: ctx.config?.policyVersion ?? null,
+    inputSnapshot: {
+      taskType: task.taskType ?? null,
+      sampleStatus: sample?.status ?? 'Unknown',
+      sampleReadyAt: sample?.readyAt ?? null,
+      sampleConfirmed: sample?.confirmed ?? false,
+      dueDate: dateKey(task.dueDate),
+      ruleVersion: ctx.config?.ruleVersion ?? null,
+      policyVersion: ctx.config?.policyVersion ?? null,
     },
     startAt: startAt?.toISOString() ?? null,
     endAt: endAt?.toISOString() ?? null,
@@ -797,6 +977,269 @@ export function comparePlans(before, after) {
   };
 }
 
+/** Copy a context so a what-if run cannot mutate the caller's calendars. */
+function cloneContext(ctx) {
+  return {
+    ...ctx,
+    downtime: new Set(ctx.downtime),
+    loads: {
+      ...ctx.loads,
+      person: new Map(ctx.loads.person),
+      resource: new Map(ctx.loads.resource),
+      activity: new Map(ctx.loads.activity),
+    },
+    ownPerson: new Map(ctx.ownPerson),
+    ownResource: new Map(ctx.ownResource),
+  };
+}
+
+/** Drop one task's existing allocations, e.g. before applying its new plan. */
+function subtractTaskAllocations(ctx, taskId) {
+  for (const allocation of ctx.domain.allocations) {
+    if (allocation.taskId !== taskId) continue;
+    if (allocation.personId) {
+      const key = `${allocation.personId}|${allocation.date}`;
+      const next = (ctx.loads.person.get(key) ?? 0) - allocation.load;
+      ctx.loads.person.set(key, round1(Math.max(0, next)));
+    }
+    if (allocation.resourceId) {
+      const key = `${allocation.resourceId}|${allocation.date}`;
+      const next = (ctx.loads.resource.get(key) ?? 0) - allocation.load;
+      ctx.loads.resource.set(key, round1(Math.max(0, next)));
+    }
+  }
+}
+
+function windowFromBefore(before) {
+  return {
+    startAt: before.startAt,
+    endAt: before.endAt,
+    startLabel: before.startLabel,
+    endLabel: before.endLabel,
+    dayCount: before.dayCount,
+    segments: before.segments,
+  };
+}
+
+function windowFromPlan(plan) {
+  if (!plan) return null;
+  return {
+    startAt: plan.startAt,
+    endAt: plan.endAt,
+    startLabel: plan.startLabel,
+    endLabel: plan.endLabel,
+    dayCount: plan.segments?.length ?? 0,
+    score: plan.score,
+    status: plan.status,
+    statusLabel: plan.statusLabel,
+    resources: plan.resources,
+    segments: plan.segments,
+    risks: plan.risks,
+  };
+}
+
+const CHANGE_LABELS = {
+  sample_delay: '样品到位时间变更',
+  due_date: '交期变更',
+  priority: '优先级变更',
+  plan_revision: '排程条件变更',
+};
+
+function changeValueLabel(type, value) {
+  if (!value) return null;
+  if (type === 'priority') return String(value);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(String(value))) return String(value);
+  return formatDateTime(value);
+}
+
+/**
+ * Impact analysis for one change event (chapter 14.7 / 14.8).
+ *
+ * The function is pure: the caller applies the change to MongoDB first, reloads
+ * the domain, then hands both contexts here. It returns the direct effect on the
+ * changed task plus up to three indirectly affected tasks that share the same
+ * equipment or person, each re-planned against the post-change calendar with the
+ * new target plan already laid down.
+ *
+ * @param {ReturnType<typeof createEngineContext>} beforeCtx
+ * @param {ReturnType<typeof createEngineContext>} afterCtx
+ * @param {{type: string, taskId: string, reason?: string, from?: string, to?: string, field?: string}} change
+ */
+export function analyzeChange(beforeCtx, afterCtx, change) {
+  const taskBefore = beforeCtx.domain.taskById.get(change.taskId);
+  const taskAfter = afterCtx.domain.taskById.get(change.taskId);
+  if (!taskBefore || !taskAfter) {
+    return { found: false, taskId: change.taskId, diagnostics: [{ code: 'task_not_found', text: `找不到任务 ${change.taskId}` }] };
+  }
+
+  const baseline = buildTaskBefore(beforeCtx, taskBefore);
+  // A task created from a draft has no allocations yet; fall back to the plan the
+  // old context would have produced so the delta still has a real baseline.
+  const beforePlan = baseline.segments.length === 0 ? generatePlans(beforeCtx, taskBefore, { count: 1 }).plans[0] ?? null : null;
+  const beforeWindow = beforePlan ? windowFromPlan(beforePlan) : windowFromBefore(baseline);
+  const afterResult = generatePlans(afterCtx, taskAfter, { count: 3 });
+  const afterPlan = afterResult.plans[0] ?? null;
+  const beforeEnd = beforeWindow.endAt ? parseInstant(beforeWindow.endAt) : null;
+  const afterEnd = afterPlan ? parseInstant(afterPlan.endAt) : null;
+  const directDeltaHours = afterEnd && beforeEnd ? round1(diffHours(afterEnd, beforeEnd)) : null;
+  const directLate = afterEnd ? afterEnd > taskAfter.dueDate : null;
+
+  const direct = {
+    taskId: taskAfter.id,
+    taskName: taskAfter.name,
+    kind: 'direct',
+    relation: '变更对象',
+    before: beforeWindow,
+    after: windowFromPlan(afterPlan),
+    deltaHours: directDeltaHours,
+    late: directLate,
+    severity: !afterPlan ? 'blocked' : directLate ? 'late' : directDeltaHours > 0 ? 'delayed' : 'ok',
+    reason: !afterPlan
+      ? afterResult.diagnostics.map((item) => item.text).join('；') || '变更后没有可行方案'
+      : directLate
+        ? `变更后预计完成 ${afterPlan.endLabel}，晚于交期 ${formatDate(taskAfter.dueDate, true)}`
+        : directDeltaHours > 0
+          ? `变更后完成时间推迟 ${round1(directDeltaHours)} 小时`
+          : `变更后完成时间提前 ${round1(Math.abs(directDeltaHours ?? 0))} 小时`,
+  };
+
+  const targetEquipment = afterPlan?.resources?.equipment?.id ?? null;
+  const targetEquipmentName = afterPlan?.resources?.equipment?.name ?? null;
+  const targetPerson = afterPlan?.resources?.person?.id ?? null;
+  const targetPersonName = afterPlan?.resources?.person?.name ?? null;
+  const targetDays = new Set((afterPlan?.segments ?? []).map((segment) => segment.day));
+
+  const relatedIds = unique(
+    afterCtx.domain.allocations
+      .filter(
+        (allocation) =>
+          allocation.taskId !== taskAfter.id &&
+          ((targetEquipment && allocation.resourceId === targetEquipment) ||
+            (targetPerson && allocation.personId === targetPerson)),
+      )
+      .filter((allocation) => allocation.date >= dateKey(afterCtx.now))
+      .map((allocation) => allocation.taskId),
+  );
+
+  const cascadeCtx = cloneContext(afterCtx);
+  subtractTaskAllocations(cascadeCtx, taskAfter.id);
+  if (afterPlan) applyPlanToContext(cascadeCtx, afterPlan);
+
+  const indirect = [];
+  for (const taskId of relatedIds.slice(0, 3)) {
+    const task = afterCtx.domain.taskById.get(taskId);
+    if (!task) continue;
+    const beforeWindow = buildTaskBefore(beforeCtx, task);
+    const result = generatePlans(cascadeCtx, task, { count: 1 });
+    const plan = result.plans[0] ?? null;
+    const previousEnd = beforeWindow.endAt ? parseInstant(beforeWindow.endAt) : null;
+    const nextEnd = plan ? parseInstant(plan.endAt) : null;
+    const deltaHours = nextEnd && previousEnd ? round1(diffHours(nextEnd, previousEnd)) : null;
+    const lateAfter = nextEnd ? nextEnd > task.dueDate : null;
+    const sharesEquipment = targetEquipment && afterCtx.domain.allocations.some((item) => item.taskId === taskId && item.resourceId === targetEquipment);
+    const sharesPerson = targetPerson && afterCtx.domain.allocations.some((item) => item.taskId === taskId && item.personId === targetPerson);
+    indirect.push({
+      taskId,
+      taskName: task.name,
+      kind: 'indirect',
+      relation: [sharesEquipment ? `共用设备 ${targetEquipmentName}` : null, sharesPerson ? `共用人员 ${targetPersonName}` : null]
+        .filter(Boolean)
+        .join('、'),
+      before: windowFromBefore(beforeWindow),
+      after: windowFromPlan(plan),
+      deltaHours,
+      late: lateAfter,
+      severity: !plan ? 'blocked' : lateAfter ? 'late' : deltaHours > 0 ? 'delayed' : 'ok',
+      reason: !plan
+        ? '重排后找不到可用容量，需要人工决策'
+        : lateAfter
+          ? `重排后完成 ${plan.endLabel}，晚于交期 ${formatDate(task.dueDate, true)}`
+          : deltaHours > 0
+            ? `因为共享资源被重新占用，完成时间推迟 ${round1(deltaHours)} 小时`
+            : `共享资源仍有余量，计划基本不受影响（${plan.segments.length} 个工作日）`,
+      targetOverlapDays: [...targetDays].filter((day) => plan?.segments?.some((segment) => segment.day === day)).length,
+    });
+  }
+
+  const summary = {
+    affected: 1 + indirect.length,
+    direct: 1,
+    indirect: indirect.length,
+    delayed: [direct, ...indirect].filter((entry) => entry.severity === 'delayed').length,
+    late: [direct, ...indirect].filter((entry) => entry.severity === 'late').length,
+    blocked: [direct, ...indirect].filter((entry) => entry.severity === 'blocked').length,
+  };
+
+  const recommendations = [];
+  if (direct.severity === 'blocked') {
+    recommendations.push('变更后没有可行方案：先补齐样品/资质信息，或调整交期，再重新运行引擎。');
+  } else if (direct.severity === 'late') {
+    recommendations.push('变更对象会晚于交期：可考虑替代设备、拆分任务或提高优先级后重排。');
+  }
+  if (indirect.some((entry) => entry.severity === 'blocked' || entry.severity === 'late')) {
+    recommendations.push('至少一个共享资源的任务会被推迟或阻塞，确认前应先为整批任务生成测试计划，避免只看单个任务。');
+  }
+  if (indirect.length > 0) {
+    recommendations.push('受影响任务只是引擎推算的连锁影响；确认前请用 lims_generate_test_plan 或 lims_generate_plans 复核。');
+  }
+  if (recommendations.length === 0) {
+    recommendations.push('当前变更未发现连带延期；仍建议在确认前重新校验资源状态。');
+  }
+
+  return {
+    found: true,
+    change: {
+      id: change.id ?? null,
+      type: change.type,
+      typeLabel: CHANGE_LABELS[change.type] ?? change.type,
+      field: change.field ?? null,
+      from: change.from ?? null,
+      to: change.to ?? null,
+      fromLabel: changeValueLabel(change.type, change.from),
+      toLabel: changeValueLabel(change.type, change.to),
+      reason: change.reason ?? '',
+      at: new Date().toISOString(),
+      task: {
+        id: taskAfter.id,
+        name: taskAfter.name,
+        projectId: taskAfter.projectId,
+        projectName: taskAfter.projectName,
+        priority: taskAfter.priority,
+        dueLabel: formatDate(taskAfter.dueDate, true),
+        effortHours: taskAfter.effortHours,
+        taskType: taskAfter.taskType,
+        sample: afterCtx.domain.taskById.get(taskAfter.id)?.sample ?? null,
+        orderIds: taskAfter.orderIds ?? [],
+      },
+      ruleVersion: afterCtx.config?.ruleVersion ?? null,
+      policyVersion: afterCtx.config?.policyVersion ?? null,
+    },
+    direct,
+    indirect,
+    summary,
+    recommendations,
+    candidatePlan: afterPlan
+      ? {
+          id: afterPlan.id,
+          strategyLabel: afterPlan.strategyLabel,
+          score: afterPlan.score,
+          status: afterPlan.status,
+          statusLabel: afterPlan.statusLabel,
+          startLabel: afterPlan.startLabel,
+          endLabel: afterPlan.endLabel,
+          resources: afterPlan.resources,
+          segments: afterPlan.segments,
+          risks: afterPlan.risks,
+          evaluations: afterPlan.evaluations,
+          sample: afterPlan.sample,
+          reservation: afterPlan.reservation,
+        }
+      : null,
+    diagnostics: afterResult.diagnostics,
+    generatedAt: new Date().toISOString(),
+  };
+}
+
 function diagnoseInfeasible(ctx, task, equipment, persons) {
   const diagnostics = [];
   if (equipment.required.length === 0) {
@@ -813,6 +1256,18 @@ function diagnoseInfeasible(ctx, task, equipment, persons) {
         resourceId: item.id,
       });
     }
+  }
+  if (task.sample?.blocked) {
+    diagnostics.push({
+      code: 'sample_missing',
+      text: '样品未到位且没有可用的到位时间；请先补充 sample_status，排程不能早于实际/预计到位时间（HC-007）',
+    });
+  }
+  if (task.taskTypeRule?.exclusive) {
+    diagnostics.push({
+      code: 'prebook_conflict',
+      text: `Task Type「${task.taskTypeLabel ?? task.taskType}」要求设备与人员整日独占，可执行窗口内没有完全空闲的工作日（HC-008）`,
+    });
   }
   if (diagnostics.length === 0) {
     diagnostics.push({
@@ -1520,10 +1975,15 @@ export function buildOverview(domain, ctx, extra = {}) {
     })
     .filter((entry) => entry.loadPct >= 65)
     .sort((a, b) => b.loadPct - a.loadPct);
+  const sampleLate = domain.tasks.filter(
+    (task) => task.sample?.readyAt && parseInstant(task.sample.readyAt) > task.dueDate,
+  );
   const riskTasks = [
     ...loadRisk.map((entry) => entry.task.id),
-    ...domain.tasks.filter((task) => isReviewTask(task) && !loadRisk.some((entry) => entry.task.id === task.id)).map((task) => task.id),
+    ...sampleLate.map((task) => task.id),
+    ...domain.tasks.filter((task) => isReviewTask(task) && !loadRisk.some((entry) => entry.task.id === task.id) && !sampleLate.includes(task)).map((task) => task.id),
   ];
+  riskTasks.splice(0, riskTasks.length, ...unique(riskTasks));
   const alerts = [];
   for (const item of domain.equipment) {
     if (item.status !== 'Operational') {
@@ -1541,6 +2001,14 @@ export function buildOverview(domain, ctx, extra = {}) {
         level: 'warn',
         title: `${task.name} 需方法审核`,
         detail: `${task.id} 为非标准方法，资源与资质组合需人工确认后才能提交。`,
+        taskId: task.id,
+      });
+    }
+    if (task.sample && task.sample.status !== 'In stock') {
+      alerts.push({
+        level: task.sample.status === 'Not in stock' ? 'warn' : 'warn',
+        title: `${task.name} ${task.sample.statusLabel}`,
+        detail: `${task.id} · ${task.sample.readyAt ? `到位时间 ${formatDateTime(task.sample.readyAt)}` : '没有到位时间'}；HC-007 不允许在样品到位前开始实际测试。`,
         taskId: task.id,
       });
     }
@@ -1563,6 +2031,7 @@ export function buildOverview(domain, ctx, extra = {}) {
       spacesAvailable: domain.spaces.filter((item) => item.status === 'Available').length,
       riskTasks: riskTasks.length,
       reviewTasks: domain.tasks.filter(isReviewTask).length,
+      sampleNotReady: domain.tasks.filter((task) => task.sample && task.sample.status !== 'In stock').length,
       equipmentUtilization: equipment.length > 0 ? Math.round((totalCapacity / (equipment.length * 8 * windowDays)) * 100) : 0,
       totalLoadHours: round1(totalUsed),
     },
@@ -1579,9 +2048,14 @@ export function buildOverview(domain, ctx, extra = {}) {
         effortHours: task.effortHours,
         status: task.status,
         review: isReviewTask(task),
-        risk: riskTasks.includes(task.id) ? (isReviewTask(task) ? 'medium' : 'high') : 'low',
+        risk: riskTasks.includes(task.id) ? (isReviewTask(task) || task.sample?.partial ? 'medium' : 'high') : 'low',
         spaceIds: task.requirements.spaceIds,
         equipmentIds: task.requirements.equipmentIds,
+        taskType: task.taskType ?? null,
+        taskTypeLabel: task.taskTypeLabel ?? null,
+        reservationMode: task.taskTypeRule?.exclusive ? 'exclusive' : 'shared',
+        sample: task.sample ?? null,
+        orderIds: task.orderIds ?? [],
       };
     }),
     equipment,
@@ -1734,6 +2208,18 @@ export function taskDetail(domain, ctx, taskId, plans = []) {
       spaceIds: task.requirements.spaceIds,
       prepMinutes: task.requirements.prepMinutes,
       review: isReviewTask(task),
+      taskType: task.taskType ?? null,
+      taskTypeLabel: task.taskTypeLabel ?? null,
+      taskTypeReason: task.taskTypeReason ?? null,
+      taskTypeConfirmed: task.taskTypeConfirmed === true,
+      reservationMode: task.taskTypeRule?.exclusive ? 'exclusive' : task.taskTypeRule?.shareable ? 'shared' : 'unknown',
+      reservationRule: task.taskTypeRule ?? null,
+      sample: task.sample ?? null,
+      orderIds: task.orderIds ?? [],
+      specIds: task.specIds ?? [],
+      overriddenFields: task.overriddenFields ?? [],
+      ruleVersion: ctx.config?.ruleVersion ?? null,
+      policyVersion: ctx.config?.policyVersion ?? null,
     },
     candidates: {
       equipment: equipment.required.map((item) => ({

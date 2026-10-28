@@ -56,31 +56,35 @@
   background: linear-gradient(135deg, var(--alims-brand), color-mix(in srgb, var(--alims-brand) 45%, var(--alims-ok)));
   box-shadow: 0 1px 2px color-mix(in srgb, var(--alims-brand) 30%, transparent);
 }
-.alims-brand-text { min-width: 0; }
+.alims-brand-text { min-width: 0; flex: 0 1 auto; overflow: hidden; }
 .alims-title { font-size: 13.5px; font-weight: 650; letter-spacing: .1px; display: flex; align-items: baseline; gap: 6px; white-space: nowrap; }
 .alims-title-en { font-size: 9.5px; font-weight: 600; color: var(--dsw-alias-label-secondary); letter-spacing: .4px; text-transform: uppercase; }
-.alims-sub { font-size: 10px; color: var(--dsw-alias-label-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.alims-sub { font-size: 9.5px; color: var(--dsw-alias-label-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .alims-brand-spacer { flex: 1 1 auto; }
 .alims-conn { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; color: var(--dsw-alias-label-secondary); white-space: nowrap; }
 .alims-conn-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--dsw-alias-state-warn-primary); }
 .alims-conn.is-ok .alims-conn-dot { background: var(--alims-ok); }
-.alims-menu { display: flex; gap: 2px; margin-top: 8px; overflow-x: auto; scrollbar-width: none; }
+.alims-menu { display: flex; gap: 3px; margin-top: 9px; padding-bottom: 6px; flex-wrap: wrap; }
 .alims-menu::-webkit-scrollbar { display: none; }
 .alims-menu-item {
   display: inline-flex; align-items: center; gap: 4px;
-  border: 0; background: transparent; color: var(--dsw-alias-label-secondary);
-  font-size: 11.5px; padding: 6px 8px 7px; border-radius: 7px 7px 0 0;
+  border: 1px solid transparent; background: transparent; color: var(--dsw-alias-label-secondary);
+  font-size: 11.5px; padding: 5px 8px; border-radius: 7px;
   cursor: pointer; white-space: nowrap; position: relative;
+  transition: background .14s ease, color .14s ease, border-color .14s ease;
 }
 .alims-menu-item:hover { color: var(--dsw-alias-label-primary); background: var(--alims-idle-bg); }
-.alims-menu-item.is-active { color: var(--alims-brand); font-weight: 600; }
-.alims-menu-item.is-active::after { content: ''; position: absolute; left: 8px; right: 8px; bottom: 0; height: 2px; border-radius: 2px; background: var(--alims-brand); }
+.alims-menu-item.is-active { color: #fff; font-weight: 600; background: var(--alims-action); border-color: var(--alims-action-border); box-shadow: 0 1px 3px color-mix(in srgb, var(--alims-action) 30%, transparent); }
+.alims-menu-item.is-active:hover { color: #fff; background: var(--alims-action-hover); }
 .alims-menu-live { width: 5px; height: 5px; border-radius: 50%; background: var(--alims-ok); margin-left: 1px; }
+.alims-menu-item.is-active .alims-menu-live { background: #fff; }
 .alims-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden; scrollbar-width: thin; }
 .alims-page { display: flex; flex-direction: column; gap: 10px; padding: 12px; }
-.alims-card { position: relative; background: var(--dsw-alias-bg-layer-1); border: 1px solid var(--dsw-alias-border-l1); border-radius: 10px; padding: 11px; min-width: 0; }
+.alims-card { position: relative; background: var(--dsw-alias-bg-layer-1); border: 1px solid var(--dsw-alias-border-l1); border-radius: 10px; padding: 11px; min-width: 0; transition: border-color .16s ease, box-shadow .16s ease; }
+.alims-card:hover { border-color: var(--dsw-alias-border-l2); box-shadow: 0 2px 10px rgba(0,0,0,.04); }
+.alims-rule-badge { display: inline-flex; align-items: center; gap: 3px; font-size: 8.5px; font-weight: 600; color: var(--alims-warn); background: var(--alims-warn-bg); border: 1px solid var(--alims-warn-border); border-radius: 999px; padding: 1px 6px; white-space: nowrap; }
 .alims-muted-card { background: color-mix(in srgb, var(--dsw-alias-bg-layer-1) 72%, transparent); }
-.alims-section-title { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 9px; padding-right: 24px; }
+.alims-section-title { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 9px; padding-right: 64px; }
 .alims-section-heading { display: flex; align-items: baseline; gap: 6px; font-size: 12px; font-weight: 650; min-width: 0; }
 .alims-section-meta { font-size: 10px; font-weight: 400; color: var(--dsw-alias-label-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .alims-link { border: 1px solid var(--alims-action-border); background: var(--alims-action); color: #fff; font-size: 9.5px; font-weight: 600; cursor: pointer; padding: 2px 6px; border-radius: 5px; white-space: nowrap; }
@@ -97,6 +101,7 @@
 .alims-btn-primary:hover { background: var(--alims-action-hover); }
 .alims-btn-ghost { background: var(--alims-action); border-color: var(--alims-action-border); color: #fff; }
 .alims-btn-ghost:hover { background: var(--alims-action-hover); }
+.alims-btn-sm { padding: 3px 7px; font-size: 9.5px; border-radius: 5px; }
 .alims-icon-btn { width: 22px; height: 22px; border-radius: 5px; border: 1px solid var(--alims-action-border); background: var(--alims-action); color: #fff; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; padding: 0; }
 .alims-icon-btn:hover { background: var(--alims-action-hover); }
 .alims-pill { display: inline-flex; align-items: center; gap: 4px; border: 1px solid; border-radius: 999px; padding: 1px 6px; font-size: 9.5px; font-weight: 600; white-space: nowrap; line-height: 1.5; }
@@ -522,6 +527,56 @@
 .alims-testplan-bar span { font-size: 6.5px; font-weight: 650; white-space: nowrap; }
 .alims-testplan-bar small { font-size: 7px; opacity: .9; }
 .alims-testplan-actions { display: flex; align-items: center; justify-content: space-between; gap: 6px; border-top: 1px solid var(--dsw-alias-border-l1); padding-top: 5px; }
+.alims-orders-hero { border-color: var(--alims-brand-border); background: linear-gradient(135deg, var(--alims-brand-bg), var(--dsw-alias-bg-layer-1) 68%); }
+.alims-orders-kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; margin-bottom: 8px; }
+.alims-orders-kpis .alims-stat { padding: 7px 8px; }
+.alims-orders-kpis .alims-stat-value { font-size: 18px; }
+.alims-orders-note { display: flex; align-items: flex-start; gap: 5px; font-size: 9px; line-height: 1.5; color: var(--dsw-alias-label-secondary); background: var(--dsw-alias-bg-layer-2); border: 1px dashed var(--dsw-alias-border-l2); border-radius: 7px; padding: 6px 7px; margin: 6px 0 8px; }
+.alims-orders-note svg { margin-top: 1px; flex: 0 0 auto; }
+.alims-order-list { display: flex; flex-direction: column; gap: 8px; }
+.alims-order-card { cursor: pointer; }
+.alims-order-card:hover { border-color: var(--alims-brand-border); background: color-mix(in srgb, var(--dsw-alias-bg-layer-1) 88%, var(--alims-brand-bg)); }
+.alims-order-card.is-selected { border-color: var(--alims-brand); box-shadow: 0 0 0 1px var(--alims-brand-border) inset; }
+.alims-order-head { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+.alims-order-main { flex: 1 1 120px; min-width: 0; }
+.alims-order-title { font-size: 12px; font-weight: 680; font-family: ui-monospace, monospace; }
+.alims-order-sub { font-size: 8.5px; color: var(--dsw-alias-label-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.alims-order-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+.alims-order-spec { display: flex; align-items: center; gap: 6px; border-top: 1px solid var(--dsw-alias-border-l1); margin-top: 6px; padding-top: 5px; }
+.alims-order-spec-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.alims-order-spec-main strong { font-size: 9.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.alims-order-spec-main span { font-size: 8px; color: var(--dsw-alias-label-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.alims-order-foot { font-size: 8px; line-height: 1.5; color: var(--dsw-alias-label-secondary); border-top: 1px dashed var(--dsw-alias-border-l1); margin-top: 6px; padding-top: 4px; }
+.alims-order-detail { border-color: var(--alims-brand-border); }
+.alims-order-tasks { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; border-top: 1px solid var(--dsw-alias-border-l1); padding-top: 6px; }
+.alims-order-tasks-label { font-size: 8px; font-weight: 700; letter-spacing: .3px; text-transform: uppercase; color: var(--dsw-alias-label-secondary); }
+.alims-order-task { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; padding: 4px 0; border-bottom: 1px solid var(--dsw-alias-border-l1); }
+.alims-order-task:last-child { border-bottom: 0; }
+.alims-order-task-main { flex: 1 1 150px; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.alims-order-task-main strong { font-size: 9.5px; }
+.alims-order-task-main span { font-size: 8px; color: var(--dsw-alias-label-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.alims-change-card { border-color: var(--alims-brand-border); background: linear-gradient(135deg, var(--alims-brand-bg), var(--dsw-alias-bg-layer-1) 72%); }
+.alims-change-current { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; margin: 6px 0 2px; font-size: 9px; color: var(--dsw-alias-label-secondary); }
+.alims-change-current strong { color: var(--dsw-alias-label-primary); }
+.alims-change-result { display: flex; flex-direction: column; gap: 7px; margin-top: 9px; border-top: 1px solid var(--dsw-alias-border-l1); padding-top: 8px; }
+.alims-revise-summary { display: flex; flex-wrap: wrap; gap: 4px; }
+.alims-change-compare { display: grid; grid-template-columns: minmax(0, 1fr) 16px minmax(0, 1fr); gap: 4px; align-items: stretch; }
+.alims-change-reason { font-size: 9px; line-height: 1.5; color: var(--dsw-alias-label-secondary); }
+.alims-change-indirect { display: flex; flex-direction: column; gap: 3px; }
+.alims-change-indirect-row { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; border-bottom: 1px solid var(--dsw-alias-border-l1); padding: 4px 0; }
+.alims-change-indirect-row:last-child { border-bottom: 0; }
+.alims-change-reco { display: flex; flex-direction: column; gap: 3px; padding: 6px 7px; border-radius: 6px; background: var(--dsw-alias-bg-layer-2); border: 1px dashed var(--dsw-alias-border-l2); }
+.alims-change-history { display: flex; flex-direction: column; gap: 3px; margin-top: 9px; border-top: 1px solid var(--dsw-alias-border-l1); padding-top: 7px; }
+.alims-change-history-row { display: flex; align-items: center; gap: 5px; font-size: 8.5px; }
+.alims-change-history-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--alims-brand); flex: 0 0 auto; }
+.alims-change-history-main { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.alims-change-history-meta { color: var(--dsw-alias-label-secondary); white-space: nowrap; }
+.alims-sample-card { border-color: var(--alims-warn-border); }
+.alims-sample-list { display: flex; flex-direction: column; gap: 2px; }
+.alims-sample-row { display: flex; align-items: center; gap: 6px; padding: 5px 2px; border-bottom: 1px solid var(--dsw-alias-border-l1); cursor: pointer; }
+.alims-sample-row:last-child { border-bottom: 0; }
+.alims-sample-row:hover { background: var(--alims-idle-bg); border-radius: 6px; }
+.alims-detail-spec { border-color: var(--alims-brand-border); }
 .alims-tool-card {
   --alims-brand: var(--dsw-alias-brand-primary);
   --alims-ok: var(--dsw-alias-state-success-primary);
@@ -536,9 +591,14 @@
   --alims-action-hover: #1d4ed8;
   --alims-action-border: #1e40af;
 }
-.alims-tool-card { width: 100%; max-width: 760px; background: var(--dsw-alias-bg-layer-1); border: 1px solid var(--dsw-alias-border-l1); border-radius: 12px; padding: 11px 12px; display: flex; flex-direction: column; gap: 8px; color: var(--dsw-alias-label-primary); font-size: 12px; }
+.alims-tool-card { position: relative; width: 100%; max-width: 760px; background: var(--dsw-alias-bg-layer-1); border: 1px solid var(--dsw-alias-border-l1); border-radius: 12px; padding: 11px 12px; display: flex; flex-direction: column; gap: 8px; color: var(--dsw-alias-label-primary); font-size: 12px; }
 .alims-tool-card.is-pending { border-style: dashed; }
 .alims-tool-head { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.alims-tool-actions { margin-left: auto; display: flex; align-items: center; gap: 4px; flex: 0 0 auto; }
+.alims-tool-quote { display: inline-flex; align-items: center; gap: 3px; height: 20px; padding: 0 6px; border-radius: 5px; border: 1px solid var(--dsw-alias-border-l1); background: var(--dsw-alias-bg-layer-1); color: var(--dsw-alias-label-secondary); font-size: 9px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.alims-tool-quote:hover { color: #fff; background: var(--alims-action); border-color: var(--alims-action-border); }
+.alims-tool-quote.is-armed { color: var(--alims-brand); border-color: var(--alims-brand-border); background: var(--alims-brand-bg); }
+.alims-tool-quote.is-done { color: var(--alims-ok); border-color: var(--alims-ok-border); background: var(--alims-ok-bg); }
 .alims-tool-icon { width: 24px; height: 24px; border-radius: 7px; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; color: var(--alims-action); background: color-mix(in srgb, var(--alims-action) 12%, transparent); }
 .alims-tool-icon.is-ok { color: var(--alims-ok); background: var(--alims-ok-bg); }
 .alims-tool-icon.is-warn { color: var(--alims-warn); background: var(--alims-warn-bg); }
@@ -623,7 +683,11 @@
 .alims-cal-card-name { font-size: 7.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .alims-cal-card-res { font-size: 6.5px; color: var(--dsw-alias-label-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .alims-cal-card-hours { font-size: 6.5px; color: var(--dsw-alias-label-secondary); }
-.alims-card-collapse { position: absolute; top: 5px; right: 5px; z-index: 2; width: 17px; height: 17px; border-radius: 4px; border: 1px solid var(--dsw-alias-border-l1); background: var(--dsw-alias-bg-layer-1); color: var(--dsw-alias-label-secondary); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; padding: 0; opacity: .7; }
+.alims-card-actions { position: absolute; top: 4px; right: 4px; z-index: 4; display: flex; align-items: center; gap: 3px; padding: 1px; border-radius: 6px; background: var(--dsw-alias-bg-layer-1); box-shadow: 0 1px 4px rgba(0,0,0,.07); opacity: 0; transition: opacity .14s ease; }
+.alims-card:hover > .alims-card-actions, .alims-card:focus-within > .alims-card-actions { opacity: 1; }
+.alims-card-quote { display: inline-flex; align-items: center; gap: 3px; height: 17px; padding: 0 5px; border-radius: 4px; border: 1px solid var(--dsw-alias-border-l1); background: var(--dsw-alias-bg-layer-1); color: var(--dsw-alias-label-secondary); font-size: 8.5px; font-weight: 600; cursor: pointer; opacity: .82; white-space: nowrap; }
+.alims-card-quote:hover, .alims-card-quote.is-armed { color: #fff; background: var(--alims-action); border-color: var(--alims-action-border); opacity: 1; }
+.alims-card-collapse { position: static; z-index: 2; width: 17px; height: 17px; border-radius: 4px; border: 1px solid var(--dsw-alias-border-l1); background: var(--dsw-alias-bg-layer-1); color: var(--dsw-alias-label-secondary); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; padding: 0; opacity: .82; }
 .alims-card-collapse:hover { opacity: 1; color: var(--alims-action); border-color: var(--alims-action); }
 .alims-card.is-collapsed { padding-top: 9px; padding-bottom: 7px; }
 .alims-card-collapsed { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 2px 24px 1px 0; font-size: 10px; font-weight: 600; color: var(--dsw-alias-label-secondary); border-top: 1px dashed var(--dsw-alias-border-l1); cursor: pointer; }
@@ -792,9 +856,12 @@
 @keyframes alims-spin { to { transform: rotate(360deg); } }
 @keyframes alims-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 @media (max-width: 380px) {
-  .alims-title-en, .alims-conn { display: none; }
+  .alims-title-en, .alims-conn, .alims-rule-badge { display: none; }
   .alims-stat-value { font-size: 19px; }
   .alims-plan-card { flex-basis: 170px; }
+}
+@media (hover: none) {
+  .alims-card-actions { opacity: 1; }
 }
 `;
 
@@ -809,18 +876,21 @@
       const KIND = 'agentic-lims';
       const MENU = [
         { id: 'dashboard', label: '概览', icon: 'grid' },
+        { id: 'orders', label: '订单', icon: 'file' },
         { id: 'projects', label: '项目', icon: 'layer' },
         { id: 'tasks', label: '任务', icon: 'list' },
         { id: 'schedule', label: '排程', icon: 'calendar' },
         { id: 'impact', label: '影响', icon: 'alert' },
         { id: 'resources', label: '资源', icon: 'cube' },
         { id: 'analytics', label: '分析', icon: 'chart' },
-        { id: 'custom', label: '自定义', icon: 'grid' },
+        { id: 'custom', label: '自定义', icon: 'spark' },
         { id: 'audit', label: '审计', icon: 'clock' },
       ];
       const LimsContext = React.createContext(null);
+      const ToolQuoteContext = React.createContext(null);
       const PIN_VIEWS = [
         { id: 'dashboard', label: '概览' },
+        { id: 'orders', label: '订单' },
         { id: 'projects', label: '项目' },
         { id: 'schedule', label: '排程' },
         { id: 'impact', label: '影响' },
@@ -829,9 +899,9 @@
         { id: 'audit', label: '审计' },
       ];
       const ROLES = {
-        lab: { label: '实验人员', short: 'Lab', pages: ['dashboard', 'projects', 'tasks', 'schedule', 'resources', 'impact', 'custom'], defaultPage: 'dashboard' },
-        lead: { label: 'TM / TL', short: 'Lead', pages: ['dashboard', 'projects', 'tasks', 'schedule', 'impact', 'resources', 'analytics', 'custom', 'audit'], defaultPage: 'schedule' },
-        ops: { label: '运营负责人', short: 'Ops', pages: ['dashboard', 'projects', 'schedule', 'impact', 'resources', 'analytics', 'custom', 'audit'], defaultPage: 'analytics' },
+        lab: { label: '实验人员', short: 'Lab', pages: ['dashboard', 'orders', 'projects', 'tasks', 'schedule', 'resources', 'impact', 'custom'], defaultPage: 'dashboard' },
+        lead: { label: 'TM / TL', short: 'Lead', pages: ['dashboard', 'orders', 'projects', 'tasks', 'schedule', 'impact', 'resources', 'analytics', 'custom', 'audit'], defaultPage: 'schedule' },
+        ops: { label: '运营负责人', short: 'Ops', pages: ['dashboard', 'orders', 'projects', 'schedule', 'impact', 'resources', 'analytics', 'custom', 'audit'], defaultPage: 'analytics' },
       };
       const PRIORITY = {
         Urgent: { label: '紧急', tone: 'error', rank: 0 },
@@ -994,6 +1064,10 @@
         dot: 'M12 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4z',
         info: 'M12 8h.01M11 12h1v5M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z',
         download: 'M12 3v12M7 10l5 5 5-5M4 21h16',
+        link: 'M10 13a5 5 0 0 0 7.1 0l1.4-1.4a5 5 0 0 0-7.1-7.1L10 5.9M14 11a5 5 0 0 0-7.1 0l-1.4 1.4a5 5 0 0 0 7.1 7.1L14 18.1',
+        file: 'M14 3H7v18h10V8zM14 3v5h5M9 13h6M9 17h6',
+        vial: 'M9 3h6M10 3v13a3 3 0 0 0 4 0V3M9 11h6',
+        gauge: 'M12 20a8 8 0 1 1 8-8M12 12l4-4',
       };
 
       function Icon({ name, size = 14, style }) {
@@ -1095,10 +1169,88 @@
         return '';
       }
 
-      function Card({ children, className, style, onClick, cardId, title }) {
+      // ------------------------------------------------------- quote to chat
+      /**
+       * A "reference" is a compact, self-describing block inserted into the chat
+       * composer. The format is deliberate: the agent can tell exactly which card
+       * (or which selected text) the follow-up question is about.
+       */
+      function buildReference(payload) {
+        const title = String(payload?.title || '卡片').trim();
+        const lines = [`【引用 · ${title}】`];
+        for (const line of (payload?.lines || []).map((value) => String(value ?? '').trim()).filter(Boolean).slice(0, 8)) {
+          lines.push(`- ${line}`);
+        }
+        const selection = normalizeQuoteText(payload?.selection);
+        if (selection) lines.push(`选中内容：「${selection.slice(0, 600)}」`);
+        const quote = normalizeQuoteText(payload?.text);
+        if (!selection && quote) lines.push(`卡片内容：${quote.slice(0, 700)}`);
+        lines.push(payload?.prompt || '请基于以上引用继续分析，说明关键结论和下一步建议。');
+        return lines.join('\n');
+      }
+
+      function normalizeQuoteText(value) {
+        return String(value ?? '')
+          .replace(/\u00a0/g, ' ')
+          .replace(/[ \t]+/g, ' ')
+          .replace(/\s*\n+\s*/g, ' ')
+          .trim();
+      }
+
+      /** Rendered text of a card, minus the chrome buttons. */
+      function collectCardText(node) {
+        if (!node) return '';
+        const clone = node.cloneNode(true);
+        for (const selector of ['.alims-card-actions', '.alims-card-collapse', '.alims-card-collapsed', 'button', 'select', 'input']) {
+          clone.querySelectorAll(selector).forEach((element) => element.remove());
+        }
+        return normalizeQuoteText(clone.innerText || clone.textContent || '');
+      }
+
+      /** Selection text, only when the current selection sits inside `node`. */
+      function selectionInside(node) {
+        try {
+          const selection = typeof window !== 'undefined' ? window.getSelection() : null;
+          if (!selection || selection.rangeCount === 0) return '';
+          const text = normalizeQuoteText(selection.toString());
+          if (!text) return '';
+          if (node && selection.anchorNode && !node.contains(selection.anchorNode)) return '';
+          return text;
+        } catch {
+          return '';
+        }
+      }
+
+      /**
+       * Insert a reference into the chat composer. Returns whether the editor
+       * accepted it; the caller shows the toast / inline confirmation.
+       */
+      function quoteIntoChat(inputActions, payload) {
+        const text = typeof payload === 'string' ? payload : buildReference(payload);
+        if (!inputActions) return { ok: false, text };
+        try {
+          const span = typeof inputActions.captureInsertion === 'function' ? inputActions.captureInsertion() : null;
+          if (span && typeof inputActions.insertText === 'function') {
+            const inserted = inputActions.insertText(`${text}\n`, span);
+            if (inserted) return { ok: true, text };
+          }
+          if (typeof inputActions.setDraft === 'function') {
+            inputActions.setDraft(`${text}\n`);
+            return { ok: true, text };
+          }
+        } catch {
+          /* fall through to failure */
+        }
+        return { ok: false, text };
+      }
+
+      function Card({ children, className, style, onClick, cardId, title, quote = true }) {
         const autoId = React.useId ? React.useId() : 'card';
         const id = cardId || autoId;
         const derivedTitle = title || findCardTitle(children) || cardTitleFromClass(className) || '卡片';
+        const nodeRef = useRef(null);
+        const [armed, setArmed] = useState(false);
+        const quoteBridge = React.useContext(LimsContext);
         const [collapsed, setCollapsed] = useState(() => {
           try {
             return typeof localStorage !== 'undefined' && localStorage.getItem(`alims.card.${id}`) === '1';
@@ -1118,21 +1270,68 @@
             return next;
           });
         };
+        const detectSelection = () => {
+          if (!quoteBridge || !quoteBridge.quote) return;
+          setArmed(Boolean(selectionInside(nodeRef.current)));
+        };
+        const onQuote = (event) => {
+          event.stopPropagation();
+          if (!quoteBridge || !quoteBridge.quote) return;
+          const selection = selectionInside(nodeRef.current);
+          const text = selection ? '' : collectCardText(nodeRef.current);
+          quoteBridge.quote({
+            title: derivedTitle,
+            lines: quoteBridge.contextLines ? quoteBridge.contextLines() : [],
+            selection,
+            text,
+          });
+          setArmed(false);
+        };
+        const canQuote = Boolean(quote) && Boolean(quoteBridge && quoteBridge.quote);
         return h(
           'div',
-          { className: cx('alims-card', collapsed && 'is-collapsed', className), style, onClick, 'data-card-id': cardId || undefined },
-          h(
-            'button',
-            {
-              type: 'button',
-              className: 'alims-card-collapse',
-              title: collapsed ? `展开「${derivedTitle}」` : `折叠「${derivedTitle}」`,
-              'aria-label': collapsed ? `展开 ${derivedTitle}` : `折叠 ${derivedTitle}`,
-              'aria-expanded': !collapsed,
-              onClick: toggle,
-            },
-            h(Icon, { name: 'chevron', size: 11, style: { transform: collapsed ? 'rotate(-90deg)' : 'rotate(90deg)' } }),
-          ),
+          {
+            ref: nodeRef,
+            className: cx('alims-card', collapsed && 'is-collapsed', className),
+            style,
+            onClick,
+            onMouseUp: detectSelection,
+            onKeyUp: detectSelection,
+            'data-card-id': cardId || undefined,
+          },
+          canQuote || collapsed !== undefined
+            ? h(
+                'div',
+                { className: 'alims-card-actions' },
+                canQuote
+                  ? h(
+                      'button',
+                      {
+                        type: 'button',
+                        className: cx('alims-card-quote', armed && 'is-armed'),
+                        title: armed ? `引用选中的文字到聊天框` : `引用「${derivedTitle}」到聊天框`,
+                        'aria-label': `引用 ${derivedTitle} 到聊天框`,
+                        onMouseDown: (event) => event.preventDefault(),
+                        onClick: onQuote,
+                      },
+                      h(Icon, { name: 'link', size: 10 }),
+                      h('span', null, armed ? '引用选中' : '引用'),
+                    )
+                  : null,
+                h(
+                  'button',
+                  {
+                    type: 'button',
+                    className: 'alims-card-collapse',
+                    title: collapsed ? `展开「${derivedTitle}」` : `折叠「${derivedTitle}」`,
+                    'aria-label': collapsed ? `展开 ${derivedTitle}` : `折叠 ${derivedTitle}`,
+                    'aria-expanded': !collapsed,
+                    onClick: toggle,
+                  },
+                  h(Icon, { name: 'chevron', size: 11, style: { transform: collapsed ? 'rotate(-90deg)' : 'rotate(90deg)' } }),
+                ),
+              )
+            : null,
           collapsed
             ? h(
                 'div',
@@ -1223,15 +1422,58 @@
       }
 
       // ------------------------------------------------------------- chat cards
-      function ToolCard({ icon, title, subtitle, tone = 'brand', children }) {
+      function ToolCard({ icon, title, subtitle, tone = 'brand', children, inputActions: explicitInputActions, facts = [], quoteId }) {
+        const injectedInputActions = React.useContext(ToolQuoteContext);
+        const inputActions = explicitInputActions || injectedInputActions;
+        const nodeRef = useRef(null);
+        const [quoted, setQuoted] = useState(false);
+        const [armed, setArmed] = useState(false);
+        const detectSelection = () => {
+          if (!inputActions) return;
+          setArmed(Boolean(selectionInside(nodeRef.current)));
+        };
+        const onQuote = (event) => {
+          event.stopPropagation();
+          const selection = selectionInside(nodeRef.current);
+          const result = quoteIntoChat(inputActions, {
+            title: quoteId || title,
+            lines: [subtitle, ...facts].filter(Boolean),
+            selection,
+            text: selection ? '' : collectCardText(nodeRef.current),
+          });
+          if (result.ok) {
+            setQuoted(true);
+            setTimeout(() => setQuoted(false), 2600);
+          }
+          setArmed(false);
+        };
         return h(
           'div',
-          { className: 'alims-tool-card' },
+          { ref: nodeRef, className: 'alims-tool-card', onMouseUp: detectSelection, onKeyUp: detectSelection },
           h(
             'div',
             { className: 'alims-tool-head' },
             h('span', { className: cx('alims-tool-icon', `is-${tone}`) }, h(Icon, { name: icon, size: 13 })),
             h('div', { className: 'alims-tool-head-text' }, h('div', { className: 'alims-tool-title' }, title), subtitle ? h('div', { className: 'alims-tool-sub' }, subtitle) : null),
+            inputActions
+              ? h(
+                  'div',
+                  { className: 'alims-tool-actions' },
+                  h(
+                    'button',
+                    {
+                      type: 'button',
+                      className: cx('alims-tool-quote', quoted && 'is-done', armed && 'is-armed'),
+                      title: armed ? '引用选中的文字到聊天输入框' : '引用此卡片到聊天输入框',
+                      'aria-label': '引用此卡片到聊天输入框',
+                      onMouseDown: (event) => event.preventDefault(),
+                      onClick: onQuote,
+                    },
+                    h(Icon, { name: quoted ? 'check' : 'link', size: 10 }),
+                    h('span', null, quoted ? '已引用' : armed ? '引用选中' : '引用'),
+                  ),
+                )
+              : null,
             h('span', { className: 'alims-tool-badge' }, 'LIMS'),
           ),
           children,
@@ -1368,7 +1610,11 @@
         );
       }
 
-      function LimsToolView({ phase, block, toolName }) {
+      function LimsToolView(props) {
+        return h(ToolQuoteContext.Provider, { value: props.inputActions || null }, h(LimsToolViewBody, props));
+      }
+
+      function LimsToolViewBody({ phase, block, toolName }) {
         if (phase !== 'result') {
           return h(
             'div',
@@ -1635,6 +1881,133 @@
             h('div', { className: 'alims-tool-note' }, meta.scenario?.note || ''),
           );
         }
+        if (meta.kind === 'orders') {
+          const orders = meta.orders ?? [];
+          return h(
+            ToolCard,
+            { icon: 'file', title: 'Test Orders 与 Spec', subtitle: `${orders.length} 个订单 · ${meta.policy?.ruleVersion ?? ''}`, facts: [`规则版本 ${meta.policy?.ruleVersion ?? '—'}`, '订单与任务关联为原型推断'] },
+            h(ToolKpis, {
+              items: [
+                { label: '订单', value: orders.length, unit: '个' },
+                { label: '待拆解', value: orders.filter((order) => order.status === 'needs_task').length, unit: '个' },
+                { label: '样品未到位', value: orders.filter((order) => order.sample?.status === 'Not in stock').length, unit: '个' },
+                { label: '未关联任务', value: (meta.unlinkedTasks ?? []).length, unit: '个' },
+              ],
+            }),
+            h(
+              ToolList,
+              {
+                rows: orders.map((order) =>
+                  h(
+                    'div',
+                    { key: order.id, className: 'alims-tool-row is-block' },
+                    h('div', null, h('strong', null, order.id), h('span', null, `${order.priority} · 交期 ${order.dueLabel ?? '—'} · ${order.sampleCount} 样品 · ${order.statusLabel}`), order.specs?.[0] ? h('span', null, `${order.specs[0].id} ${order.specs[0].templateName} → ${order.specs[0].linkedTaskId ?? '待拆解'}`) : null),
+                    h(Pill, { tone: order.sample?.tone || 'idle' }, order.sample?.statusLabel || '样品待确认'),
+                  ),
+                ),
+              },
+            ),
+            h('div', { className: 'alims-tool-note' }, '订单 → 任务关联为原型推断（同模板 + 交期接近），需 TL 确认。'),
+          );
+        }
+        if (meta.kind === 'order') {
+          const order = meta.order ?? {};
+          return h(
+            ToolCard,
+            { icon: 'file', title: `订单 ${order.id || ''}`, subtitle: `${order.priority || ''} · 交期 ${order.dueLabel || '—'}`, facts: [`${order.sampleCount ?? 0} 样品`, order.sample?.statusLabel ?? '样品待确认'] },
+            h(ToolKpis, {
+              items: [
+                { label: 'Spec', value: (order.specs ?? []).length, unit: '个' },
+                { label: '关联任务', value: (order.tasks ?? []).length, unit: '个' },
+                { label: '候选任务', value: (meta.candidates ?? []).length, unit: '个' },
+                { label: '剩余天数', value: order.daysLeft ?? '—', unit: '天' },
+              ],
+            }),
+            h(
+              ToolList,
+              {
+                rows: (order.specs ?? []).map((spec) =>
+                  h('div', { key: spec.id, className: 'alims-tool-row is-block' }, h('div', null, h('strong', null, spec.name), h('span', null, `${spec.id} · ${spec.templateId} ${spec.templateName}`), h('span', null, spec.linkBasis)), h(Pill, { tone: spec.linkedTaskId ? 'ok' : 'warn' }, spec.linkedTaskId ?? '待拆解')),
+                ),
+              },
+            ),
+            (order.tasks ?? []).length > 0
+              ? h(
+                  ToolList,
+                  {
+                    rows: order.tasks.map((task) =>
+                      h('div', { key: task.id, className: 'alims-tool-row' }, h('div', null, h('strong', null, task.name), h('span', null, `${task.id} · ${task.taskType} · ${task.dueLabel} · ${task.effortHours}h`)), h(Pill, { tone: task.sample?.tone || 'idle' }, task.sample?.statusLabel || '样品待确认')),
+                    ),
+                  },
+                )
+              : h('div', { className: 'alims-tool-note is-late' }, '该订单还没有关联任务。'),
+          );
+        }
+        if (meta.kind === 'change') {
+          const change = meta.change ?? {};
+          const direct = meta.direct ?? {};
+          return h(
+            ToolCard,
+            {
+              icon: 'refresh',
+              title: change.typeLabel || '变更影响',
+              subtitle: `${change.task?.id || ''} ${change.task?.name || ''}`,
+              tone: meta.summary?.blocked > 0 || meta.summary?.late > 0 ? 'warn' : 'brand',
+              facts: [`规则版本 ${change.ruleVersion || '—'}`, `变更 ${change.field || ''} ${change.fromLabel || change.from || '—'} → ${change.toLabel || change.to || '—'}`],
+            },
+            h(ToolKpis, {
+              items: [
+                { label: '受影响', value: meta.summary?.affected ?? 0, unit: '项' },
+                { label: '直接/间接', value: `${meta.summary?.direct ?? 0}/${meta.summary?.indirect ?? 0}` },
+                { label: '延期', value: meta.summary?.late ?? 0, unit: '项' },
+                { label: '阻塞', value: meta.summary?.blocked ?? 0, unit: '项' },
+              ],
+            }),
+            h(
+              'div',
+              { className: 'alims-tool-compare' },
+              h('div', { className: 'alims-tool-compare-side' }, h('span', null, '变更前'), h('strong', null, `${direct.before?.startLabel ?? '—'} → ${direct.before?.endLabel ?? '—'}`), h('small', null, `${direct.before?.dayCount ?? 0} 个执行日`)),
+              h('div', { className: 'alims-tool-compare-arrow' }, h(Icon, { name: 'arrow', size: 13 })),
+              h('div', { className: 'alims-tool-compare-side is-after' }, h('span', null, '变更后'), direct.after ? h('strong', null, `${direct.after.startLabel} → ${direct.after.endLabel}`) : h('strong', { className: 'is-late' }, '无可行方案'), direct.after ? h('small', null, `${direct.after.resources?.equipment?.name ?? '—'} + ${direct.after.resources?.person?.name ?? '—'} · ${direct.after.statusLabel || ''}`) : null),
+            ),
+            (meta.indirect ?? []).length > 0
+              ? h(
+                  ToolList,
+                  {
+                    rows: meta.indirect.map((impact) =>
+                      h('div', { key: impact.taskId, className: 'alims-tool-row is-block' }, h('div', null, h('strong', null, impact.taskName), h('span', null, `${impact.taskId} · ${impact.relation} · ${impact.before?.endLabel ?? '—'} → ${impact.after?.endLabel ?? '无方案'}`)), h(Pill, { tone: impact.severity === 'ok' ? 'ok' : impact.severity === 'delayed' ? 'warn' : 'error' }, impact.severity === 'late' ? '会延期' : impact.severity === 'blocked' ? '阻塞' : impact.severity === 'delayed' ? '推迟' : '基本不变')),
+                    ),
+                  },
+                )
+              : h('div', { className: 'alims-tool-note' }, '没有发现共享设备/人员的连带影响。'),
+            h('div', { className: 'alims-tool-note' }, (meta.recommendations ?? []).join(' ')),
+          );
+        }
+        if (meta.kind === 'policies') {
+          return h(
+            ToolCard,
+            { icon: 'info', title: '排程规则', subtitle: `${meta.ruleVersion || ''} · ${meta.confirmed ? '已确认' : '原型假设，待确认'}`, tone: meta.confirmed ? 'ok' : 'warn', facts: [`实验室策略 ${meta.policyVersion || '—'}`, meta.confirmed ? '' : '规则尚未经业务方确认'] },
+            h(
+              ToolKpis,
+              {
+                items: [
+                  { label: 'Task Type 规则', value: Object.keys(meta.taskTypeRules ?? {}).length, unit: '条' },
+                  { label: '样品在库', value: `${(meta.samples ?? []).filter((item) => item.sample?.status === 'In stock').length}/${(meta.samples ?? []).length}` },
+                  { label: '规则确认', value: meta.confirmed ? '已确认' : '待确认' },
+                ],
+              },
+            ),
+            h(
+              ToolList,
+              {
+                rows: Object.entries(meta.taskTypeRules ?? {}).map(([key, rule]) =>
+                  h('div', { key, className: 'alims-tool-row is-block' }, h('div', null, h('strong', null, key), h('span', null, rule.description)), h(Pill, { tone: rule.exclusive ? 'brand' : 'idle' }, rule.exclusive ? '独占' : `共享 ≤${rule.maxConcurrentTasks ?? '—'}`)),
+                ),
+              },
+            ),
+            h('div', { className: 'alims-tool-note' }, '规则未确认前，不得把原型假设当作生产规则。'),
+          );
+        }
         return h(ToolCard, { icon: 'flask', title: '智能实验室', subtitle: toolName }, h('pre', { className: 'alims-tool-raw' }, JSON.stringify(meta, null, 2).slice(0, 2000)));
       }
 
@@ -1665,6 +2038,10 @@
         'lims_get_project',
         'lims_generate_test_plan',
         'lims_list_requests',
+        'lims_list_orders',
+        'lims_get_order',
+        'lims_analyze_change',
+        'lims_list_policies',
         'lims_prepare_task_draft',
         'lims_create_task_draft',
       ];
@@ -1746,7 +2123,7 @@
         return h(
           'div',
           { className: 'alims-turn-cards' },
-          cards.map((card) => h(LimsToolView, { key: card.callId, phase: 'result', toolName: card.toolName, block: { meta: card.meta, content: [] } })),
+          cards.map((card) => h(LimsToolView, { key: card.callId, phase: 'result', toolName: card.toolName, block: { meta: card.meta, content: [] }, inputActions: props.inputActions })),
         );
       }
 
@@ -1975,8 +2352,8 @@
             h(
               'div',
               { className: 'alims-brand-text' },
-              h('div', { className: 'alims-title' }, '智能实验室', h('span', { className: 'alims-title-en' }, 'Agentic LIMS')),
-              h('div', { className: 'alims-sub' }, 'MongoDB · 确定性排程引擎 · MVP'),
+              h('div', { className: 'alims-title' }, '智能实验室'),
+              h('div', { className: 'alims-sub', title: 'Task Type / 样品 / 优先级规则仍是原型假设，需业务方确认' }, 'Agentic LIMS · 规则待确认'),
             ),
             h('div', { className: 'alims-brand-spacer' }),
             h(
@@ -2612,6 +2989,199 @@
         );
       }
 
+      // ------------------------------------------------------------ order / spec
+      const SAMPLE_TONE = { 'In stock': 'ok', 'Partially in stock': 'warn', 'Not in stock': 'error', Unknown: 'idle' };
+
+      function SampleBadge({ sample, showReady = true, compact = false }) {
+        if (!sample) return null;
+        const ready = showReady && sample.readyAt ? ` · ${fmtDateTime(sample.readyAt)}` : '';
+        return h(
+          Pill,
+          { tone: sample.tone || SAMPLE_TONE[sample.status] || 'idle', dot: true, style: compact ? { fontSize: 8.5 } : undefined },
+          `${sample.statusLabel || sample.status}${ready}`,
+        );
+      }
+
+      function TaskTypeBadge({ task }) {
+        if (!task || !task.taskType) return null;
+        const exclusive = task.reservationMode === 'exclusive' || task.taskTypeRule?.exclusive;
+        return h(
+          Pill,
+          { tone: exclusive ? 'brand' : 'idle', style: { fontSize: 8.5 } },
+          `${exclusive ? '独占预占 · ' : '共享 · '}${task.taskTypeLabel || task.taskType}`,
+        );
+      }
+
+      function OrdersPage({ initialOrderId, onOpenTask, onGenerate }) {
+        const list = useApi('/api/lims/orders');
+        const [filter, setFilter] = useState('all');
+        const [selectedId, setSelectedId] = useState(initialOrderId || null);
+        useEffect(() => {
+          if (initialOrderId) setSelectedId(initialOrderId);
+        }, [initialOrderId]);
+        const detail = useApi(selectedId ? `/api/lims/order?orderId=${encodeURIComponent(selectedId)}` : null, [selectedId]);
+        if (list.loading && !list.data) return h(Loading, { label: '读取 Test Order 与 Spec…' });
+        if (list.error) return h(ErrorBox, { message: list.error, onRetry: list.reload });
+        const orders = list.data?.orders || [];
+        const filters = [
+          { id: 'all', label: '全部', count: orders.length },
+          { id: 'needs_task', label: '待拆解任务', count: orders.filter((order) => order.status === 'needs_task').length },
+          { id: 'ready_to_plan', label: '可排程', count: orders.filter((order) => order.status === 'ready_to_plan').length },
+          { id: 'needs_review', label: '需审核', count: orders.filter((order) => order.status === 'needs_review').length },
+        ];
+        const visible = filter === 'all' ? orders : orders.filter((order) => order.status === filter);
+        const selected = detail.data?.order || orders.find((order) => order.id === selectedId) || null;
+        return h(
+          'div',
+          { className: 'alims-page' },
+          h(
+            Card,
+            { title: '订单 / 规范', cardId: 'orders-hero', className: 'alims-orders-hero' },
+            h(SectionTitle, { title: 'Test Order / Test Spec', meta: `${orders.length} 个订单 · 规则 ${list.data?.policy?.ruleVersion || '—'}` }),
+            h(
+              'div',
+              { className: 'alims-orders-kpis' },
+              h(StatTile, { label: '订单', value: orders.length, unit: '个', foot: '来自 test_requests' }),
+              h(StatTile, { label: '待拆解', value: filters[1].count, unit: '个', tone: filters[1].count > 0 ? 'warn' : 'brand', foot: '还没有关联任务' }),
+              h(StatTile, { label: '样品未到位', value: orders.filter((order) => order.sample?.status === 'Not in stock').length, unit: '个', tone: 'warn', foot: '排程不得早于到位时间' }),
+              h(StatTile, { label: '未关联任务', value: list.data?.unlinkedTasks?.length || 0, unit: '个', foot: '项目制任务，需 TL 确认订单归属' }),
+            ),
+            h(
+              'div',
+              { className: 'alims-orders-note' },
+              h(Icon, { name: 'info', size: 12 }),
+              h('span', null, '订单 → 任务的关联为原型推断（同模板 + 交期接近），不是 LIMS 已确认关系；样品状态与 Task Type 均为待确认假设。'),
+            ),
+            h(
+              'div',
+              { className: 'alims-filter-row' },
+              filters.map((item) =>
+                h(
+                  'button',
+                  { key: item.id, type: 'button', className: cx('alims-filter', filter === item.id && 'is-active'), onClick: () => setFilter(item.id) },
+                  item.label,
+                  h('span', { className: 'alims-filter-count' }, item.count),
+                ),
+              ),
+            ),
+          ),
+          h(
+            'div',
+            { className: 'alims-order-list' },
+            visible.length === 0 ? h(Empty, { icon: 'file', title: '没有匹配的订单', detail: '换个筛选条件看看。' }) : null,
+            visible.map((order) =>
+              h(
+                Card,
+                { key: order.id, cardId: `order-${order.id}`, title: `订单 ${order.id}`, className: cx('alims-order-card', selected?.id === order.id && 'is-selected'), onClick: () => setSelectedId(order.id) },
+                h(
+                  'div',
+                  { className: 'alims-order-head' },
+                  h('div', { className: 'alims-order-main' }, h('div', { className: 'alims-order-title' }, order.id), h('div', { className: 'alims-order-sub' }, `${order.source} · ${order.specs.length} 个 Spec · ${order.sampleCount} 样品`)),
+                  h(Pill, { tone: priorityInfo(order.priority).tone }, priorityInfo(order.priority).label),
+                  h(Pill, { tone: order.status === 'needs_task' ? 'warn' : order.status === 'needs_review' ? 'error' : 'ok' }, order.statusLabel),
+                ),
+                h(
+                  'div',
+                  { className: 'alims-order-tags' },
+                  h(Pill, { tone: 'idle' }, `交期 ${order.dueLabel || '—'}`),
+                  h(Pill, { tone: order.daysLeft !== null && order.daysLeft < 2 ? 'error' : 'idle' }, `${order.daysLeft ?? '—'} 天后`),
+                  h(SampleBadge, { sample: order.sample, compact: true }),
+                ),
+                order.specs.map((spec) =>
+                  h(
+                    'div',
+                    { key: spec.id, className: 'alims-order-spec' },
+                    h('div', { className: 'alims-order-spec-main' }, h('strong', null, spec.name), h('span', null, `${spec.id} · ${spec.templateId || '—'} ${spec.templateName || ''}`)),
+                    spec.linkedTaskId
+                      ? h(
+                          'button',
+                          {
+                            type: 'button',
+                            className: 'alims-link',
+                            onClick: (event) => {
+                              event.stopPropagation();
+                              onOpenTask(spec.linkedTaskId);
+                            },
+                          },
+                          `任务 ${spec.linkedTaskId}`,
+                        )
+                      : h(Pill, { tone: 'warn' }, '待拆解任务'),
+                  ),
+                ),
+                h('div', { className: 'alims-order-foot' }, order.linkNote),
+              ),
+            ),
+          ),
+          selected
+            ? h(
+                Card,
+                { title: `订单详情 ${selected.id}`, cardId: 'order-detail', className: 'alims-order-detail' },
+                h(SectionTitle, { title: `订单 ${selected.id}`, meta: `${selected.specs.length} 个 Spec` }),
+                h(
+                  'div',
+                  { className: 'alims-kv-grid' },
+                  h('div', null, h('span', null, '优先级'), h('strong', null, priorityInfo(selected.priority).label)),
+                  h('div', null, h('span', null, '交期'), h('strong', null, `${selected.dueLabel || '—'}（${selected.daysLeft ?? '—'} 天）`)),
+                  h('div', null, h('span', null, '样品'), h('strong', null, h(SampleBadge, { sample: selected.sample }))),
+                  h('div', null, h('span', null, '状态'), h('strong', null, selected.statusLabel)),
+                ),
+                (detail.data?.linkedTasks || []).length > 0
+                  ? h(
+                      'div',
+                      { className: 'alims-order-tasks' },
+                      h('div', { className: 'alims-order-tasks-label' }, '推断关联的任务'),
+                      detail.data.linkedTasks.map((task) =>
+                        h(
+                          'div',
+                          { key: task.id, className: 'alims-order-task' },
+                          h('div', { className: 'alims-order-task-main' }, h('strong', null, task.name), h('span', null, `${task.id} · ${task.projectName} · ${task.dueLabel} · ${task.effortHours}h`)),
+                          h(TaskTypeBadge, { task }),
+                          h(SampleBadge, { sample: task.sample, compact: true }),
+                          h('button', { type: 'button', className: 'alims-back', onClick: () => onOpenTask(task.id) }, '查看'),
+                          h('button', { type: 'button', className: 'alims-btn alims-btn-sm', onClick: () => onGenerate(task.id) }, h(Icon, { name: 'spark', size: 11 }), '排程'),
+                        ),
+                      ),
+                    )
+                  : h('div', { className: 'alims-muted' }, '该订单还没有关联任务；可到「项目」页或用聊天拆解后再排程。'),
+                (detail.data?.candidates || []).length > 0
+                  ? h(
+                      'div',
+                      { className: 'alims-order-tasks' },
+                      h('div', { className: 'alims-order-tasks-label' }, '同模板候选任务（尚未关联）'),
+                      detail.data.candidates.map((task) =>
+                        h('div', { key: task.id, className: 'alims-order-task' }, h('div', { className: 'alims-order-task-main' }, h('strong', null, task.name), h('span', null, `${task.id} · ${task.projectName} · ${task.dueLabel}`)), h(SampleBadge, { sample: task.sample, compact: true })),
+                      ),
+                    )
+                  : null,
+                h('div', { className: 'alims-order-foot' }, selected.linkNote),
+              )
+            : null,
+          (list.data?.unlinkedTasks || []).length > 0
+            ? h(
+                Card,
+                { title: '未关联订单的任务', cardId: 'orders-unlinked' },
+                h(SectionTitle, { title: '未关联订单的项目任务', meta: `${list.data.unlinkedTasks.length} 个` }),
+                h(
+                  'div',
+                  { className: 'alims-order-tasks' },
+                  list.data.unlinkedTasks.map((task) =>
+                    h(
+                      'div',
+                      { key: task.id, className: 'alims-order-task' },
+                      h('div', { className: 'alims-order-task-main' }, h('strong', null, task.name), h('span', null, `${task.id} · ${task.projectName} · ${task.dueLabel} · ${task.effortHours}h`)),
+                      h(TaskTypeBadge, { task }),
+                      h(SampleBadge, { sample: task.sample, compact: true }),
+                      h('button', { type: 'button', className: 'alims-back', onClick: () => onOpenTask(task.id) }, '查看'),
+                    ),
+                  ),
+                ),
+                h('div', { className: 'alims-order-foot' }, '这些任务来自项目制 CSV，没有订单外键；与 LIMS 集成后应由 Test Order / Spec 反查。'),
+              )
+            : null,
+          h(PinnedWidgets, { view: 'orders' }),
+        );
+      }
+
       function PersonalView({ tasks, onOpenTask, onNavigate }) {
         const resources = useApi('/api/lims/resources');
         const taskData = useApi('/api/lims/tasks');
@@ -2741,6 +3311,7 @@
         const taskRank = (task) => (riskRank[task.risk] ?? 3) * 10 + (PRIORITY[task.priority]?.rank ?? 4);
         const top = [...tasks].sort((a, b) => taskRank(a) - taskRank(b)).slice(0, 3);
         const unplanned = tasks.filter((task) => !task.scheduled).sort((a, b) => taskRank(a) - taskRank(b));
+        const sampleTasks = tasks.filter((task) => task.sample && task.sample.status !== 'In stock');
         const agentTask = unplanned.find((task) => !task.review) || unplanned[0] || top[0] || null;
         return h(
           'div',
@@ -2777,6 +3348,7 @@
               ),
             ),
             h('div', { className: 'alims-agent-note' }, `还有 ${unscheduledTasks} 项任务没有活动方案；点击会真实写入 MongoDB，并刷新概览覆盖率和资源排程。`),
+            h('div', { className: 'alims-agent-note' }, '追问技巧：悬停任意卡片 → 「引用」可把整张卡片带入聊天；先选中一段文字再点，则只引用选中内容。'),
             h(
               'div',
               { className: 'alims-agent-actions' },
@@ -2829,6 +3401,27 @@
                 ),
               ),
             ),
+          ),
+          h(
+            Card,
+            { title: '样品到位', className: 'alims-sample-card' },
+            h(SectionTitle, { title: '样品到位 · HC-007', meta: `${sampleTasks.length} 项未齐`, action: h('button', { className: 'alims-link', onClick: () => onNavigate('impact') }, '登记延迟') }),
+            sampleTasks.length === 0
+              ? h('div', { className: 'alims-muted' }, '所有任务的样品都已到位。')
+              : h(
+                  'div',
+                  { className: 'alims-sample-list' },
+                  sampleTasks.map((task) =>
+                    h(
+                      'div',
+                      { key: task.id, className: 'alims-sample-row', onClick: () => onOpenTask(task.id) },
+                      h('div', { className: 'alims-order-task-main' }, h('strong', null, task.name), h('span', null, `${task.id} · ${task.projectName} · 交期 ${task.dueLabel}`)),
+                      h(SampleBadge, { sample: task.sample, compact: true }),
+                      h(Icon, { name: 'chevron', size: 12, style: { color: 'var(--dsw-alias-label-secondary)' } }),
+                    ),
+                  ),
+                ),
+            h('div', { className: 'alims-inline-note' }, '样品未到位前不得开始实际测试；延迟会触发变更影响分析。'),
           ),
           h(
             Card,
@@ -3018,6 +3611,8 @@
               h('div', null, h('span', null, '预计工作量'), h('strong', null, fmtHours(task.effortHours))),
               h('div', null, h('span', null, '优先级'), h('strong', null, task.priority)),
               h('div', null, h('span', null, '状态'), h('strong', null, task.status)),
+              h('div', null, h('span', null, 'Task Type'), h('strong', null, task.taskTypeLabel || task.taskType || '—')),
+              h('div', null, h('span', null, '样品'), h('strong', null, task.sample?.statusLabel || '待确认')),
             ),
             h(
               'div',
@@ -3025,6 +3620,23 @@
               h('button', { className: 'alims-btn alims-btn-primary', onClick: () => onGenerate(task.id) }, h(Icon, { name: 'spark', size: 12 }), '生成候选方案'),
               task.review ? h('span', { className: 'alims-inline-note' }, '非标准方法：方案会标记为“需审核”，不能直接确认') : null,
             ),
+          ),
+          h(
+            Card,
+            { title: '样品与预约规则', className: 'alims-detail-spec' },
+            h(SectionTitle, { title: '样品与预约规则', meta: `规则版本 ${data.task.ruleVersion || '—'}` }),
+            h(
+              'div',
+              { className: 'alims-kv-grid' },
+              h('div', null, h('span', null, 'Task Type'), h('strong', null, `${task.taskTypeLabel || task.taskType || '—'} · ${task.reservationMode === 'exclusive' ? '独占' : '共享'}`)),
+              h('div', null, h('span', null, '规则确认'), h('strong', null, task.taskTypeConfirmed ? '已确认' : '原型假设，待确认')),
+              h('div', null, h('span', null, '样品状态'), h('strong', null, h(SampleBadge, { sample: task.sample }))),
+              h('div', null, h('span', null, '到位时间'), h('strong', null, task.sample?.readyAt ? fmtDateTime(task.sample.readyAt) : '—')),
+              h('div', null, h('span', null, '关联订单'), h('strong', null, (task.orderIds || []).join('、') || '未关联')),
+              h('div', null, h('span', null, '已登记变更'), h('strong', null, (task.overriddenFields || []).join('、') || '—')),
+            ),
+            h('div', { className: 'alims-inline-note' }, task.reservationRule?.description || ''),
+            task.sample?.note ? h('div', { className: 'alims-inline-note is-warn' }, task.sample.note) : null,
           ),
           h(
             Card,
@@ -3784,7 +4396,221 @@
       }
 
       // ----------------------------------------------------------------- impact
-      function ImpactPage({ initialEquipmentId, initialDate, onOpenTask, onGenerate, onAudit, showToast }) {
+      /**
+       * Chapter 14.7 / 14.8 change analysis: sample delay, due date, priority.
+       * It posts to the same route the `lims_analyze_change` tool calls, so the
+       * page and the chat can never disagree about the impact.
+       */
+      function ChangePanel({ onOpenTask, showToast, initialChangeId }) {
+        const tasks = useApi('/api/lims/tasks');
+        const events = useApi('/api/lims/change-events');
+        const stored = useApi(
+          initialChangeId ? `/api/lims/change-events?changeId=${encodeURIComponent(initialChangeId)}` : null,
+          [initialChangeId],
+        );
+        const [type, setType] = useState('sample_delay');
+        const [taskId, setTaskId] = useState('TASK-2005');
+        const [value, setValue] = useState('2026-10-31');
+        const [delayDays, setDelayDays] = useState(2);
+        const [reason, setReason] = useState('样品批次延期');
+        const [result, setResult] = useState(null);
+        const [busy, setBusy] = useState(false);
+        const [error, setError] = useState(null);
+
+        const taskList = tasks.data?.tasks ?? [];
+        const selectedTask = taskList.find((task) => task.id === taskId) || null;
+        useEffect(() => {
+          const event = stored.data?.event;
+          if (!event || !event.analysis) return;
+          setResult(event.analysis);
+          if (event.type) setType(event.type);
+          if (event.taskId) setTaskId(event.taskId);
+          if (event.to) setValue(event.type === 'priority' ? event.to : String(event.to).slice(0, 10));
+          if (event.reason) setReason(event.reason);
+        }, [stored.data]);
+        const changeTypes = [
+          { id: 'sample_delay', label: '样品延迟' },
+          { id: 'due_date', label: '交期变更' },
+          { id: 'priority', label: '优先级变更' },
+        ];
+
+        useEffect(() => {
+          if (selectedTask && type === 'due_date' && !/^\d{4}-\d{2}-\d{2}$/.test(value)) setValue(selectedTask.dueDate.slice(0, 10));
+        }, [selectedTask, type, value]);
+
+        const submit = async () => {
+          setBusy(true);
+          setError(null);
+          try {
+            const payload = { type, taskId, reason, actor: 'workspace' };
+            if (type === 'priority') payload.value = value;
+            else if (type === 'due_date') payload.value = value;
+            else if (value) payload.value = value;
+            else payload.delayDays = Number(delayDays) || 1;
+            const data = await api('/api/lims/change-impact', { method: 'POST', body: payload });
+            setResult(data);
+            events.reload();
+            tasks.reload();
+            showToast('变更已登记并完成影响分析', 'ok', `受影响 ${data.summary?.affected ?? 0} 个任务，延期 ${data.summary?.late ?? 0} 个`);
+          } catch (failure) {
+            setError(failure.message);
+            showToast('变更分析失败', 'error', failure.message);
+          } finally {
+            setBusy(false);
+          }
+        };
+
+        return h(
+          Card,
+          { className: 'alims-change-card', title: '订单变更与影响分析' },
+          h(SectionTitle, { title: '订单变更与影响分析', meta: 'UC-2 · ChangeEvent' }),
+          h(
+            'div',
+            { className: 'alims-impact-form-head' },
+            h('div', null, h('div', { className: 'alims-impact-form-title' }, '变更 → 直接影响 → 间接影响'), h('div', { className: 'alims-impact-form-sub' }, '登记 ChangeEvent，重排变更对象，并沿共享设备/人员分析连锁影响')),
+            h(Pill, { tone: 'brand', dot: true }, 'UC-2'),
+          ),
+          h(
+            'div',
+            { className: 'alims-revise-fields' },
+            h(
+              'label',
+              { className: 'alims-revise-field' },
+              h('span', { className: 'alims-field-label' }, '变更类型'),
+              h(
+                'select',
+                {
+                  className: 'alims-select',
+                  value: type,
+                  onChange: (event) => {
+                    const nextType = event.target.value;
+                    setType(nextType);
+                    setResult(null);
+                    setValue(nextType === 'priority' ? 'Urgent' : selectedTask ? selectedTask.dueDate.slice(0, 10) : '2026-10-31');
+                  },
+                },
+                changeTypes.map((item) => h('option', { key: item.id, value: item.id }, item.label)),
+              ),
+            ),
+            h(
+              'label',
+              { className: 'alims-revise-field' },
+              h('span', { className: 'alims-field-label' }, '任务'),
+              h(
+                'select',
+                { className: 'alims-select', value: taskId, onChange: (event) => { setTaskId(event.target.value); setResult(null); } },
+                taskList.map((task) => h('option', { key: task.id, value: task.id }, `${task.id} · ${task.name}`)),
+              ),
+            ),
+            type === 'priority'
+              ? h(
+                  'label',
+                  { className: 'alims-revise-field' },
+                  h('span', { className: 'alims-field-label' }, '新优先级'),
+                  h(
+                    'select',
+                    { className: 'alims-select', value: value, onChange: (event) => setValue(event.target.value) },
+                    ['Urgent', 'High', 'Normal', 'Low'].map((item) => h('option', { key: item, value: item }, item)),
+                  ),
+                )
+              : h(
+                  'label',
+                  { className: 'alims-revise-field' },
+                  h('span', { className: 'alims-field-label' }, type === 'due_date' ? '新交期' : '新到位日期'),
+                  h('input', { type: 'date', className: 'alims-select', value: value, onChange: (event) => setValue(event.target.value) }),
+                ),
+            h(
+              'label',
+              { className: 'alims-revise-field' },
+              h('span', { className: 'alims-field-label' }, '原因'),
+              h('input', { type: 'text', className: 'alims-select', value: reason, onChange: (event) => setReason(event.target.value) }),
+            ),
+          ),
+          selectedTask
+            ? h(
+                'div',
+                { className: 'alims-change-current' },
+                h('span', null, '当前值'),
+                h('strong', null, selectedTask.id),
+                h(SampleBadge, { sample: selectedTask.sample, compact: true }),
+                h(TaskTypeBadge, { task: selectedTask }),
+                h('span', null, `交期 ${selectedTask.dueLabel}`),
+              )
+            : null,
+          h(
+            'div',
+            { className: 'alims-agent-actions' },
+            h('button', { className: 'alims-btn alims-btn-primary', disabled: busy, onClick: submit }, h(Icon, { name: busy ? 'refresh' : 'refresh', size: 12, style: busy ? { animation: 'alims-spin 1s linear infinite' } : undefined }), busy ? '分析中…' : '登记变更并分析影响'),
+            h('span', { className: 'alims-inline-note' }, '只写原型集合与审计；不自动确认任何方案。'),
+          ),
+          error ? h(ErrorBox, { message: error }) : null,
+          result
+            ? h(
+                'div',
+                { className: 'alims-change-result' },
+                h(
+                  'div',
+                  { className: 'alims-revise-summary' },
+                  h(Pill, { tone: result.summary?.blocked > 0 ? 'error' : result.summary?.late > 0 ? 'warn' : 'ok' }, `受影响 ${result.summary?.affected ?? 0}`),
+                  h(Pill, { tone: 'idle' }, `直接 ${result.summary?.direct ?? 0} / 间接 ${result.summary?.indirect ?? 0}`),
+                  h(Pill, { tone: result.summary?.late > 0 ? 'error' : 'ok' }, `延期 ${result.summary?.late ?? 0}`),
+                  h(Pill, { tone: result.summary?.blocked > 0 ? 'error' : 'ok' }, `阻塞 ${result.summary?.blocked ?? 0}`),
+                  result.change?.ruleVersion ? h(Pill, { tone: 'idle' }, `规则 ${result.change.ruleVersion}`) : null,
+                ),
+                h(
+                  'div',
+                  { className: 'alims-change-compare' },
+                  h(
+                    'div',
+                    { className: 'alims-compare-side' },
+                    h('span', { className: 'alims-compare-side-label' }, '变更前'),
+                    h('strong', null, `${result.direct?.before?.startLabel ?? '—'} → ${result.direct?.before?.endLabel ?? '—'}`),
+                    h('span', null, `${result.direct?.before?.dayCount ?? 0} 个执行日`),
+                  ),
+                  h('div', { className: 'alims-compare-arrow' }, h(Icon, { name: 'arrow', size: 12 })),
+                  h(
+                    'div',
+                    { className: 'alims-compare-side is-after' },
+                    h('span', { className: 'alims-compare-side-label' }, '变更后'),
+                    result.direct?.after ? h('strong', null, `${result.direct.after.startLabel} → ${result.direct.after.endLabel}`) : h('strong', { className: 'is-late' }, '无可行方案'),
+                    result.direct?.after ? h('span', null, `${result.direct.after.resources?.equipment?.name ?? '—'} + ${result.direct.after.resources?.person?.name ?? '—'}`) : null,
+                  ),
+                ),
+                h('div', { className: 'alims-change-reason' }, result.direct?.reason),
+                (result.indirect ?? []).length > 0
+                  ? h(
+                      'div',
+                      { className: 'alims-change-indirect' },
+                      h('div', { className: 'alims-order-tasks-label' }, '间接受影响任务'),
+                      result.indirect.map((impact) =>
+                        h(
+                          'div',
+                          { key: impact.taskId, className: 'alims-change-indirect-row' },
+                          h('div', { className: 'alims-order-task-main' }, h('strong', null, impact.taskName), h('span', null, `${impact.taskId} · ${impact.relation} · ${impact.before?.endLabel ?? '—'} → ${impact.after?.endLabel ?? '无方案'}`)),
+                          h(Pill, { tone: impact.severity === 'ok' ? 'ok' : impact.severity === 'delayed' ? 'warn' : 'error' }, impact.severity === 'late' ? '会延期' : impact.severity === 'blocked' ? '阻塞' : impact.severity === 'delayed' ? '推迟' : '不受影响'),
+                          h('button', { type: 'button', className: 'alims-back', onClick: () => onOpenTask(impact.taskId) }, '查看'),
+                        ),
+                      ),
+                    )
+                  : h('div', { className: 'alims-inline-note' }, '没有共享资源上的连带影响。'),
+                h('div', { className: 'alims-change-reco' }, (result.recommendations ?? []).map((item, index) => h('div', { key: index, className: 'alims-explain-reason' }, h(Icon, { name: 'info', size: 11 }), h('span', null, item)))),
+                h('div', { className: 'alims-inline-note' }, '候选方案尚未确认：确认前请重新生成并校验资源状态。'),
+              )
+            : null,
+          (events.data?.events ?? []).length > 0
+            ? h(
+                'div',
+                { className: 'alims-change-history' },
+                h('div', { className: 'alims-order-tasks-label' }, '最近变更事件'),
+                (events.data.events ?? []).slice(0, 5).map((event) =>
+                  h('div', { key: event.id, className: 'alims-change-history-row' }, h('span', { className: 'alims-change-history-dot' }), h('span', { className: 'alims-change-history-main' }, `${event.typeLabel || event.type} · ${event.taskId}`), h('span', { className: 'alims-change-history-meta' }, `${event.from ? `${event.fromLabel || event.from} → ` : ''}${event.toLabel || event.to || ''}`)),
+                ),
+              )
+            : null,
+        );
+      }
+
+      function ImpactPage({ initialEquipmentId, initialDate, initialChangeId, onOpenTask, onGenerate, onAudit, showToast }) {
         const resources = useApi('/api/lims/resources');
         const [equipmentId, setEquipmentId] = useState(initialEquipmentId || 'EQ-007');
         const [date, setDate] = useState(initialDate || '2026-10-28');
@@ -3911,6 +4737,7 @@
             error ? h(ErrorBox, { message: error }) : null,
           ),
           h(ActionBanner, { feedback, onAudit, onDismiss: () => setFeedback(null) }),
+          h(ChangePanel, { onOpenTask, showToast, initialChangeId }),
           impact
             ? h(
                 'div',
@@ -4398,6 +5225,7 @@
         const [workspace, setWorkspace] = useState(null);
         const [impactTarget, setImpactTarget] = useState(null);
         const [projectTarget, setProjectTarget] = useState(null);
+        const [orderTarget, setOrderTarget] = useState(null);
         const [explainId, setExplainId] = useState(null);
         const [simulate, setSimulate] = useState(null);
         const [simulateBusy, setSimulateBusy] = useState(false);
@@ -4409,27 +5237,33 @@
         const showToast = useCallback((title, tone = 'info', detail = '') => {
           setToast({ title, tone, detail });
         }, []);
-        const referenceEquipment = useCallback((item) => {
-          if (!item || !inputActions) return;
-          const phrase = `关于 ${item.name}（${item.id}）设备：`;
-          try {
-            if (typeof inputActions.captureInsertion === 'function' && typeof inputActions.insertText === 'function') {
-              const span = inputActions.captureInsertion();
-              const inserted = inputActions.insertText(phrase, span);
-              if (!inserted) inputActions.setDraft(phrase);
+        /** Shared reference bridge: every Card / chat card can quote itself here. */
+        const quote = useCallback(
+          (payload) => {
+            const result = quoteIntoChat(inputActions, payload);
+            if (result.ok) {
+              showToast('已引用到聊天输入框', 'ok', result.text.split('\n').slice(0, 3).join('\n'));
             } else {
-              inputActions.setDraft(phrase);
+              showToast('无法写入聊天输入框', 'error', '请先在聊天框打开草稿，或点一下输入框后重试。');
             }
-            showToast('已引用到聊天输入框', 'ok', phrase);
-          } catch {
-            try {
-              inputActions.setDraft(phrase);
-              showToast('已引用到聊天输入框', 'ok', phrase);
-            } catch {
-              showToast('无法写入聊天输入框', 'error', '请先打开聊天输入框。');
-            }
-          }
-        }, [inputActions, showToast]);
+            return result.ok;
+          },
+          [inputActions, showToast],
+        );
+        const contextLines = useCallback(() => {
+          const lines = [];
+          if (overview?.clock?.dateLabel) lines.push(`演示时钟 ${overview.clock.dateLabel}`);
+          lines.push(`工作区页面 ${page}${taskId ? ` · 当前任务 ${taskId}` : ''}`);
+          return lines;
+        }, [overview, page, taskId]);
+        const referenceEquipment = useCallback((item) => {
+          if (!item) return;
+          quote({
+            title: `${item.name}（${item.id}）`,
+            lines: [`设备类型 ${item.type}`, `状态 ${item.status}`, `利用率 ${item.utilizationPct}%`, '用户正在从资源负荷图追问这台设备'],
+            prompt: `关于 ${item.name}（${item.id}）设备，请说明：`,
+          });
+        }, [quote]);
         const togglePin = useCallback((widgetId, view) => {
           setPinned((previous) => {
             const next = { ...previous };
@@ -4457,19 +5291,12 @@
           });
         }, []);
         const sendToChat = useCallback((title) => {
-          const phrase = `请结合当前“${title}”卡片，说明关键发现和下一步建议。`;
-          try {
-            if (inputActions && typeof inputActions.captureInsertion === 'function' && typeof inputActions.insertText === 'function') {
-              const span = inputActions.captureInsertion();
-              if (!inputActions.insertText(phrase, span)) inputActions.setDraft(phrase);
-            } else if (inputActions) {
-              inputActions.setDraft(phrase);
-            }
-            showToast('已把卡片主题加入聊天输入框', 'ok', phrase);
-          } catch {
-            showToast('无法写入聊天输入框', 'error', '请先打开聊天输入框。');
-          }
-        }, [inputActions, showToast]);
+          quote({
+            title,
+            lines: contextLines(),
+            prompt: `请结合当前「${title}」卡片，说明关键发现和下一步建议。`,
+          });
+        }, [quote, contextLines]);
         const roleConfig = ROLES[role] || ROLES.lead;
         const menuItems = MENU.filter((item) => roleConfig.pages.includes(item.id));
         const changeRole = useCallback((next) => {
@@ -4528,8 +5355,9 @@
                 }
                 if (next.page === 'schedule') setComparison(next.comparison || null);
                 if (next.resourceId) setExplainId(next.resourceId);
-                if (next.page === 'impact') setImpactTarget({ equipmentId: next.equipmentId, date: next.date });
+                if (next.page === 'impact') setImpactTarget({ equipmentId: next.equipmentId, date: next.date, changeId: next.changeId ?? null });
                 if (next.page === 'projects') setProjectTarget({ projectId: next.projectId, testPlanId: next.testPlanId });
+                if (next.page === 'orders') setOrderTarget({ orderId: next.orderId ?? null });
                 if (previous && next.message) showToast(next.message, 'info');
               }
             } catch (error) {
@@ -4730,7 +5558,7 @@
           h(TopBar, { page, setPage, connected, workspace, role, onRoleChange: changeRole, menuItems }),
           h(
             LimsContext.Provider,
-            { value: { inputActions, showToast, pinned, togglePin, removePin, sendToChat, setPage } },
+            { value: { inputActions, showToast, pinned, togglePin, removePin, sendToChat, setPage, quote, contextLines } },
             h(
               'div',
               { className: 'alims-body' },
@@ -4749,6 +5577,13 @@
                   roleConfig,
                   agentResult,
                   busy,
+                })
+              : null,
+            page === 'orders'
+              ? h(OrdersPage, {
+                  initialOrderId: orderTarget?.orderId,
+                  onOpenTask: openTask,
+                  onGenerate: (id) => generatePlans(id, { page: 'schedule', actor: 'agent' }),
                 })
               : null,
             page === 'projects'
@@ -4795,6 +5630,7 @@
               ? h(ImpactPage, {
                   initialEquipmentId: impactTarget?.equipmentId,
                   initialDate: impactTarget?.date,
+                  initialChangeId: impactTarget?.changeId,
                   onOpenTask: openTask,
                   onGenerate: generatePlans,
                   onAudit: () => setPage('audit'),
@@ -4843,6 +5679,11 @@
           },
           h(Icon, { name: 'flask', size: 14 }),
         );
+      }
+
+      /* Test-only surface for the no-browser check script; never set in the app. */
+      if (typeof window !== 'undefined' && window.__AGENTIC_LIMS_TEST__) {
+        window.__agenticLimsTest = { buildReference, normalizeQuoteText, quoteIntoChat, LIMS_TOOL_NAMES };
       }
 
       let headerContext = null;

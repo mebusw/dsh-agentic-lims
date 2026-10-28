@@ -17,6 +17,7 @@ import {
   toNumber,
   unique,
 } from './util.js';
+import { applyUpgrade, normalizeUpgradeConfig } from './upgrade.js';
 
 const EQUIPMENT_KEYWORDS = [
   { match: ['gc'], type: 'GC-FID' },
@@ -121,7 +122,13 @@ function normalizeAllocation(row) {
   };
 }
 
-export function buildDomain(raw, templateOverrides = {}) {
+/**
+ * @param {object} raw - CSV rows
+ * @param {object|Map} [templateOverrides] - taskId → templateId override
+ * @param {{config?: object, taskOverrides?: object}} [options] - upgrade config and
+ *   change overrides (priority / due date) kept outside the raw CSV
+ */
+export function buildDomain(raw, templateOverrides = {}, options = {}) {
   const persons = raw.persons.map(normalizePerson);
   const resources = raw.equipment.map(normalizeResource);
   const equipment = resources.filter((resource) => resource.kind === 'equipment');
@@ -201,6 +208,17 @@ export function buildDomain(raw, templateOverrides = {}) {
       if (match) task.requirements.equipmentType = match.type;
     }
   }
+  for (const task of tasks) {
+    const override = options.taskOverrides?.[task.id];
+    if (!override) continue;
+    if (override.priority) task.priority = override.priority;
+    if (override.dueDate) task.dueDate = parseInstant(override.dueDate);
+    if (override.requestedStart) task.requestedStart = parseInstant(override.requestedStart);
+    if (override.effortHours !== undefined && override.effortHours !== null) {
+      task.effortHours = toNumber(override.effortHours);
+    }
+    task.overriddenFields = Object.keys(override).filter((key) => !['updatedAt', 'actor', 'reason', 'taskId'].includes(key));
+  }
   const taskById = new Map(tasks.map((item) => [item.id, item]));
 
   const activities = raw.activities.map(normalizeActivity);
@@ -259,7 +277,7 @@ export function buildDomain(raw, templateOverrides = {}) {
     });
   }
 
-  return {
+  const domain = {
     persons,
     personById,
     resources,
@@ -280,6 +298,8 @@ export function buildDomain(raw, templateOverrides = {}) {
     projects,
     raw,
   };
+  const config = normalizeUpgradeConfig(options.config ?? null);
+  return applyUpgrade(domain, config);
 }
 
 export function personMatches(person, qualifications) {
@@ -400,6 +420,16 @@ export function taskSummary(domain, task, now, extra = {}) {
     spaceIds: task.requirements.spaceIds,
     templateId: task.templateId,
     templateName: task.template?.name ?? null,
+    taskType: task.taskType ?? null,
+    taskTypeLabel: task.taskTypeLabel ?? null,
+    taskTypeReason: task.taskTypeReason ?? null,
+    taskTypeConfirmed: task.taskTypeConfirmed === true,
+    reservationMode: task.taskTypeRule?.exclusive ? 'exclusive' : task.taskTypeRule?.shareable ? 'shared' : 'unknown',
+    sample: task.sample ?? null,
+    sampleReadyAt: task.sample?.readyAt ?? null,
+    orderIds: task.orderIds ?? [],
+    specIds: task.specIds ?? [],
+    overriddenFields: task.overriddenFields ?? [],
     candidateEquipment: equipment.required.map((item) => ({ id: item.id, name: item.name, status: item.status })),
     candidatePersons: persons.map((entry) => ({ id: entry.person.id, name: entry.person.name, missing: entry.missing })),
     allocatedHours: round1(sum(allocations.map((item) => item.load))),

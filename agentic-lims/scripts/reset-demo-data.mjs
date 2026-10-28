@@ -30,6 +30,8 @@ await db.collection('workspace').updateOne(
       equipmentId: null,
       date: null,
       resourceId: null,
+      orderId: null,
+      changeId: null,
       message: '演示数据已恢复到初始状态（无历史方案、无停机登记）。',
       source: 'system',
       updatedAt: new Date().toISOString(),

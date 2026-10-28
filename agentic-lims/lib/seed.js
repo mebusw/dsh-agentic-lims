@@ -6,6 +6,7 @@
  */
 import { loadRawDataset } from './csv.js';
 import { buildDomain } from './model.js';
+import { defaultUpgradeConfig, normalizeUpgradeConfig } from './upgrade.js';
 import { formatDateTime } from './util.js';
 
 export const RAW_COLLECTIONS = {
@@ -53,11 +54,35 @@ export async function readRawDataset(db) {
   return Object.fromEntries(entries);
 }
 
+/** Stored upgrade configuration, or the bundled prototype defaults. */
+export async function readUpgradeConfig(db) {
+  const doc = await db.collection('prototype_config').findOne({ _id: 'upgrade-v1' }, { projection: { _id: 0 } });
+  return normalizeUpgradeConfig(doc ?? null);
+}
+
+/** Sample readiness lives in its own collection so a delay is an auditable event. */
+export async function readSampleStatus(db) {
+  const rows = await db.collection('sample_status').find({}, { projection: { _id: 0 } }).toArray();
+  return Object.fromEntries(rows.map((row) => [row.taskId, row]));
+}
+
+/** Priority / due-date changes are overrides; the raw CSV stays untouched. */
+export async function readTaskOverrides(db) {
+  const rows = await db.collection('task_overrides').find({}, { projection: { _id: 0 } }).toArray();
+  return Object.fromEntries(rows.map((row) => [row.taskId, row]));
+}
+
 export async function loadDomain(db) {
-  const raw = await readRawDataset(db);
-  const overrides = await db.collection('task_template_overrides').find({}).toArray();
+  const [raw, overrides, config, samples, taskOverrides] = await Promise.all([
+    readRawDataset(db),
+    db.collection('task_template_overrides').find({}).toArray(),
+    readUpgradeConfig(db),
+    readSampleStatus(db),
+    readTaskOverrides(db),
+  ]);
   const mapping = Object.fromEntries(overrides.map((item) => [item._id, item.templateId]));
-  return buildDomain(raw, mapping);
+  const mergedConfig = { ...config, samples: { ...config.samples, ...samples } };
+  return buildDomain(raw, mapping, { config: mergedConfig, taskOverrides });
 }
 
 export async function ensureIndexes(db) {
@@ -68,12 +93,52 @@ export async function ensureIndexes(db) {
     db.collection('plans').createIndex({ taskId: 1, generatedAt: -1 }),
     db.collection('test_plans').createIndex({ projectId: 1, createdAt: -1 }),
     db.collection('audit_events').createIndex({ at: -1 }),
+    db.collection('change_events').createIndex({ at: -1 }),
+    db.collection('change_events').createIndex({ taskId: 1, at: -1 }),
+    db.collection('change_impacts').createIndex({ changeId: 1 }),
+    db.collection('sample_status').createIndex({ taskId: 1 }, { unique: true }),
   ]);
+}
+
+const SEED_VERSION = '2026-10-28.1';
+
+/**
+ * Seed the chapter-14 upgrade collections idempotently. Runs for existing
+ * databases too, so an upgrade does not require wiping confirmed plans/audit.
+ */
+async function ensureUpgradeSeed(db) {
+  const defaults = defaultUpgradeConfig();
+  await db.collection('prototype_config').updateOne(
+    { _id: 'upgrade-v1' },
+    { $setOnInsert: { ...defaults, seededAt: new Date().toISOString(), source: 'prototype-assumption' } },
+    { upsert: true },
+  );
+  const samples = defaults.samples ?? {};
+  if (Object.keys(samples).length > 0) {
+    await db.collection('sample_status').bulkWrite(
+      Object.entries(samples).map(([taskId, sample]) => ({
+        updateOne: {
+          filter: { _id: taskId },
+          update: { $setOnInsert: { taskId, ...sample, source: sample.source ?? 'prototype-assumption' } },
+          upsert: true,
+        },
+      })),
+      { ordered: false },
+    );
+  }
+  await db.collection('meta').updateOne(
+    { _id: 'seed' },
+    { $set: { version: SEED_VERSION, upgradedAt: new Date().toISOString() } },
+    { upsert: true },
+  );
 }
 
 export async function seedDatabase(db, { force = false } = {}) {
   const meta = await db.collection('meta').findOne({ _id: 'seed' });
-  if (meta && !force) return { seeded: false, version: meta.version };
+  if (meta && !force) {
+    await ensureUpgradeSeed(db);
+    return { seeded: false, version: SEED_VERSION };
+  }
   if (force) {
     await Promise.all([
       ...Object.values(RAW_COLLECTIONS).map((collection) => db.collection(collection).deleteMany({})),
@@ -82,6 +147,11 @@ export async function seedDatabase(db, { force = false } = {}) {
       db.collection('audit_events').deleteMany({}),
       db.collection('downtime_events').deleteMany({}),
       db.collection('task_template_overrides').deleteMany({}),
+      db.collection('prototype_config').deleteMany({}),
+      db.collection('sample_status').deleteMany({}),
+      db.collection('task_overrides').deleteMany({}),
+      db.collection('change_events').deleteMany({}),
+      db.collection('change_impacts').deleteMany({}),
     ]);
   }
   const raw = await loadRawDataset();
@@ -95,12 +165,13 @@ export async function seedDatabase(db, { force = false } = {}) {
     }
   }
   await ensureIndexes(db);
-  const version = '2026-10-27.1';
+  const version = SEED_VERSION;
   await db.collection('meta').updateOne(
     { _id: 'seed' },
     { $set: { version, seededAt: new Date().toISOString(), source: 'LIMS排程原型-模拟数据包' } },
     { upsert: true },
   );
+  await ensureUpgradeSeed(db);
   await db.collection('workspace').updateOne(
     { _id: 'default' },
     {
@@ -188,6 +259,66 @@ export async function readAudit(db, limit = 40) {
     .sort({ at: -1 })
     .limit(limit)
     .toArray();
+}
+
+/** Persist one `ChangeEvent` and its `ChangeImpact` rows (append-only). */
+export async function saveChange(db, { change, impacts }) {
+  const doc = { _id: change.id, ...change };
+  await db.collection('change_events').insertOne(doc);
+  if (impacts && impacts.length > 0) {
+    await db.collection('change_impacts').insertMany(
+      impacts.map((impact, index) => ({
+        _id: `${change.id}-${index + 1}`,
+        changeId: change.id,
+        ...impact,
+      })),
+      { ordered: false },
+    );
+  }
+  return change;
+}
+
+export async function readChangeEvents(db, limit = 20) {
+  return db
+    .collection('change_events')
+    .find({}, { projection: { _id: 0 } })
+    .sort({ at: -1 })
+    .limit(limit)
+    .toArray();
+}
+
+export async function readChangeImpacts(db, changeId) {
+  return db
+    .collection('change_impacts')
+    .find({ changeId }, { projection: { _id: 0 } })
+    .toArray();
+}
+
+/** A sample arrival change is a first-class event, not a field edit in the CSV. */
+export async function updateSampleStatus(db, taskId, patch) {
+  const next = {
+    taskId,
+    ...patch,
+    updatedAt: new Date().toISOString(),
+    source: patch.source ?? 'workspace',
+  };
+  await db.collection('sample_status').updateOne(
+    { _id: taskId },
+    { $set: next, $setOnInsert: { required: null, available: null } },
+    { upsert: true },
+  );
+  return next;
+}
+
+/** Priority / due-date overrides; the raw CSV row stays untouched. */
+export async function updateTaskOverride(db, taskId, patch) {
+  const next = { taskId, ...patch, updatedAt: new Date().toISOString() };
+  await db.collection('task_overrides').updateOne(
+    { _id: taskId },
+    { $set: next },
+    { upsert: true },
+  );
+  return next;
 }
 
 let lastWorkspaceTouch = 0;

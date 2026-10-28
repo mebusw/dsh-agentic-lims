@@ -1,9 +1,9 @@
 {
   "name": "@local/agentic-lims",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
-  "description": "Agentic LIMS MVP for the DSH right sidebar: mock lab data, deterministic scheduling, agent tools",
+  "description": "Agentic LIMS for the DSH right sidebar: mock lab data, deterministic scheduling, orders/specs, sample readiness, change impact, agent tools",
   "exports": {
     ".": "./index.js",
     "./client": "./client.js",

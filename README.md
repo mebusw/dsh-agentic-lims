@@ -3,10 +3,11 @@
 一个跑在 **DeepSeek Harness（DSH）右侧边栏**里的 Agentic LIMS 可行性 demo：MongoDB 存模拟实验室数据，确定性引擎判定排程可行性，聊天里的 Agent 通过 `lims_*` 工具排程、解释约束、分析停机影响。
 
 - **形态**：DSH 插件（Host + Client 两半），不是独立网站。
-- **界面**：DSH 右侧边栏 tab，一级菜单（概览 / 项目 / 任务 / 排程 / 影响 / 资源 / 分析 / 自定义 / 审计）+ 角色视图（实验人员 / TM-TL / 运营），内置方案对比、甘特图、约束校验、负荷报表。
+- **界面**：DSH 右侧边栏 tab，一级菜单（概览 / 订单 / 项目 / 任务 / 排程 / 影响 / 资源 / 分析 / 自定义 / 审计）+ 角色视图（实验人员 / TM-TL / 运营），内置订单/规范、方案对比、甘特图、约束校验、负荷报表与变更影响。
 - **对话**：DSH 原生聊天框；Agent 通过 `lims_*` 工具读数据、跑引擎，并驱动右侧工作区切页。
 - **数据**：MongoDB（默认 `127.0.0.1:27018/agentic_lims`），模拟数据包 CSV 原样导入 `raw_*` 集合。
-- **规则**：硬约束由代码校验（设备能力、资质、校准、冲突、工作时段、前处理空间），模型只做理解与解释。
+- **规则**：硬约束由代码校验（设备能力、资质、校准、冲突、工作时段、前处理空间、样品到位、Task Type 预约规则），模型只做理解与解释。
+- **追问**：任意卡片（含聊天里的工具卡）可「引用」到聊天输入框；选中文字后引用只带选中内容，便于针对某个设备/日期/约束继续追问。
 
 ---
 
@@ -160,6 +161,10 @@ export AGENTIC_LIMS_MONGO_URI='mongodb://127.0.0.1:27019'
    cd agentic-lims
    node scripts/check-engine.mjs
    node scripts/check-routes.mjs
+   node scripts/check-upgrade.mjs
+   node scripts/check-client-cards.mjs
+   # 可选：headless Chrome 渲染测试（需要浏览器 + React UMD；缺依赖时自动跳过）
+   # CHROME_BIN=... AGENTIC_LIMS_UI_VENDOR=... node scripts/check-ui-render.mjs
    ```
 
 ---
@@ -199,6 +204,24 @@ export AGENTIC_LIMS_MONGO_URI='mongodb://127.0.0.1:27019'
 
    Agent 先 `lims_list_requests` / `lims_prepare_task_draft` 给出「request 片段 → 项目 → 模板 → 候选 TASK_ID → 依据 → 置信度 → 缺失字段」，你确认后才 `lims_create_task_draft` 写库。
 
+9. **订单与样品**
+   > 有哪些订单还没拆任务？TASK-2005 的样品什么时候到？
+
+   Agent 调 `lims_list_orders` / `lims_get_order`，右侧切「订单」页；订单 → 任务是原型推断，样品状态标「待确认」。
+
+10. **样品延迟 / 交期变更**
+    > TASK-2005 样品晚到 10/31，会影响哪些任务？
+
+    Agent 调 `lims_analyze_change`，写出 ChangeEvent，返回直接 + 间接影响；右侧「影响」页回放同一次分析。原始 CSV 不变。
+
+11. **规则解释**
+    > Prebook 和 Test Spec 的预约规则有什么不同？哪些规则还没确认？
+
+    Agent 调 `lims_list_policies`；规则全部标记为原型假设，未经业务方确认。
+
+12. **引用卡片追问**
+    悬停任意卡片点「引用」，或选中卡片里的一段文字后点「引用选中」，内容会进入聊天输入框；补一句「为什么？」即可让 Agent 针对这张卡片回答。聊天里的工具卡同样支持。
+
 ---
 
 ## 数据与重置
@@ -224,8 +247,8 @@ dsh-agentic-lims/
 │  ├─ index.js           Host 入口：Mongo 连接、路由、工具、系统提示
 │  ├─ client.js          右侧边栏 React UI（无构建，DSH Client 模块）
 │  ├─ cordis.patch.yml   bundle 安装行
-│  ├─ lib/               model / engine / routes / tools / seed / csv / util / drafts
-│  ├─ data/              模拟数据包 CSV/JSON
+│  ├─ lib/               model / engine / routes / tools / seed / csv / util / drafts / upgrade
+│  ├─ data/              模拟数据包 CSV/JSON + prototype_upgrade.json（升级层原型假设）
 │  ├─ scripts/           start-mongo.sh、数据重置、引擎/路由自测
 │  ├─ locale/            插件标题与描述（中/英）
 │  └─ icon.svg           插件图标
@@ -269,4 +292,5 @@ dsh-agentic-lims/
 - 停机目前按「设备 + 整天」建模；部分时段停机、跨天窗口未实现。
 - Test Plan 是 draft，不做批量确认。
 - `TASK-2007` 的资质数据本身冲突（无人同时具备 HPLC Level 2 + Sample Prep），原型有意暴露为「需方法审核」，而不是放宽硬约束。
+- 订单 ↔ 任务关联、样品到位时间、Task Type 分配和实验室优先级都是 `data/prototype_upgrade.json` 的原型假设（`confirmed: false`），不是客户已确认规则；变更影响只沿共享设备/人员展开，最多 3 个间接任务。
 - 仓库里的模拟数据包为演示用途，与任何真实客户数据无关。
