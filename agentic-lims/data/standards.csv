@@ -1,0 +1,10 @@
+standard_id,standard_code,standard_title,activity_no,activity_name,equipment_type,competency_id,prep_minutes,test_minutes,duration_label,site,note
+STD26AA0001,DIN VDE 0620-1,Plugs and socket-outlets for household use,1,TD1&2- Salt mist,Salt Mist Chamber,COMP-ENV-SALT,30,480,1d,AMPLITUDE,盐雾 24h 周期，设备可跨夜
+STD26AA0001,DIN VDE 0620-1,Plugs and socket-outlets for household use,2,"TD1&2- Drop out voltage at cold, elvation angle",Climate Chamber,COMP-ENV-CLIM,30,480,1d,AMPLITUDE,冷态电压降，需提前降温
+STD26AA0001,DIN VDE 0620-1,Plugs and socket-outlets for household use,3,"TD1&2- Pick up voltage at heat, hot, depression angle",Climate Chamber,COMP-ENV-CLIM,30,480,1d,AMPLITUDE,热态电压升
+STD26AA0001,DIN VDE 0620-1,Plugs and socket-outlets for household use,4,TD1&2- Noise during holding,Laserbay Bench,COMP-ELEC-LASER,15,120,02h,AMPLITUDE,保持状态噪声
+STD26AA0001,DIN VDE 0620-1,Plugs and socket-outlets for household use,5,TD1&2- Damp heat,Climate Chamber,COMP-ENV-CLIM,30,480,1d,AMPLITUDE,湿热循环
+STD26AA0001,DIN VDE 0620-1,Plugs and socket-outlets for household use,6,TD1&2- Laserbay test data,Laserbay Bench,COMP-ELEC-LASER,15,120,02h,AMPLITUDE,激光舱数据采集
+STD26AA0002,IEC 60884-1,Mechanical endurance of plugs and socket-outlets,1,Mechanical endurance 10000 cycles,Electrical Endurance Bench,COMP-ELEC-MECH,30,480,1d,AMPLITUDE,耐久台已到期维护，需先确认
+STD26AA0003,2131,Internal dielectric routine,1,Dielectric withstand,Dielectric Bench,COMP-ELEC-DIEL,15,240,04h,VOLTA,耐压台校准到期 10-28
+STD26AA0004,SUBCONTRACT,外送分包（EMC / 特殊环境）,1,EMC pre-compliance (外送),Subcontract Lab,COMP-REPORT,0,240,10d,EXTERNAL,外送实验室，按周期回样

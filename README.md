@@ -3,7 +3,7 @@
 一个跑在 **DeepSeek Harness（DSH）右侧边栏**里的 Agentic LIMS 可行性 demo：MongoDB 存模拟实验室数据，确定性引擎判定排程可行性，聊天里的 Agent 通过 `lims_*` 工具排程、解释约束、分析停机影响。
 
 - **形态**：DSH 插件（Host + Client 两半），不是独立网站。
-- **界面**：DSH 右侧边栏 tab，一级菜单（概览 / 订单 / 项目 / 任务 / 排程 / 影响 / 资源 / 分析 / 自定义 / 审计）+ 角色视图（实验人员 / TM-TL / 运营），内置订单/规范、方案对比、甘特图、约束校验、负荷报表与变更影响。
+- **界面**：DSH 右侧边栏 tab，一级菜单（概览 / 订单 / SPEC / 项目 / 任务 / 排程 / 周计划 / 甘特 / 影响 / 资源 / 分析 / 自定义 / 审计）+ 角色视图（实验人员 / TM-TL / 运营），内置 SPEC 生命周期看板、周计划、四层甘特、方案对比、约束校验、负荷报表与变更影响。
 - **对话**：DSH 原生聊天框；Agent 通过 `lims_*` 工具读数据、跑引擎，并驱动右侧工作区切页。
 - **数据**：MongoDB（默认 `127.0.0.1:27018/agentic_lims`），模拟数据包 CSV 原样导入 `raw_*` 集合。
 - **规则**：硬约束由代码校验（设备能力、资质、校准、冲突、工作时段、前处理空间、样品到位、Task Type 预约规则），模型只做理解与解释。
@@ -140,7 +140,7 @@ export AGENTIC_LIMS_MONGO_URI='mongodb://127.0.0.1:27019'
     dbName: agentic_lims
 ```
 
-> 演示时钟冻结在 `2026-10-27 08:00 (+08:00)`，和模拟数据包日期一致，保证每次演示结果可复现。
+> 演示时钟冻结在 `2026-10-30 08:00 (+08:00)`（周五），和模拟数据包日期一致，保证每次演示结果可复现。
 
 ---
 
@@ -171,70 +171,88 @@ export AGENTIC_LIMS_MONGO_URI='mongodb://127.0.0.1:27019'
 
 ## 30 秒演示脚本
 
+> 2026-10-29 起数据改为客户口径：**SPEC → 规格活动 → PLAN 批次**。下面的提问已经换成新 ID；
+> 界面文案还在按旧结构渲染，UI 改造在下一阶段。
+
 在 DSH 聊天框里依次说：
 
-1. **排程**
-   > 帮我安排 TASK-2005，优先保证交付日期，给我两个备选方案，说明风险和资源安排。
+1. **看 SPEC 池**
+   > 现在有哪些 SPEC？哪些排不了，为什么？
 
-   Agent 调 `lims_get_task` / `lims_generate_plans`，右侧切「排程」，出现候选方案、甘特图、HC-001…HC-006 约束校验和评分拆解。
+   Agent 调 `lims_list_specs`，逐条给出状态与不可排原因：HC-101 状态准入（Draft / In approval / In progress…）与 HC-102 计划窗口必填。
 
-2. **确认** —— 点候选卡片下方或右侧摘要顶部的**「确认此方案」**。候选方案只是写进 MongoDB，确认后才占资源、写审计。
+2. **看周计划**
+   > 未来四周怎么排？给我客户的排程表视图。
 
-3. **解释不可用**
-   > 为什么 TASK-2003 不能用 EQ-004？有哪些替代设备？
+   Agent 调 `lims_week_plan`，右侧切「周计划」：按周桶列出 Plan No. / LIMS No. / 设备 / 执行人 / 优先级 / 周内序号 / 工时 / 状态，并标出哪几列缺客户主数据（PVP No. / Sample No. / A& SMPL）。
 
-4. **停机影响**
-   > EQ-007 明天全天维护，帮我分析受影响的预约并给出重排方案。
+3. **排一条活动**
+   > 帮我排 SA26AA4851-01 这个盐雾活动，优先保交期，给我两个备选方案。
 
-5. **按新约束重排**
-   > 重新安排 TASK-2005，从 10/29 开始，周五下午不要排实验，优先用 EQ-005。
+   Agent 调 `lims_get_task` / `lims_generate_plans`，右侧切「排程」，出现候选方案、甘特图、HC-103…HC-112 约束校验和评分拆解。样品 10-28 才到，方案不会早于它。
 
-6. **项目 / 测试计划**
-   > 把 PRJ-1001 的 Tensile Strength Test 任务排成一个测试计划。
+4. **确认** —— 点候选卡片下方或右侧摘要顶部的**「确认此方案」**。候选方案只是写进 MongoDB，确认后才占资源、写审计。
 
-   Agent 调 `lims_generate_test_plan`，右侧切「项目」页，展示项目 → 模板分组 → 多个任务 → 合并时间轴。
+5. **解释阻塞**
+   > 为什么 SA26AA4854-01 排不了？
 
-7. **简单数字**
-   > 周三 EQ-007 有多少个预约？
+   Agent 调 `lims_get_task` / `lims_explain_resource`：机械耐久台 EB-01 状态 Maintenance Due（HC-105），给出替代资源或先维护的建议。
+
+6. **停机影响**
+   > EQPT25AA1101 明天维护，哪些活动受影响？
+
+   Agent 调 `lims_analyze_downtime`，右侧切「影响」页；对比重排前后的完成时间与延期项。
+
+7. **样品延迟**
+   > SPEC26AA4853 的样品晚到 11-05，会影响哪些活动？
+
+   Agent 调 `lims_analyze_change`（`sample_delay`），写 ChangeEvent，返回直接 + 间接影响；样品到位时间读自 `Instockdate`。
+
+8. **按新约束重排**
+   > 重新安排 SA26AA4851-01，周五下午不要排实验，优先用 EQPT25AA1103。
+
+9. **项目 / 测试计划**
+   > 把 PRJ-01-OPS 里 DIN VDE 0620-1 的活动排成一个测试计划。
+
+   Agent 调 `lims_generate_test_plan`（projectId + 标准 `STD26AA0001`），右侧「项目」页展示项目 → 标准 → 活动 → 合并时间轴。
+
+10. **简单数字**
+   > 周三 EQPT25AA1104 有多少个预约？
 
    走 `lims_equipment_bookings`，聊天里直接渲染预约卡片。
 
-8. **模糊需求先拆解**
-   > 下周把 PRJ-1001 的拉伸和耐久测试排掉，优先保交期，模板用 TPL-004。
+11. **订单与样品**
+    > 有哪些订单？ORD-26AA0043 的样品到齐了吗？
 
-   Agent 先 `lims_list_requests` / `lims_prepare_task_draft` 给出「request 片段 → 项目 → 模板 → 候选 TASK_ID → 依据 → 置信度 → 缺失字段」，你确认后才 `lims_create_task_draft` 写库。
+    Agent 调 `lims_list_orders` / `lims_get_order`；订单号取自排程表的 `Order` 列，与 SPEC 是精确关联（`linkConfidence: exact`），不再标"原型推断"。
 
-9. **订单与样品**
-   > 有哪些订单还没拆任务？TASK-2005 的样品什么时候到？
+12. **规则解释（客户最爱问的两个坑）**
+    > Pre-booked 和预约模式（Exclusive / Shared / Subcontracted）有什么区别？哪些规则还没确认？
 
-   Agent 调 `lims_list_orders` / `lims_get_order`，右侧切「订单」页；订单 → 任务是原型推断，样品状态标「待确认」。
+    Agent 调 `lims_list_policies`：`Pre-booked` 是 SPEC 状态，预约模式是另一套枚举；11 态状态机、能力校验 ON/OFF、优先级词表全部 `confirmed: false`。
 
-10. **样品延迟 / 交期变更**
-    > TASK-2005 样品晚到 10/31，会影响哪些任务？
-
-    Agent 调 `lims_analyze_change`，写出 ChangeEvent，返回直接 + 间接影响；右侧「影响」页回放同一次分析。原始 CSV 不变。
-
-11. **规则解释**
-    > Prebook 和 Test Spec 的预约规则有什么不同？哪些规则还没确认？
-
-    Agent 调 `lims_list_policies`；规则全部标记为原型假设，未经业务方确认。
-
-12. **引用卡片追问**
-    悬停任意卡片点「引用」，或选中卡片里的一段文字后点「引用选中」，内容会进入聊天输入框；补一句「为什么？」即可让 Agent 针对这张卡片回答。聊天里的工具卡同样支持。
-
----
-
+13. **引用卡片追问** —— 悬停任意卡片点「引用」，或选中一段文字后点「引用选中」，内容会进入聊天输入框；补一句「为什么？」即可针对这张卡片追问。
 ## 数据与重置
 
 ```bash
 # 干净的演示库（无历史方案、无停机登记）
 (cd agentic-lims && node scripts/reset-demo-data.mjs)
 
-# 完整演示数据（预置 EQ-007 停机、PRJ-1001 测试计划、TASK-2005 候选方案）
+# 完整演示数据（预置 EQPT25AA1101 停机、测试计划、SA26AA4851-01 候选方案）
 (cd agentic-lims && node scripts/reseed-demo.mjs)
+
+# 数据结构自测（SPEC 准入 / 样品 / 工时 / 规则 / 路由）
+(cd agentic-lims && node scripts/check-customer-model.mjs)
+
+# 重启宿主前必跑：全量语法检查
+(cd agentic-lims && node scripts/check-syntax.mjs)
 ```
 
 两个脚本都认 `AGENTIC_LIMS_MONGO_URI` / `AGENTIC_LIMS_DB`，可以指向别的实例。
+
+**演示中的一键复位**：右侧边栏「自定义 → 测试数据」有 6 个按钮（全部重置 / 清空候选方案 / 清空停机 / 清空变更 / 复位工作区 / 重置当前活动），两段确认，等价接口是 `POST /api/lims/reset {"scope":"all" | "plans" | "downtime" | "changes" | "workspace" | "task" | "spec", "targetId": "..."}`。
+
+客户 Demo 的提示词与现场数字见 **[demo/customer-demo-2026-10-30.md](demo/customer-demo-2026-10-30.md)**。
 
 ---
 
@@ -248,14 +266,16 @@ dsh-agentic-lims/
 │  ├─ client.js          右侧边栏 React UI（无构建，DSH Client 模块）
 │  ├─ cordis.patch.yml   bundle 安装行
 │  ├─ lib/               model / engine / routes / tools / seed / csv / util / drafts / upgrade
-│  ├─ data/              模拟数据包 CSV/JSON + prototype_upgrade.json（升级层原型假设）
+│  ├─ data/              客户口径数据包 CSV/JSON + lab_rules.json（规则层，全部待确认）
 │  ├─ scripts/           start-mongo.sh、数据重置、引擎/路由自测
 │  ├─ locale/            插件标题与描述（中/英）
 │  └─ icon.svg           插件图标
-└─ demo/                 演示脚本与讲稿
+├─ docs/                 客户数据复盘、数据模型、回填示例、界面截图
+└─ demo/                 演示脚本与讲稿（旧 task 口径，待 UI 阶段重写）
 ```
 
 插件自身的详细说明（角色视图、Test Plan 生成顺序、卡片与折叠、工具清单、引擎假设、已知边界）见 **[agentic-lims/README.md](agentic-lims/README.md)**。
+数据结构（集合、字段、状态机、投影规则、约束清单）见 **[docs/data-model.md](docs/data-model.md)**。
 
 ---
 
@@ -288,9 +308,12 @@ dsh-agentic-lims/
 
 - 这是**可验证可行性的 demo**：单机 MongoDB、冻结演示时钟、贪心排程，不是生产优化器。
 - 没有真实权限、审批流、生产写入、SSO 或回滚；审计只保留原型事件，确认永远是「模拟确认」。
-- 排程按「每日小时」建模，甘特图是日粒度资源条，没有分钟级设备时间轴。
+- 排程按「每日小时」建模，甘特图是日粒度资源条，没有分钟级设备时间轴；周计划已按周桶输出（ISO 周号），但**还不能导出客户的 xlsx 回填模板**。
 - 停机目前按「设备 + 整天」建模；部分时段停机、跨天窗口未实现。
 - Test Plan 是 draft，不做批量确认。
-- `TASK-2007` 的资质数据本身冲突（无人同时具备 HPLC Level 2 + Sample Prep），原型有意暴露为「需方法审核」，而不是放宽硬约束。
-- 订单 ↔ 任务关联、样品到位时间、Task Type 分配和实验室优先级都是 `data/prototype_upgrade.json` 的原型假设（`confirmed: false`），不是客户已确认规则；变更影响只沿共享设备/人员展开，最多 3 个间接任务。
-- 仓库里的模拟数据包为演示用途，与任何真实客户数据无关。
+- SPEC 内的活动顺序（活动 2 必须在活动 1 之后）还没有做成硬约束，目前靠批次避让近似。
+- 规则层（`data/lab_rules.json`、`data/constraints.csv`）是从客户导出**反推**的：11 态状态机、预约模式、优先级词表、周产能阈值 1400、站点含义都标了 `confirmed: false`，不是客户已确认的业务规则。
+- 能力目录（Competency）是原型造的 8 条，只保证结构与客户一致（外部 ID + Type/Domain/Sub Domain/Sub Domain2），**ID 值不是客户的**。
+- UI 已加「SPEC 看板」与「周计划」两页；项目页仍是「项目 → 标准 → 活动」，客户口径的四层折叠（Project → PLAN → SPEC → activity）与双站点图例还没做。
+- `agentic-lims/scripts/` 里的 `check-routes.mjs`、`check-upgrade.mjs` 等 15 个旧自测脚本仍引用上一版 `TASK-200x` / `EQ-00x` ID，需在 UI 阶段重写；当前可用的自测是 `check-customer-model.mjs` 与 `check-engine.mjs`。
+- 仓库里的演示数据是按客户**结构**造的中性样例（项目名、标准号、活动名沿用客户导出里的值，人员与设备为脱敏后的演示值），不含客户真实业务数据。

@@ -7,7 +7,7 @@ const db = client.db('agentic_lims_test');
 await db.dropDatabase();
 await ensureIndexes(db);
 console.log('seed', await seedDatabase(db));
-const routes = buildRoutes({ db, config: { demoNow: '2026-10-27T08:00:00+08:00' } });
+const routes = buildRoutes({ db, config: { demoNow: '2026-10-30T08:00:00+08:00' } });
 const call = async (path, body) => {
   const [p, q] = path.split('?');
   const route = routes.find(r => r.path === p);

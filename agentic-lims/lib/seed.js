@@ -10,32 +10,36 @@ import { defaultUpgradeConfig, normalizeUpgradeConfig } from './upgrade.js';
 import { formatDateTime } from './util.js';
 
 export const RAW_COLLECTIONS = {
-  resources: 'raw_resources',
   persons: 'raw_persons',
+  competencies: 'raw_competencies',
   equipment: 'raw_equipment',
-  templates: 'raw_templates',
-  requests: 'raw_requests',
-  tasks: 'raw_tasks',
-  activities: 'raw_activities',
+  standards: 'raw_standards',
+  specs: 'raw_specs',
+  specActivities: 'raw_spec_activities',
+  plans: 'raw_plans',
+  activities: 'raw_person_activities',
   assignments: 'raw_assignments',
   allocations: 'raw_allocations',
   history: 'raw_history',
-  candidates: 'raw_candidates',
   constraints: 'raw_constraints',
 };
 
+/**
+ * One row per stored document. A standard owns several activity steps, so its
+ * rows need a composite key instead of the plain `standard_id`.
+ */
 const ID_FIELDS = {
-  resources: 'resource_id',
   persons: 'person_id',
-  equipment: 'equipment_id',
-  templates: 'template_id',
-  requests: 'request_id',
-  tasks: 'task_id',
+  competencies: 'competency_id',
+  equipment: 'resource_id',
+  standards: (row) => `${row.standard_id}#${row.activity_no}`,
+  specs: 'spec_id',
+  specActivities: 'activity_id',
+  plans: 'plan_no',
   activities: 'activity_id',
   assignments: 'assignment_id',
   allocations: 'allocation_id',
   history: 'history_id',
-  candidates: 'plan_id',
   constraints: 'constraint_id',
 };
 
@@ -54,9 +58,9 @@ export async function readRawDataset(db) {
   return Object.fromEntries(entries);
 }
 
-/** Stored upgrade configuration, or the bundled prototype defaults. */
+/** Stored rule document (`lab_rules`), or the bundled defaults. */
 export async function readUpgradeConfig(db) {
-  const doc = await db.collection('prototype_config').findOne({ _id: 'upgrade-v1' }, { projection: { _id: 0 } });
+  const doc = await db.collection('lab_rules').findOne({ _id: 'lab-rules-v1' }, { projection: { _id: 0 } });
   return normalizeUpgradeConfig(doc ?? null);
 }
 
@@ -89,6 +93,9 @@ export async function ensureIndexes(db) {
   await Promise.all([
     db.collection('raw_allocations').createIndex({ task_id: 1, allocation_date: 1 }),
     db.collection('raw_allocations').createIndex({ resource_id: 1, allocation_date: 1 }),
+    db.collection('raw_spec_activities').createIndex({ spec_id: 1, activity_no: 1 }),
+    db.collection('raw_specs').createIndex({ status: 1, est_end_date: 1 }),
+    db.collection('raw_plans').createIndex({ plan_no: 1 }, { unique: true }),
     db.collection('plans').createIndex({ planId: 1 }, { unique: true }),
     db.collection('plans').createIndex({ taskId: 1, generatedAt: -1 }),
     db.collection('test_plans').createIndex({ projectId: 1, createdAt: -1 }),
@@ -100,7 +107,7 @@ export async function ensureIndexes(db) {
   ]);
 }
 
-const SEED_VERSION = '2026-10-28.1';
+const SEED_VERSION = '2026-10-29.1';
 
 /**
  * Seed the chapter-14 upgrade collections idempotently. Runs for existing
@@ -108,9 +115,9 @@ const SEED_VERSION = '2026-10-28.1';
  */
 async function ensureUpgradeSeed(db) {
   const defaults = defaultUpgradeConfig();
-  await db.collection('prototype_config').updateOne(
-    { _id: 'upgrade-v1' },
-    { $setOnInsert: { ...defaults, seededAt: new Date().toISOString(), source: 'prototype-assumption' } },
+  await db.collection('lab_rules').updateOne(
+    { _id: 'lab-rules-v1' },
+    { $setOnInsert: { ...defaults, seededAt: new Date().toISOString(), source: 'customer-export-inference' } },
     { upsert: true },
   );
   const samples = defaults.samples ?? {};
@@ -140,14 +147,26 @@ export async function seedDatabase(db, { force = false } = {}) {
     return { seeded: false, version: SEED_VERSION };
   }
   if (force) {
+    // Legacy collections from the earlier task-centric dataset; kept here so a
+    // force reseed does not leave stale `raw_*` documents behind.
+    const LEGACY_COLLECTIONS = [
+      'raw_resources',
+      'raw_templates',
+      'raw_requests',
+      'raw_tasks',
+      'raw_activities',
+      'raw_candidates',
+    ];
     await Promise.all([
       ...Object.values(RAW_COLLECTIONS).map((collection) => db.collection(collection).deleteMany({})),
+      ...LEGACY_COLLECTIONS.map((collection) => db.collection(collection).deleteMany({})),
       db.collection('plans').deleteMany({}),
       db.collection('test_plans').deleteMany({}),
       db.collection('audit_events').deleteMany({}),
       db.collection('downtime_events').deleteMany({}),
       db.collection('task_template_overrides').deleteMany({}),
       db.collection('prototype_config').deleteMany({}),
+      db.collection('lab_rules').deleteMany({}),
       db.collection('sample_status').deleteMany({}),
       db.collection('task_overrides').deleteMany({}),
       db.collection('change_events').deleteMany({}),
@@ -157,7 +176,10 @@ export async function seedDatabase(db, { force = false } = {}) {
   const raw = await loadRawDataset();
   for (const [key, collection] of Object.entries(RAW_COLLECTIONS)) {
     const idField = ID_FIELDS[key];
-    const docs = raw[key].map((row) => ({ _id: row[idField] || undefined, ...row }));
+    const docs = raw[key].map((row) => {
+      const id = typeof idField === 'function' ? idField(row) : row[idField];
+      return { _id: id || undefined, ...row };
+    });
     if (docs.length > 0) {
       await db.collection(collection).insertMany(docs, { ordered: false }).catch((error) => {
         if (error?.code !== 11000) throw error;
@@ -192,13 +214,13 @@ export async function seedDatabase(db, { force = false } = {}) {
     type: 'seed',
     actor: 'system',
     summary: '模拟数据包已导入 MongoDB',
-    detail: `载入 ${raw.tasks.length} 个任务、${raw.equipment.length} 个设备/空间、${raw.persons.length} 名人员、${raw.allocations.length} 条负荷记录。`,
+    detail: `载入 ${raw.specs.length} 个 SPEC、${raw.specActivities.length} 条规格活动、${raw.plans.length} 个 PLAN 批次、${raw.equipment.length} 个设备/工位/分包资源、${raw.persons.length} 名人员、${raw.allocations.length} 条负荷记录。`,
   });
   await addAudit(db, {
     type: 'clock',
     actor: 'system',
     summary: '演示时钟已冻结',
-    detail: '原型固定使用 2026-10-27 08:00 作为当前时间，保证模拟数据与排程结果可复现。',
+    detail: '原型固定使用 2026-10-30 08:00 作为当前时间，保证模拟数据与排程结果可复现。',
   });
   return { seeded: true, version };
 }

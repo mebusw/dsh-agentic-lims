@@ -1,31 +1,24 @@
 /**
- * Upgrade layer for 《README-升级版》第 14 章.
+ * Rule layer for the customer-shaped dataset.
  *
- * Chapter 14 separates `Test Order` from `Test Specification` and `Test Task`,
- * makes sample readiness a first-class scheduling input, and treats the
- * `Task Type` reservation rule (Prebook / Test Spec) as laboratory policy
- * rather than a universal "one task per slot" rule.
+ * Chapter 14 of the old README assumed `task → order` and a `Task Type`
+ * reservation rule. The customer's export shows something different:
  *
- * The bundled project CSV has no foreign key from a task to an order, and no
- * sample-in-stock column at all. Instead of inventing those facts silently, this
- * module:
+ *   - the schedulable object is a SPEC, gated by a 10-state status machine;
+ *   - `Workload` is 0 everywhere, so effort must come from the standard activity;
+ *   - `Pre-booked` is a STATUS, not a reservation rule;
+ *   - `Instockdate` is a real column, so sample readiness is a fact, not an
+ *     assumption (assumptions are only a fallback and stay `confirmed: false`).
  *
- *   1. keeps every assumption in `data/prototype_upgrade.json` with
- *      `source: "prototype-assumption"` and `confirmed: false`;
- *   2. derives order → spec → task links only when the template matches and the
- *      due dates are close, and labels the result as a prototype inference that
- *      a TL must confirm;
- *   3. leaves unlinked orders/tasks visible instead of fabricating a mapping.
+ * Everything below is configuration-driven (`data/lab_rules.json`) and marked
+ * `confirmed: false` until the business owner signs it off.
  */
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { diffHours, formatDateTime, parseInstant, priorityRank, round1 } from './util.js';
+import { diffHours, formatDate, formatDateTime, parseInstant, priorityRank, round1 } from './util.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-
-/** Prototype inference is only offered inside this due-date distance. */
-const ORDER_LINK_MAX_DAYS = 21;
 
 const SAMPLE_LABELS = {
   'In stock': '样品已到位',
@@ -43,10 +36,10 @@ const SAMPLE_TONES = {
 
 let cachedDefaults = null;
 
-/** Bundled prototype defaults; the DB copy always wins over this file. */
+/** Bundled defaults; the DB copy (`lab_rules`) always wins over this file. */
 export function defaultUpgradeConfig() {
   if (!cachedDefaults) {
-    const text = readFileSync(join(HERE, '..', 'data', 'prototype_upgrade.json'), 'utf8');
+    const text = readFileSync(join(HERE, '..', 'data', 'lab_rules.json'), 'utf8');
     cachedDefaults = JSON.parse(text);
   }
   return cachedDefaults;
@@ -66,59 +59,73 @@ function deepMerge(base, patch) {
 }
 
 /**
- * Merge a stored configuration document over the bundled defaults and fill the
- * fields the rest of the host relies on.
- * @param {object|null} doc - `prototype_config` document, or null for defaults.
+ * Merge a stored configuration document over the bundled defaults.
+ * @param {object|null} doc - `lab_rules` document, or null for defaults.
  */
 export function normalizeUpgradeConfig(doc) {
   const merged = deepMerge(defaultUpgradeConfig(), doc ?? {});
-  const taskTypeRules = { ...(merged.taskTypeRules ?? {}) };
+  const states = Array.isArray(merged.statusMachine?.states) ? merged.statusMachine.states : [];
   return {
-    id: merged._id ?? 'upgrade-v1',
-    version: merged.version ?? '2026.10.28',
-    ruleVersion: merged.ruleVersion ?? 'LIMS-RULES-2026.10.28',
-    policyVersion: merged.policyVersion ?? 'LAB-POLICY-2026.10.28',
+    id: merged._id ?? 'lab-rules-v1',
+    version: merged.version ?? '2026.10.29',
+    ruleVersion: merged.ruleVersion ?? 'LIMS-RULES-2026.10.29',
+    policyVersion: merged.policyVersion ?? 'LAB-POLICY-2026.10.29',
     confirmed: merged.confirmed === true,
     disclaimer: merged.disclaimer ?? '',
     labPolicy: merged.labPolicy ?? {},
+    statusMachine: {
+      ...(merged.statusMachine ?? {}),
+      states,
+      schedulableStatuses:
+        merged.statusMachine?.schedulableStatuses ??
+        states.filter((state) => state.schedulable).map((state) => state.code),
+    },
+    reservationModes: merged.reservationModes ?? {},
+    defaultReservationMode: merged.defaultReservationMode ?? 'Shared',
+    reservationOverrides: merged.reservationOverrides ?? {},
+    competencyPolicy: merged.competencyPolicy ?? {},
     samplePolicy: merged.samplePolicy ?? {},
-    taskTypeRules,
-    taskTypes: merged.taskTypes ?? {},
+    calendarPolicy: merged.calendarPolicy ?? {},
+    priorityScale: merged.priorityScale ?? {},
+    durationPolicy: merged.durationPolicy ?? {},
+    weekSequencing: merged.weekSequencing ?? {},
     samples: merged.samples ?? {},
   };
 }
 
 /**
- * Resolve one task's sample readiness. `readyAt` is the earliest instant the
- * engine may start actual testing: the actual in-stock time when known, then the
- * expected one. Unknown statuses are surfaced as warnings, never as "ready".
- * @param {string} taskId
- * @param {object} config - normalized upgrade config
+ * Resolve one activity's sample readiness.
+ *
+ * Priority: the SPEC's `Instockdate` (a real column) → a stored override
+ * (`sample_status`, written by a sample-delay ChangeEvent) → a bundled
+ * assumption. Unknown is always reported as unknown, never as "ready".
  */
-export function resolveSample(taskId, config) {
-  const raw = config.samples?.[taskId] ?? null;
-  if (!raw) {
-    return {
-      status: 'Unknown',
-      statusLabel: SAMPLE_LABELS.Unknown,
-      tone: SAMPLE_TONES.Unknown,
-      required: null,
-      available: null,
-      readyAt: null,
-      expectedInStockAt: null,
-      actualInStockAt: null,
-      inStock: false,
-      partial: false,
-      blocked: false,
-      confirmed: false,
-      source: 'missing',
-      note: '模拟数据包没有样品到位信息，需要 TL 补充后才可判断。',
-    };
-  }
-  const actual = raw.actualInStockAt ? parseInstant(raw.actualInStockAt) : null;
-  const expected = raw.expectedInStockAt ? parseInstant(raw.expectedInStockAt) : null;
+export function resolveSample(task, config) {
+  const base =
+    task.sample ??
+    (task.spec
+      ? {
+          status: task.spec.instockDate ? 'In stock' : 'Unknown',
+          readyAt: task.spec.instockDate?.toISOString() ?? null,
+          source: 'spec-export',
+          confirmed: false,
+          note: '',
+        }
+      : {
+          status: 'Unknown',
+          readyAt: null,
+          source: 'missing',
+          confirmed: false,
+          note: '没有关联 spec，无法判断样品',
+        });
+
+  const override = config.samples?.[task.id] ?? config.samples?.[task.specId] ?? null;
+  const mergedRaw = override ? { ...base, ...override } : base;
+
+  const actual = mergedRaw.actualInStockAt ? parseInstant(mergedRaw.actualInStockAt) : null;
+  const expected = mergedRaw.expectedInStockAt ? parseInstant(mergedRaw.expectedInStockAt) : mergedRaw.readyAt ? parseInstant(mergedRaw.readyAt) : null;
   const readyAt = actual ?? expected;
-  const status = raw.status ?? 'Unknown';
+  const status = mergedRaw.status ?? 'Unknown';
   const inStock = status === 'In stock';
   const partial = status === 'Partially in stock';
   const blocked = status === 'Not in stock' && !readyAt;
@@ -126,75 +133,79 @@ export function resolveSample(taskId, config) {
     status,
     statusLabel: SAMPLE_LABELS[status] ?? status,
     tone: SAMPLE_TONES[status] ?? 'idle',
-    required: raw.required ?? null,
-    available: raw.available ?? null,
+    required: mergedRaw.required ?? null,
+    available: mergedRaw.available ?? null,
     readyAt: readyAt?.toISOString() ?? null,
     expectedInStockAt: expected?.toISOString() ?? null,
     actualInStockAt: actual?.toISOString() ?? null,
     inStock,
     partial,
     blocked,
-    confirmed: raw.confirmed === true,
-    source: raw.source ?? 'prototype-assumption',
-    note: raw.note ?? '',
+    needsConfirmation: status === 'Unknown',
+    confirmed: mergedRaw.confirmed === true,
+    source: override ? override.source ?? 'sample_status' : mergedRaw.source ?? 'spec-export',
+    note: override?.note ?? mergedRaw.note ?? '',
   };
 }
 
-/**
- * Resolve the task type and its reservation rule. An explicit assignment wins;
- * otherwise non-standard (needs-review) tasks are typed conservatively and
- * everything else is treated as a Test Spec.
- */
-export function resolveTaskType(task, config) {
-  const explicit = config.taskTypes?.[task.id];
-  const reviewLike = /review/i.test(String(task.status ?? '')) || task.status === 'Needs Method Review';
-  const type = explicit?.type || (reviewLike ? 'Non-standard validation' : 'Test Spec');
-  const rule = config.taskTypeRules?.[type] ?? {
-    label: type,
-    exclusive: false,
-    shareable: true,
-    description: '未配置的 Task Type，按可共享但需人工确认处理。',
-  };
+/** Reservation rule for a task. `Pre-booked` is a status and must not be confused with `Prebook`. */
+export function resolveReservationMode(task, config) {
+  const mode = task.reservationMode ?? config.defaultReservationMode ?? 'Shared';
+  const rule =
+    config.reservationModes?.[mode] ?? {
+      label: mode,
+      exclusive: false,
+      shareable: true,
+      description: '未配置的预约模式，按可共享但需人工确认处理。',
+    };
+  const override = config.reservationOverrides?.[task.id] ?? null;
   return {
-    type,
-    label: rule.label ?? type,
-    reason: explicit?.reason ?? (reviewLike ? '任务状态为需方法审核' : '未显式配置 Task Type，按测试规范处理'),
-    source: explicit ? 'config' : 'derived',
-    confirmed: explicit?.confirmed === true,
+    mode,
+    label: rule.label ?? mode,
+    reason: override?.reason ?? rule.description ?? '',
+    source: override ? 'config' : 'spec-status',
+    confirmed: override?.confirmed === true,
     rule,
   };
 }
 
-/** Attach upgrade fields (task type, sample readiness, orders) to the domain. */
+/** Backwards-compatible alias: the old engine/tools called this "task type". */
+export function resolveTaskType(task, config) {
+  const resolved = resolveReservationMode(task, config);
+  return {
+    type: resolved.mode,
+    label: resolved.label,
+    reason: resolved.reason,
+    source: resolved.source,
+    confirmed: resolved.confirmed,
+    rule: resolved.rule,
+  };
+}
+
+/** Attach rule-layer fields (sample, reservation mode, orders) to the domain. */
 export function applyUpgrade(domain, config) {
   for (const task of domain.tasks) {
-    const taskType = resolveTaskType(task, config);
-    task.taskType = taskType.type;
-    task.taskTypeLabel = taskType.label;
-    task.taskTypeReason = taskType.reason;
-    task.taskTypeSource = taskType.source;
-    task.taskTypeConfirmed = taskType.confirmed;
-    task.taskTypeRule = taskType.rule;
-    task.sample = resolveSample(task.id, config);
+    const reservation = resolveReservationMode(task, config);
+    task.taskType = reservation.mode;
+    task.taskTypeLabel = reservation.label;
+    task.taskTypeReason = reservation.reason;
+    task.taskTypeSource = reservation.source;
+    task.taskTypeConfirmed = reservation.confirmed;
+    task.taskTypeRule = reservation.rule;
+    task.reservationMode = reservation.mode;
+    task.sample = resolveSample(task, config);
     task.sampleReadyAt = task.sample.readyAt;
-    task.orderIds = [];
-    task.specIds = [];
+    const spec = domain.specById?.get(task.specId) ?? null;
+    task.orderIds = spec?.orderNo ? [spec.orderNo] : [];
+    task.specIds = spec ? [spec.id] : [];
   }
   domain.config = config;
   domain.ruleVersion = config.ruleVersion;
   domain.policyVersion = config.policyVersion;
   domain.orders = deriveOrders(domain, config);
   domain.orderById = new Map(domain.orders.map((order) => [order.id, order]));
-  for (const order of domain.orders) {
-    for (const spec of order.specs) {
-      if (!spec.linkedTaskId) continue;
-      const task = domain.taskById.get(spec.linkedTaskId);
-      if (!task) continue;
-      task.orderIds.push(order.id);
-      task.specIds.push(spec.id);
-    }
-  }
   domain.unlinkedTasks = domain.tasks.filter((task) => task.orderIds.length === 0);
+  domain.unlinkedSpecs = domain.specs.filter((spec) => !spec.orderNo);
   return domain;
 }
 
@@ -204,105 +215,106 @@ export function sampleLeadHours(sample, now) {
   return round1(diffHours(sample.readyAt, now));
 }
 
-function daysBetweenDates(first, second) {
-  return Math.abs(diffHours(second, first) / 24);
+function specActivityPayload(domain, spec) {
+  const activities = spec.activityIds
+    .map((id) => domain.specActivities.find((activity) => activity.id === id))
+    .filter(Boolean);
+  const tasks = activities.map((activity) => domain.taskById.get(activity.id)).filter(Boolean);
+  return { activities, tasks };
 }
 
 /**
- * Build `TestOrder` / `TestSpecification` projections.
+ * Build `Order` / `Spec` projections.
  *
- * A request is one `TestSpecification` (the mock data keeps a 1:1 order/spec
- * ratio). A spec is linked to at most one existing task by template and due-date
- * proximity, because the bundled project CSV has no order foreign key. The link
- * is marked `confidence: 'prototype-inference'` so neither the UI nor the agent
- * can present it as a confirmed relationship.
+ * Unlike the earlier prototype, the spec → order link is NOT guessed: the
+ * planning grid carries an `Order` column per line and we keep that value. A
+ * spec without an order number stays unlinked instead of being attached by
+ * title similarity (customer titles repeat in 48% of rows).
  */
 export function deriveOrders(domain, config) {
-  const claimedTasks = new Set();
-  const specs = [];
-
-  const requests = [...domain.requests].sort(
-    (first, second) =>
-      priorityRank(first.priority) - priorityRank(second.priority) ||
-      (first.dueAt?.getTime() ?? 0) - (second.dueAt?.getTime() ?? 0),
-  );
-
-  for (const request of requests) {
-    const template = domain.templateById.get(request.templateId) ?? null;
-    const candidates = domain.tasks
-      .filter((task) => task.templateId === request.templateId && !claimedTasks.has(task.id))
-      .sort(
-        (first, second) =>
-          daysBetweenDates(first.dueDate, request.dueAt) - daysBetweenDates(second.dueDate, request.dueAt),
-      );
-    const best = candidates[0] ?? null;
-    const distance = best ? daysBetweenDates(best.dueDate, request.dueAt) : null;
-    const linked = best && distance !== null && distance <= ORDER_LINK_MAX_DAYS ? best : null;
-    if (linked) claimedTasks.add(linked.id);
-
-    const sample = linked ? resolveSample(linked.id, config) : resolveSample(request.id, config);
-    specs.push({
-      id: request.id,
-      orderId: request.orderId,
-      templateId: request.templateId,
-      templateName: template?.name ?? request.name,
-      methodCode: template?.methodCode ?? null,
-      testStandard: template?.name ?? null,
-      name: request.name,
-      priority: request.priority,
-      requestedAt: request.requestedAt?.toISOString() ?? null,
-      dueAt: request.dueAt?.toISOString() ?? null,
-      dueLabel: request.dueAt ? formatDateTime(request.dueAt) : null,
-      sampleCount: request.sampleCount,
-      sample,
-      summary: request.summary,
-      ruleStatus: request.ruleStatus,
-      linkedTaskId: linked?.id ?? null,
-      linkedTaskName: linked?.name ?? null,
-      linkConfidence: linked ? (distance !== null && distance <= 7 ? 'medium' : 'low') : 'none',
-      linkBasis: linked
-        ? `同模板 ${request.templateId} + 交期相差 ${round1(distance)} 天（原型推断，需 TL 确认）`
-        : '未找到同模板且交期接近的任务，需要先拆解任务',
-    });
-  }
-
   const byOrder = new Map();
-  for (const spec of specs) {
-    if (!byOrder.has(spec.orderId)) {
-      byOrder.set(spec.orderId, {
-        id: spec.orderId,
-        source: 'LIS Test Order（模拟）',
+  for (const spec of domain.specs) {
+    if (!spec.orderNo) continue;
+    if (!byOrder.has(spec.orderNo)) {
+      byOrder.set(spec.orderNo, {
+        id: spec.orderNo,
+        source: '排程回填表 Order 列（客户 LIMS 导出里没有该字段）',
         specs: [],
-        priority: spec.priority,
-        dueAt: spec.dueAt,
+        priority: spec.priority.value,
+        dueAt: spec.windowEnd?.toISOString() ?? null,
         sampleCount: 0,
       });
     }
-    const order = byOrder.get(spec.orderId);
-    order.specs.push(spec);
+    const order = byOrder.get(spec.orderNo);
+    const { activities, tasks } = specActivityPayload(domain, spec);
+    const template = spec.standards.length ? domain.templates.find((item) => item.methodCode === spec.standards[0]) ?? null : null;
+    const sample = domain.sampleForSpec(spec);
+    order.specs.push({
+      id: spec.id,
+      orderId: spec.orderNo,
+      templateId: template?.id ?? null,
+      templateName: template?.name ?? spec.standards.join(' / ') ?? null,
+      methodCode: template?.methodCode ?? spec.standards[0] ?? null,
+      name: spec.title ?? spec.id,
+      title: spec.title,
+      status: spec.status,
+      statusLabel: spec.statusLabel,
+      lifecycle: spec.phase,
+      priority: spec.priority.value,
+      priorityCode: spec.priority.code,
+      requestedAt: spec.createdAt?.toISOString() ?? null,
+      dueAt: spec.windowEnd?.toISOString() ?? null,
+      dueLabel: spec.windowEnd ? formatDateTime(spec.windowEnd) : null,
+      windowLabel:
+        spec.windowStart && spec.windowEnd ? `${formatDate(spec.windowStart)}–${formatDate(spec.windowEnd)}` : null,
+      sampleCount: spec.sampleCount,
+      sample,
+      summary: [spec.originOfNeed, spec.standards.join(' / ')].filter(Boolean).join(' · '),
+      ruleStatus: spec.schedulable ? 'Approved' : spec.status,
+      standards: spec.standards,
+      competencyCheck: spec.competencyCheck,
+      activityIds: activities.map((activity) => activity.id),
+      linkedTaskIds: tasks.map((task) => task.id),
+      linkedTaskId: tasks[0]?.id ?? null,
+      linkedTaskName: tasks[0]?.name ?? null,
+      linkConfidence: 'exact',
+      linkBasis: `Order 列 ${spec.orderNo} 直接关联 SPEC ${spec.id}（不靠名称推断）`,
+      site: spec.site,
+    });
     order.sampleCount += spec.sampleCount ?? 0;
-    if (!order.dueAt || (spec.dueAt && spec.dueAt < order.dueAt)) order.dueAt = spec.dueAt;
-    if (priorityRank(spec.priority) < priorityRank(order.priority)) order.priority = spec.priority;
+    if (!order.dueAt || (spec.windowEnd && spec.windowEnd.toISOString() < order.dueAt)) {
+      order.dueAt = spec.windowEnd?.toISOString() ?? order.dueAt;
+    }
+    if (priorityRank(spec.priority.value) < priorityRank(order.priority)) order.priority = spec.priority.value;
   }
 
   const orders = [...byOrder.values()]
     .map((order) => {
-      const linkedSpecs = order.specs.filter((spec) => spec.linkedTaskId);
-      const reviewSpecs = order.specs.filter((spec) => spec.ruleStatus === 'NeedsReview');
-      const sampleState = linkedSpecs[0]?.sample ?? order.specs[0]?.sample ?? null;
-      const status = reviewSpecs.length > 0 ? 'needs_review' : linkedSpecs.length > 0 ? 'ready_to_plan' : 'needs_task';
+      const specs = order.specs;
+      const linked = specs.filter((spec) => spec.linkedTaskIds.length > 0);
+      const pending = specs.filter((spec) => !spec.linkedTaskIds.length);
+      const sample = linked[0]?.sample ?? specs[0]?.sample ?? null;
+      const status =
+        pending.length > 0 && linked.length === 0
+          ? 'needs_task'
+          : specs.some((spec) => spec.status === 'In approval' || spec.status === 'Draft')
+            ? 'needs_review'
+            : 'ready_to_plan';
       return {
         ...order,
         dueLabel: order.dueAt ? formatDateTime(order.dueAt) : null,
-        linkedTaskIds: linkedSpecs.map((spec) => spec.linkedTaskId),
-        sample: sampleState,
+        linkedTaskIds: linked.flatMap((spec) => spec.linkedTaskIds),
+        sample,
         status,
-        statusLabel:
-          status === 'needs_review' ? '需方法审核' : status === 'needs_task' ? '待拆解任务' : '可排程',
-        linkNote: '订单 → 任务的关联为原型推断，需与 LIMS 集成后由 TL 确认。',
+        statusLabel: status === 'needs_review' ? '含未审批 SPEC' : status === 'needs_task' ? '无可排活动' : '可排程',
+        linkNote: 'Order 与 SPEC 的关联取自排程回填表的 Order 列；LIMS 导出本身没有订单号，缺失时留空而不推断。',
       };
     })
-    .sort((first, second) => priorityRank(first.priority) - priorityRank(second.priority) || (first.dueAt ?? '').localeCompare(second.dueAt ?? ''));
+    .sort(
+      (first, second) =>
+        priorityRank(first.priority) - priorityRank(second.priority) ||
+        String(first.dueAt ?? '').localeCompare(String(second.dueAt ?? '')),
+    );
 
   return orders;
 }
@@ -314,14 +326,14 @@ export function orderSummary(order, domain) {
     id: order.id,
     source: order.source,
     priority: order.priority,
+    priorityCode: order.specs?.[0]?.priorityCode ?? null,
     dueAt: order.dueAt,
     dueLabel: order.dueLabel,
-    daysLeft: order.daysLeft,
     sampleCount: order.sampleCount,
     status: order.status,
     statusLabel: order.statusLabel,
     sample: order.sample,
-    specs: order.specs.map((spec) => ({
+    specs: (order.specs ?? []).map((spec) => ({
       id: spec.id,
       name: spec.name,
       templateId: spec.templateId,
@@ -329,9 +341,16 @@ export function orderSummary(order, domain) {
       methodCode: spec.methodCode,
       sampleCount: spec.sampleCount,
       priority: spec.priority,
+      status: spec.status,
+      statusLabel: spec.statusLabel,
       dueLabel: spec.dueLabel,
+      windowLabel: spec.windowLabel,
       ruleStatus: spec.ruleStatus,
+      standards: spec.standards,
+      competencyCheck: spec.competencyCheck,
+      activityIds: spec.activityIds,
       linkedTaskId: spec.linkedTaskId,
+      linkedTaskIds: spec.linkedTaskIds,
       linkedTaskName: spec.linkedTaskName,
       linkConfidence: spec.linkConfidence,
       linkBasis: spec.linkBasis,
@@ -340,11 +359,14 @@ export function orderSummary(order, domain) {
     tasks: tasks.map((task) => ({
       id: task.id,
       name: task.name,
+      specId: task.specId,
       projectId: task.projectId,
       projectName: task.projectName,
       priority: task.priority,
-      dueLabel: task.dueDate ? formatDateTime(task.dueDate) : null,
+      priorityCode: task.priorityCode,
+      dueLabel: task.dueDate ? formatDateTime(task.dueDate) : '—',
       effortHours: task.effortHours,
+      effortSource: task.effortSource,
       taskType: task.taskType,
       sample: task.sample,
     })),
@@ -360,11 +382,21 @@ export function policyPayload(config) {
     confirmed: config.confirmed,
     disclaimer: config.disclaimer,
     lab: config.labPolicy,
+    sites: config.labPolicy?.sites ?? [],
     samplePolicy: config.samplePolicy,
-    taskTypeRules: config.taskTypeRules,
-    taskTypeAssignments: Object.entries(config.taskTypes).map(([taskId, entry]) => ({
+    statusMachine: config.statusMachine,
+    reservationModes: config.reservationModes,
+    // Legacy key kept so the current sidebar keeps rendering until the UI pass.
+    taskTypeRules: config.reservationModes,
+    defaultReservationMode: config.defaultReservationMode,
+    competencyPolicy: config.competencyPolicy,
+    calendarPolicy: config.calendarPolicy,
+    priorityScale: config.priorityScale,
+    durationPolicy: config.durationPolicy,
+    weekSequencing: config.weekSequencing,
+    taskTypeAssignments: Object.entries(config.reservationOverrides).map(([taskId, entry]) => ({
       taskId,
-      type: entry.type,
+      type: entry.mode,
       reason: entry.reason,
       confirmed: entry.confirmed === true,
     })),

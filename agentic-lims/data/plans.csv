@@ -1,0 +1,5 @@
+plan_no,project,site,plan_status,created_by,window_start,window_end,spec_ids,note
+PLAN26AA1125-1,TEC-EC Technology Action,VOLTA,Firm,Linghong Zhang,2026-10-30,2026-11-01,SPEC26AA4781,执行中
+PLAN26AA1126-1,[0-1] ALL-Ops Support-Affiliates Manufacturing Plants,AMPLITUDE,Draft,Linghong Zhang,2026-11-01,2026-11-12,SPEC26AA4851;SPEC26AA4852,待定稿
+PLAN26AA1128-1,[0-1] ALL-Ops Support-Affiliates Manufacturing Plants,AMPLITUDE,Firm,Tingting Tang,2026-11-08,2026-11-16,SPEC26AA4855,预占（Pre-booked）
+PLAN26AA1129-1,[0-1] ALL-Ops Support-Affiliates Manufacturing Plants,AMPLITUDE,Firm,Tingting Tang,2026-11-13,2026-11-24,SUBS26AA0720;SUBS26AA0723,分包批次

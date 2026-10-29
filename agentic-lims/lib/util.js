@@ -1,11 +1,11 @@
 /**
  * Small date / text helpers shared by the host half.
  * The prototype deliberately uses a frozen demo clock so the bundled mock data
- * (2026-10-27 onwards) keeps producing the same story.
+ * (2026-10-30 onwards) keeps producing the same story.
  */
 
 export const TZ = '+08:00';
-export const DEMO_NOW = '2026-10-27T08:00:00+08:00';
+export const DEMO_NOW = '2026-10-30T08:00:00+08:00';
 
 const WEEKDAYS = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
 

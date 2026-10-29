@@ -1,12 +1,19 @@
-﻿constraint_id,constraint_type,name,rule,handling
-HC-001,Hard,Equipment capability 设备能力,Equipment type and precision must satisfy method requirements,Never violate
-HC-002,Hard,Tester qualification 人员资质,Assigned tester must have required qualification,Never violate
-HC-003,Hard,Calibration status 校准状态,Equipment must be operational and calibration valid during the scheduled period,Never violate
-HC-004,Hard,Resource conflict 资源冲突,"Equipment, person and required space cannot be double-booked",Never violate
-HC-005,Hard,Working calendar 工作时段,Task must fit resource working hours unless overtime is explicitly allowed,Never violate
-HC-006,Hard,Pre-processing dependency 前处理依赖,Required prep space must be available before instrument task starts,Never violate
-SC-001,Soft,Delivery deadline 交付期限,Prefer completion before due date,Optimize
-SC-002,Soft,Waiting time 等待时间,Minimize time between request readiness and scheduled start,Optimize
-SC-003,Soft,Load balance 负载均衡,Avoid concentrating work on one instrument or tester,Optimize
-SC-004,Soft,Resource preference 资源偏好,Prefer requested equipment/person when feasible,Optimize
-SC-005,Soft,Switching cost 切换成本,Reduce method changeover and setup time,Optimize
+constraint_id,constraint_type,name,rule,handling,source,confirmed
+HC-101,Hard,Spec 状态准入门槛,只有 Approved / Pre-booked / Finalized 的 spec 进入排程池；Draft / In approval / Cancelled / Completed 及其后状态不参与新排程,Never violate,客户导出结构 + 原型推断,false
+HC-102,Hard,计划窗口必填,est_start_date 与 est_end_date 都存在的 spec 才可排程；缺失时标为 no_window 而不是猜一个日期,Never violate,客户导出结构 + 原型推断,false
+HC-103,Hard,标准与设备能力匹配,活动所用设备类型必须等于标准活动定义的 equipment_type,Never violate,客户导出结构 + 原型推断,false
+HC-104,Hard,能力项（Competency）校验,competency_check=ON 时，执行人必须持有该活动要求的全部 competency；OFF 时只提示不阻断,Never violate,客户导出结构 + 原型推断,false
+HC-105,Hard,设备状态与校准,设备必须 Operational，且排程日晚于等于 calibration_due,Never violate,客户导出结构 + 原型推断,false
+HC-106,Hard,资源不重复占用,同一设备、同一人员、同一工位在同一天不得被两个任务重叠占用,Never violate,客户导出结构 + 原型推断,false
+HC-107,Hard,日历规则,workday 模式仅 08:00-18:00 且不含周末；24h 模式可跨夜连续占用；周末仅在设备与人员都允许时开放,Never violate,客户导出结构 + 原型推断,false
+HC-108,Hard,样品到位,instock_date 之前不得开始实际测试；instock_date 为空时按“待确认”处理，不默认已到位,Never violate,客户导出结构 + 原型推断,false
+HC-109,Hard,分包走外送资源,SUBS spec 的活动只能占用 VENDOR 资源，不得占用内部设备,Never violate,客户导出结构 + 原型推断,false
+HC-110,Hard,站点隔离,AMPLITUDE 与 VOLTA 的设备、工位、人员池互不共享；EXTERNAL 站点只能由分包资源承接,Never violate,客户导出结构 + 原型推断,false
+SC-101,Soft,交期,优先在 est_end_date 之前完成,Optimize,客户导出结构 + 原型推断,false
+SC-102,Soft,优先级与周内序号,按 priority（P1→P4）排序，同优先级按 est_end_date，再按规格内 activity_no 串行,Optimize,客户导出结构 + 原型推断,false
+SC-103,Soft,负载均衡,避免同一设备或同一人单日过载,Optimize,客户导出结构 + 原型推断,false
+SC-104,Soft,切换成本,同标准、同设备的活动尽量连续排，减少装夹与升温降温,Optimize,客户导出结构 + 原型推断,false
+SC-105,Soft,周产能阈值,单周工作量超过 1400（客户模板 WARNING 阈值，单位待确认）时给出警告，不阻断,Warn only,客户导出结构 + 原型推断,false
+SC-106,Soft,计划稳定性,plan_status=Firm 的计划不自动移动；改动必须生成 ChangeEvent,Optimize,客户导出结构 + 原型推断,false
+HC-111,Hard,前处理工位,活动指定的 Cube 必须在同日可用且与设备同站点,Never violate,客户模板 Cube 列 + 原型推断,false
+HC-112,Hard,预约模式（Reservation Mode）,Exclusive 整日独占；Shared 按剩余容量共享（同日 ≤2）；Subcontracted 只占用外送资源，不占内部设备,Never violate,客户甘特串行排列 + 原型推断,false

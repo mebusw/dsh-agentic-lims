@@ -5,7 +5,7 @@ import { parseInstant } from '../lib/util.js';
 
 const raw = await loadRawDataset();
 const domain = buildDomain(raw);
-const now = parseInstant('2026-10-27T08:00:00+08:00');
+const now = parseInstant('2026-10-30T08:00:00+08:00');
 const ctx = createEngineContext(domain, now);
 console.log('domain', { tasks: domain.tasks.length, equipment: domain.equipment.length, spaces: domain.spaces.length, persons: domain.persons.length, allocations: domain.allocations.length });
 for (const task of domain.tasks) {

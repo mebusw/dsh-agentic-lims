@@ -5,7 +5,7 @@ const client = await MongoClient.connect('mongodb://127.0.0.1:27018');
 const db = client.db('agentic_lims_revision_start');
 await db.dropDatabase();
 await ensureIndexes(db); await seedDatabase(db);
-const routes = buildRoutes({ db, config: { demoNow: '2026-10-27T08:00:00+08:00' } });
+const routes = buildRoutes({ db, config: { demoNow: '2026-10-30T08:00:00+08:00' } });
 const call = async (p, b) => { const route = routes.find(r => r.path === p); const res = await route.fetch(new Request('http://x' + p, { method: 'POST', headers: {'content-type':'application/json'}, body: JSON.stringify(b) })); return { status: res.status, data: await res.json() }; };
 const first = await call('/api/lims/plans', { taskId: 'TASK-2005' });
 const old = first.data.plans[0];

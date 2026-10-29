@@ -33,7 +33,7 @@ await db.dropDatabase();
 await ensureIndexes(db);
 await seedDatabase(db);
 
-const routes = buildRoutes({ db, config: { demoNow: '2026-10-27T08:00:00+08:00' } });
+const routes = buildRoutes({ db, config: { demoNow: '2026-10-30T08:00:00+08:00' } });
 const call = async (path, body) => {
   const [pathname, query] = path.split('?');
   const route = routes.find((entry) => entry.path === pathname && entry.methods.includes(body ? 'POST' : 'GET'));
@@ -77,7 +77,7 @@ check('three Task Type rules', Object.keys(policies.data.taskTypeRules ?? {}).le
 check('sample policy blocks testing before arrival', policies.data.samplePolicy?.requireInStockBeforeTest === true);
 
 console.log('\nHC-007 sample readiness');
-const ctx = createEngineContext(domain, new Date('2026-10-27T08:00:00+08:00'));
+const ctx = createEngineContext(domain, new Date('2026-10-30T08:00:00+08:00'));
 const task2005 = domain.taskById.get('TASK-2005');
 const plans2005 = generatePlans(ctx, task2005, { count: 1 });
 const plan2005 = plans2005.plans[0];

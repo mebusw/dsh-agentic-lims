@@ -3,7 +3,7 @@ import { buildDomain } from '../lib/model.js';
 import { createEngineContext, analyzeDowntime } from '../lib/engine.js';
 import { parseInstant } from '../lib/util.js';
 const domain = buildDomain(await loadRawDataset());
-const ctx = createEngineContext(domain, parseInstant('2026-10-27T08:00:00+08:00'), { downtime: [
+const ctx = createEngineContext(domain, parseInstant('2026-10-30T08:00:00+08:00'), { downtime: [
   { equipmentId: 'EQ-007', date: '2026-10-27' },
   { equipmentId: 'EQ-007', date: '2026-10-28' },
 ]});

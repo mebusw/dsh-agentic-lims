@@ -72,7 +72,58 @@ const db = client.db('agentic_lims_ui_harness');
 await db.dropDatabase();
 await ensureIndexes(db);
 await seedDatabase(db);
-const routes = buildRoutes({ db, config: { demoNow: '2026-10-27T08:00:00+08:00' } });
+const routes = buildRoutes({ db, config: { demoNow: '2026-10-30T08:00:00+08:00' } });
+
+// Give the harness one candidate plan so the Gantt / week plan screenshots show
+// the planned path instead of only bookings.
+{
+  const planRoute = routes.find((entry) => entry.path === '/api/lims/plans' && entry.methods.includes('POST'));
+  if (planRoute) {
+    await planRoute.fetch(
+      new Request('http://127.0.0.1/api/lims/plans', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ taskId: 'SA26AA4851-01', count: 2, actor: 'harness' }),
+      }),
+    );
+  }
+  // AGENTIC_LIMS_UI_REVIEW=1 turns one activity into a "needs review" task so the
+  // review-acknowledgement UI can be checked without touching the demo dataset.
+  if (process.env.AGENTIC_LIMS_UI_REVIEW) {
+    await db.collection('raw_spec_activities').updateOne(
+      { activity_id: 'SA26AA4851-02' },
+      { $set: { status: 'Needs Method Review' } },
+    );
+    await planRoute.fetch(
+      new Request('http://127.0.0.1/api/lims/plans', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ taskId: 'SA26AA4851-02', count: 2, actor: 'harness' }),
+      }),
+    );
+    await db.collection('workspace').updateOne(
+      { _id: 'default' },
+      { $set: { page: 'schedule', taskId: 'SA26AA4851-02' } },
+    );
+  } else {
+  // The plans route focuses the workspace on the schedule page; put it back so
+  // the harness still boots on the dashboard.
+  await db.collection('workspace').updateOne(
+    { _id: 'default' },
+    {
+      $set: {
+        page: 'dashboard',
+        taskId: null,
+        planIds: [],
+        selectedPlanId: null,
+        message: '',
+        revision: 1,
+        updatedAt: new Date().toISOString(),
+      },
+    },
+  );
+  }
+}
 
 const harness = `<!doctype html><html><head><meta charset="utf-8"><title>booting</title>
 <style>html,body{margin:0;height:100%}#root{height:100%}</style></head><body><div id="root"></div>
@@ -117,8 +168,36 @@ if (new URLSearchParams(location.search).get('stale')) {
   };
 }
 window.__module.apply(fakeCtx());
+function renderChatPreview() {
+  var h = React.createElement;
+  var host = document.getElementById('root');
+  var Plan = registered['tool.call.toolview|lims_generate_plans'];
+  var Read = registered['tool.call.toolview|lims_list_specs'];
+  var Task = registered['tool.call.toolview|lims_get_task'];
+  var blocks = [
+    h('div', { key: 'u', className: 'alims-chat-bubble' }, '帮我把 SA26AA4851-01 排到下周，保交期，给我两个方案。'),
+    Read ? h('div', { key: 'r1', className: 'alims-chat-tool' }, React.createElement(Read, { phase: 'result', toolName: 'lims_list_specs', callId: 'c1', inputActions: inputActions, block: { content: [{ type: 'text', text: 'SPEC（19）｜可排 8｜不可排 11' }] } })) : null,
+    Task ? h('div', { key: 'r2', className: 'alims-chat-tool' }, React.createElement(Task, { phase: 'result', toolName: 'lims_get_task', callId: 'c2', inputActions: inputActions, block: { content: [{ type: 'text', text: 'SA26AA4851-01 盐雾 · 8.5h' }] } })) : null,
+    h('div', { key: 'a', className: 'alims-chat-text' }, '两个方案都在 11/02 开始，都不早于样品到位时间。选 A 还是 B？'),
+    Plan ? React.createElement(Plan, { key: 'p', phase: 'result', toolName: 'lims_generate_plans', callId: 'c3', inputActions: inputActions, block: { meta: {
+      kind: 'plans',
+      task: { id: 'SA26AA4851-01', name: 'TD1&2- Salt mist' },
+      plans: [
+        { id: 'PLAN-A', strategyLabel: '最快完成', status: 'feasible', statusLabel: '可行', score: 86, startLabel: '11/02 08:00', endLabel: '11/03 08:30', dueMarginHours: 120, resources: { equipment: { name: '盐雾箱 SM-01' }, person: { name: 'Tingting Tang' } } },
+        { id: 'PLAN-B', strategyLabel: '综合评分', status: 'feasible', statusLabel: '可行', score: 85, startLabel: '11/02 09:00', endLabel: '11/03 11:30', dueMarginHours: 116, resources: { equipment: { name: '盐雾箱 SM-01' }, person: { name: 'NEWUSER_02' } } },
+      ],
+      diagnostics: [],
+    }, content: [] } }) : null,
+  ];
+  ReactDOM.createRoot(host).render(React.createElement('div', { style: { padding: '10px', display: 'flex', flexDirection: 'column', gap: '8px' } }, blocks));
+}
+if (new URLSearchParams(location.search).get('chat')) {
+  renderChatPreview();
+  document.title = 'CHAT PREVIEW';
+} else {
 var Panel = registered['sidebar.right.pane.tab'];
 ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(Panel, { inputActions: inputActions }));
+}
 
 function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
 function tabByLabel(label) {
@@ -132,16 +211,20 @@ async function run() {
     if (target) target.click();
     await sleep(1800);
     document.title = 'ONLY ' + only;
+    var pre = document.createElement('pre');
+    pre.id = 'harness-result';
+    pre.textContent = JSON.stringify({ only: only, errors: window.__errors, text: document.body.innerText.slice(0, 6000) }, null, 2);
+    document.body.appendChild(pre);
     return;
   }
   var steps = {};
   steps.nav = Array.prototype.map.call(document.querySelectorAll('[role=tab]'), function (t) { return t.textContent; });
   steps.dashboard = /Agent 协作入口/.test(document.body.innerText);
-  steps.sampleCard = /样品到位 · HC-007/.test(document.body.innerText);
+  steps.sampleCard = /样品到位 · HC-108/.test(document.body.innerText);
 
-  tabByLabel('订单').click(); await sleep(1300);
-  steps.orders = /Test Order \\/ Test Spec/.test(document.body.innerText) && /ORD-7002/.test(document.body.innerText);
-  steps.ordersLinked = /TASK-2003/.test(document.body.innerText);
+  tabByLabel('订单').click(); await sleep(2000);
+  steps.orders = /订单/.test(document.body.innerText) && /ORD-26AA00/.test(document.body.innerText);
+  steps.ordersLinked = /SA26AA4851/.test(document.body.innerText);
   var quotes = document.querySelectorAll('.alims-card-quote');
   steps.quoteButtons = quotes.length;
   if (quotes.length) {
@@ -185,8 +268,28 @@ async function run() {
   await sleep(3000);
   steps.changeResult = /变更后/.test(document.body.innerText) && /LIMS-RULES/.test(document.body.innerText);
 
-  tabByLabel('排程').click(); await sleep(1000);
+  tabByLabel('SPEC').click(); await sleep(1600);
+  steps.specBoard = /SPEC26AA4851/.test(document.body.innerText) && /不可排|状态准入/.test(document.body.innerText);
+  steps.specReason = /HC-10[12]/.test(document.body.innerText);
+
+  tabByLabel('周计划').click(); await sleep(1800);
+  steps.weekPlan = /回填字段/.test(document.body.innerText) && /第 4[4-9] 周|W4[4-9]/.test(document.body.innerText);
+  steps.weekFillable = /PVP No|pvpNo/.test(document.body.innerText);
+
+  tabByLabel('甘特').click(); await sleep(1800);
+  steps.gantt = /层级：Project/.test(document.body.innerText) && /PLAN26AA1126-1/.test(document.body.innerText);
+  steps.ganttTree = /SPEC26AA4851/.test(document.body.innerText) && document.querySelectorAll('.alims-tree-bar').length >= 5;
+  steps.ganttScroll = (() => {
+    const scroll = document.querySelector('.alims-tree-scroll');
+    return Boolean(scroll) && scroll.scrollWidth > scroll.clientWidth + 4;
+  })();
+
+  tabByLabel('自定义').click(); await sleep(1200);
+  steps.resetCard = /测试数据/.test(document.body.innerText) && /全部重置/.test(document.body.innerText);
+
+  tabByLabel('排程').click(); await sleep(2200);
   steps.schedule = /候选方案|当前方案|排程/.test(document.body.innerText);
+  steps.decisionZone = document.querySelectorAll('[data-decision="confirm-plan"]').length > 0;
 
   // Chat tool cards share the same quote bridge (tool.call.toolview props).
   var chatHost = document.createElement('div');
@@ -214,6 +317,26 @@ async function run() {
     if (chatQuote) { chatQuote.dispatchEvent(new MouseEvent('mousedown', { bubbles: true })); chatQuote.click(); }
     await sleep(300);
     steps.chatQuoteInserted = /【引用 · 候选排程】/.test(inputActions._text);
+  }
+
+  // Intermediate reads must collapse into a one-line strip, not a full card.
+  var readHost = document.createElement('div');
+  readHost.id = 'read-host';
+  document.body.appendChild(readHost);
+  var ReadView = registered['tool.call.toolview|lims_list_specs'];
+  steps.readToolView = Boolean(ReadView);
+  if (ReadView) {
+    ReactDOM.createRoot(readHost).render(React.createElement(ReadView, {
+      phase: 'result',
+      toolName: 'lims_list_specs',
+      callId: 'call-read-1',
+      inputActions: inputActions,
+      block: { content: [{ type: 'text', text: 'SPEC（19）｜可排 8｜不可排 11' }] },
+    }));
+    await sleep(400);
+    steps.readStrip = readHost.querySelectorAll('.alims-tool-strip').length === 1;
+    steps.readNoCard = readHost.querySelectorAll('.alims-tool-card').length === 0;
+    steps.readToggle = readHost.querySelector('.alims-tool-strip')?.textContent?.includes('读取 SPEC 列表') === true;
   }
 
   steps.errors = window.__errors;
@@ -251,7 +374,7 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname === '/api/lims/health' && url.searchParams.get('stale') === '1') {
       // Simulate the pre-upgrade host: same route, no feature list.
       res.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
-      res.end(JSON.stringify({ ok: true, mongo: 'connected', seed: '2026-10-27.1', demoNow: '2026-10-27T08:00:00+08:00', workspaceRevision: 1 }));
+      res.end(JSON.stringify({ ok: true, mongo: 'connected', seed: '2026-10-27.1', demoNow: '2026-10-30T08:00:00+08:00', workspaceRevision: 1 }));
       return;
     }
     if (url.pathname.startsWith('/api/lims/')) {
@@ -288,11 +411,56 @@ const server = http.createServer(async (req, res) => {
 await new Promise((resolveListen) => server.listen(0, '127.0.0.1', resolveListen));
 const port = server.address().port;
 
+/* Optional DOM dump: AGENTIC_LIMS_UI_DUMP=周计划 prints the rendered DOM for one page. */
+if (process.env.AGENTIC_LIMS_UI_DUMP) {
+  const page = process.env.AGENTIC_LIMS_UI_DUMP;
+  const { stdout } = await exec(
+    chrome,
+    [
+      '--headless',
+      '--disable-gpu',
+      '--no-sandbox',
+      '--no-first-run',
+      `--user-data-dir=${process.env.TMPDIR ?? '/tmp'}/lims-ui-profile-dump`,
+      '--virtual-time-budget=9000',
+      '--dump-dom',
+      `http://127.0.0.1:${port}/harness.html?only=${encodeURIComponent(page)}`,
+    ],
+    { maxBuffer: 40 * 1024 * 1024, timeout: 120000 },
+  );
+  if (process.env.AGENTIC_LIMS_UI_HTML) {
+    console.log(stdout);
+    server.close();
+    await db.dropDatabase();
+    await client.close();
+    process.exit(0);
+  }
+  const match = /<pre id="harness-result">([\s\S]*?)<\/pre>/.exec(stdout);
+  console.log(match ? match[1].replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>') : stdout.slice(0, 4000));
+  server.close();
+  await db.dropDatabase();
+  await client.close();
+  process.exit(0);
+}
+
 /* Optional visual review: AGENTIC_LIMS_UI_SHOT=/tmp/shots renders one PNG per page. */
 if (process.env.AGENTIC_LIMS_UI_SHOT) {
   const dir = process.env.AGENTIC_LIMS_UI_SHOT;
   await exec('mkdir', ['-p', dir]);
-  for (const page of ['概览', '订单', '影响', '排程']) {
+  await exec(
+    chrome,
+    [
+      '--headless', '--disable-gpu', '--no-sandbox', '--no-first-run',
+      `--user-data-dir=${process.env.TMPDIR ?? '/tmp'}/lims-ui-profile-chat`,
+      '--hide-scrollbars', '--window-size=420,900',
+      '--virtual-time-budget=6000',
+      `--screenshot=${dir}/chat-preview.png`,
+      `http://127.0.0.1:${port}/harness.html?chat=1`,
+    ],
+    { maxBuffer: 20 * 1024 * 1024, timeout: 120000 },
+  );
+  console.log('shot', `${dir}/chat-preview.png`);
+  for (const page of ['概览', '订单', 'SPEC', '周计划', '甘特', '排程', '自定义']) {
     await exec(
       chrome,
       [
@@ -327,7 +495,7 @@ const { stdout, stderr } = await exec(
     `--user-data-dir=${process.env.TMPDIR ?? '/tmp'}/lims-ui-profile`,
     '--hide-scrollbars',
     '--window-size=420,1400',
-    '--virtual-time-budget=16000',
+    '--virtual-time-budget=26000',
     '--dump-dom',
     `http://127.0.0.1:${port}/harness.html`,
   ],
@@ -384,10 +552,22 @@ const checks = [
   ['selection quote uses only the selected fragment', result.selectionQuoted === true && result.selectionOnly === true],
   ['impact page renders the change panel', result.changePanel === true],
   ['sample-delay change returns an analysis', result.changeResult === true],
+  ['SPEC board lists the customer specs', result.specBoard === true],
+  ['SPEC board shows the HC-101 / HC-102 reason', result.specReason === true],
+  ['week plan renders week buckets', result.weekPlan === true],
+  ['week plan flags the unfillable customer columns', result.weekFillable === true],
+  ['four-layer gantt renders project → PLAN → SPEC → activity', result.gantt === true],
+  ['gantt draws activity bars', result.ganttTree === true],
   ['schedule page renders', result.schedule === true],
+  ['custom page exposes the demo data reset card', result.resetCard === true],
+  ['schedule shows a dedicated decision zone', result.decisionZone === true],
+  ['gantt canvas is wider than the panel (horizontal scroll)', result.ganttScroll === true],
   ['chat tool card renders', result.chatToolView === true],
   ['chat tool card exposes a quote button', result.chatQuoteButton === true],
   ['chat tool card quotes into the composer', result.chatQuoteInserted === true],
+  ['intermediate read collapses to a one-line strip', result.readStrip === true],
+  ['intermediate read renders no card', result.readNoCard === true],
+  ['strip names the read tool', result.readToggle === true],
   ['stale host is explained, not shown as a raw 404', staleBanner === true],
   ['no runtime errors', (result.errors || []).length === 0],
 ];

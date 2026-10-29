@@ -1,9 +1,0 @@
-﻿task_id,project_id,project_name,project_code,test_no,task_name,test_method,priority,requested_start,due_date,estimated_effort_hours,estimated_elapsed_days,required_qualifications,required_equipment_ids,required_space_ids,status
-TASK-2001,PRJ-1001,MOMA - Squad Tesys 小型控制,0000S24L0369,SUBS26AA0531,Electrical durability test 电气耐久测试,Electrical durability,High,2026-10-27,2026-11-06,18,4,Universal Tester Level 2,EQ-007,,Ready
-TASK-2002,PRJ-1001,MOMA - Squad Tesys 小型控制,0000S24L0369,SUBS26AA0532,Mechanical durability test 机械耐久测试,Mechanical durability,Normal,2026-10-28,2026-11-10,16,3,Universal Tester Level 2,EQ-007,,Ready
-TASK-2003,PRJ-1002,MOMA - Squad Easy Tesys 易控系列,DN9554CS_T,SUBS26AA0540,Laserbay validation test 激光舱验证,Laserbay validation,High,2026-10-27,2026-11-04,12,3,HPLC Level 2,EQ-003,SP-001,Ready
-TASK-2004,PRJ-1003,MOMA - Kylin 麒麟,DE9609TR_T,SUBS26AA0551,Thermal stability screening 热稳定性筛选,Stability screening,Normal,2026-10-29,2026-11-20,8,7,Climate Chamber Level 1,EQ-006,SP-003,Ready
-TASK-2005,PRJ-1004,Hybrid 混合项目,HYB-2026-018,SUBS26AA0562,GC residual solvent test 残留溶剂检测,GC-FID residual solvent,Urgent,2026-10-27,2026-10-30,10,2,GC Level 2,EQ-005,SP-002,Ready
-TASK-2006,PRJ-1005,Engineering China-NPF 中国工程,NPF-ENG-026,SUBS26AA0570,Balance verification 天平校验,Balance verification,Normal,2026-10-30,2026-11-05,4,1,Balance Level 1,EQ-001,SP-002,Ready
-TASK-2007,PRJ-1006,MOMA 技术探索,XPLO-MOMA-026,SUBS26AA0588,Non-standard method validation 非标方法验证,Non-standard method validation,Low,2026-11-02,2026-11-18,24,5,HPLC Level 2; Sample Prep,EQ-003;SP-001,,Needs Method Review
-TASK-2008,PRJ-1002,MOMA - Squad Easy Tesys 易控系列,DN9554CS_T,SUBS26AA0591,Electrical endurance retest 电气耐久复测,Electrical endurance,Normal,2026-11-03,2026-11-12,14,3,Universal Tester Level 2,EQ-007,,Ready

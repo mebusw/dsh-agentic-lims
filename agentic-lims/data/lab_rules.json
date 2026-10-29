@@ -1,0 +1,310 @@
+{
+  "_id": "lab-rules-v1",
+  "version": "2026.10.29",
+  "ruleVersion": "LIMS-RULES-2026.10.29",
+  "policyVersion": "LAB-POLICY-2026.10.29",
+  "confirmed": false,
+  "disclaimer": "本文件是原型规则层，依据客户脱敏导出（SPEC 主数据 + 甘特 + 排程回填模板）反推，不是客户已确认的业务规则。状态机、站点、周产能阈值、优先级词表、工时来源均为推断，需按文档《客户数据复盘与插件更新清单》第 10 节逐项确认后才能作为生产规则。",
+  "labPolicy": {
+    "labId": "KAREN-TESTLAB",
+    "name": "中高压电气实验室（客户脱敏数据口径）",
+    "sites": [
+      {
+        "id": "AMPLITUDE",
+        "name": "Amplitude",
+        "calendar": "workday"
+      },
+      {
+        "id": "VOLTA",
+        "name": "Volta",
+        "calendar": "workday"
+      },
+      {
+        "id": "EXTERNAL",
+        "name": "外部 / 分包",
+        "calendar": "24h"
+      }
+    ],
+    "siteIsolation": true,
+    "weekCapacityWarningHours": 1400,
+    "weekCapacityConfirmed": false,
+    "objectives": [
+      {
+        "key": "delivery",
+        "label": "交期",
+        "note": "先保 est_end_date，再看资源平衡"
+      },
+      {
+        "key": "sequence",
+        "label": "周内顺序",
+        "note": "同周内按 priority → est_end_date → activity_no"
+      },
+      {
+        "key": "stability",
+        "label": "计划稳定性",
+        "note": "plan_status=Firm 的计划不自动移动"
+      }
+    ],
+    "insertPolicy": "更高优先级 spec 可插队，但必须展示被推迟的活动、交期影响与 SPEC 号，并由 TL 确认。"
+  },
+  "statusMachine": {
+    "states": [
+      {
+        "code": "Draft",
+        "label": "草稿",
+        "phase": "request",
+        "schedulable": false,
+        "requiresWindow": false
+      },
+      {
+        "code": "In approval",
+        "label": "审批中",
+        "phase": "request",
+        "schedulable": false,
+        "requiresWindow": false
+      },
+      {
+        "code": "Approved",
+        "label": "已批准",
+        "phase": "planning",
+        "schedulable": true,
+        "requiresWindow": true
+      },
+      {
+        "code": "Pre-booked",
+        "label": "已预占",
+        "phase": "booked",
+        "schedulable": true,
+        "requiresWindow": true,
+        "reservation": "Exclusive"
+      },
+      {
+        "code": "Finalized",
+        "label": "计划已定稿",
+        "phase": "booked",
+        "schedulable": true,
+        "requiresWindow": true,
+        "reservation": "Exclusive"
+      },
+      {
+        "code": "In progress",
+        "label": "执行中",
+        "phase": "executing",
+        "schedulable": false,
+        "requiresWindow": true
+      },
+      {
+        "code": "Test results in approval",
+        "label": "结果审批中",
+        "phase": "post",
+        "schedulable": false
+      },
+      {
+        "code": "Report in approval",
+        "label": "报告审批中",
+        "phase": "post",
+        "schedulable": false
+      },
+      {
+        "code": "Completed",
+        "label": "已完成",
+        "phase": "closed",
+        "schedulable": false
+      },
+      {
+        "code": "Cancelled",
+        "label": "已取消",
+        "phase": "closed",
+        "schedulable": false
+      },
+      {
+        "code": "Unknown",
+        "label": "未知状态",
+        "phase": "unknown",
+        "schedulable": false,
+        "requiresWindow": false
+      }
+    ],
+    "transitions": [
+      [
+        "Draft",
+        "In approval"
+      ],
+      [
+        "In approval",
+        "Draft"
+      ],
+      [
+        "In approval",
+        "Approved"
+      ],
+      [
+        "Approved",
+        "Pre-booked"
+      ],
+      [
+        "Pre-booked",
+        "Finalized"
+      ],
+      [
+        "Finalized",
+        "In progress"
+      ],
+      [
+        "In progress",
+        "Test results in approval"
+      ],
+      [
+        "Test results in approval",
+        "Report in approval"
+      ],
+      [
+        "Report in approval",
+        "Completed"
+      ],
+      [
+        "Draft",
+        "Cancelled"
+      ],
+      [
+        "Approved",
+        "Cancelled"
+      ]
+    ],
+    "schedulableStatuses": [
+      "Approved",
+      "Pre-booked",
+      "Finalized"
+    ],
+    "note": "客户导出里 Draft / In approval 100% 没有计划窗口，Approved 之后才有；因此审批通过是排程准入门槛。",
+    "confirmed": false
+  },
+  "reservationModes": {
+    "Exclusive": {
+      "label": "独占预约（Prebook）",
+      "exclusive": true,
+      "shareable": false,
+      "description": "设备与执行人整日独占，同日同设备只允许一个规格活动。",
+      "source": "客户甘特里同设备活动串行排列，推断为独占；待确认。"
+    },
+    "Shared": {
+      "label": "共享预约（Test Spec）",
+      "exclusive": false,
+      "shareable": true,
+      "maxConcurrentTasks": 2,
+      "description": "允许按剩余容量共享同一设备，日并发上限 2。",
+      "source": "客户模板图例区分 LIMS task / Team task，推断存在共享；上限为原型设定，待确认。"
+    },
+    "Subcontracted": {
+      "label": "分包（SUBS）",
+      "exclusive": true,
+      "shareable": false,
+      "resourceKinds": [
+        "subcontract"
+      ],
+      "description": "分包规格只能占用外送资源，不占用内部设备；周期由供应商 lead time 决定。",
+      "source": "客户甘特 SUBS 前缀 + 独立 Test execution，推断；待确认。"
+    }
+  },
+  "defaultReservationMode": "Shared",
+  "reservationOverrides": {
+    "SA26AA4855-01": {
+      "mode": "Exclusive",
+      "reason": "Pre-booked 规格已占用盐雾箱，不接受共享。",
+      "confirmed": false
+    },
+    "SUBS26AA0720-01": {
+      "mode": "Subcontracted",
+      "reason": "SUBS 前缀规格，走外送资源。",
+      "confirmed": false
+    },
+    "SUBS26AA0723-01": {
+      "mode": "Subcontracted",
+      "reason": "SUBS 前缀规格，走外送资源。",
+      "confirmed": false
+    }
+  },
+  "competencyPolicy": {
+    "mode": "hard-when-ON",
+    "missingWhenOff": "warn",
+    "rolePlaceholderPrefix": [
+      "TST BY",
+      "Performance measure"
+    ],
+    "description": "competency_check=ON 时缺能力项为硬阻塞；OFF 时只提示。Testers 里出现 TST BY / Performance measure 这类占位符时不当作真实人员。",
+    "confirmed": false
+  },
+  "samplePolicy": {
+    "requireInStockBeforeTest": true,
+    "allowPreReserve": false,
+    "partialBatchAllowed": false,
+    "unknownBehavior": "confirm",
+    "description": "以 spec.instock_date 为准；缺失时按待确认处理，不默认已到位。",
+    "confirmed": false
+  },
+  "calendarPolicy": {
+    "workday": {
+      "start": "08:00",
+      "end": "18:00",
+      "allowWeekend": false
+    },
+    "24h": {
+      "start": "00:00",
+      "end": "23:59",
+      "allowWeekend": true
+    },
+    "extended": {
+      "start": "06:00",
+      "end": "22:00",
+      "allowWeekend": true
+    },
+    "weekendNeedsBothResourceAndPerson": true,
+    "confirmed": false
+  },
+  "priorityScale": {
+    "order": [
+      "P1",
+      "P2",
+      "P3",
+      "P4"
+    ],
+    "map": {
+      "P1": "Urgent",
+      "P2": "High",
+      "P3": "Normal",
+      "P4": "Low"
+    },
+    "aliases": {
+      "Urgent": "P1",
+      "High": "P2",
+      "Normal": "P3",
+      "Low": "P4",
+      "Routine": "P3"
+    },
+    "unknownFallback": "Normal",
+    "unknownBehavior": "warn",
+    "description": "客户的 Priority 填写在排程回填表里，不在 SPEC 导出中，值域未确认；P1-P4 为原型假设，Routine 作为历史别名映射到 Normal。",
+    "confirmed": false
+  },
+  "durationPolicy": {
+    "dayEquivalentHours": 8,
+    "source": "standard-first",
+    "fallback": [
+      "history",
+      "manual"
+    ],
+    "description": "客户 Workload 列 100% 为 0，工时按 标准活动 → 同模板历史实际 → 人工补录 三级回退，并记录来源。",
+    "confirmed": false
+  },
+  "weekSequencing": {
+    "order": [
+      "priority",
+      "est_end_date",
+      "activity_no"
+    ],
+    "sequenceField": "sequence_in_week",
+    "confirmed": false
+  },
+  "samples": {},
+  "samplesNote": "样品到位以 SPEC 的 Instockdate 为准；只有导入数据确实缺失时才在此放兜底值（key = activity_id 或 spec_id），并保持 confirmed=false。"
+}

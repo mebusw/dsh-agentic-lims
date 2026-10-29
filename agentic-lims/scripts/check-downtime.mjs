@@ -5,7 +5,7 @@ import { parseInstant } from '../lib/util.js';
 
 const raw = await loadRawDataset();
 const domain = buildDomain(raw);
-const now = parseInstant('2026-10-27T08:00:00+08:00');
+const now = parseInstant('2026-10-30T08:00:00+08:00');
 const downtime = [{ equipmentId: 'EQ-007', date: '2026-10-27', reason: '计划维护' }];
 const ctx = createEngineContext(domain, now, { downtime });
 const impact = analyzeDowntime(ctx, 'EQ-007', '2026-10-27', '计划维护');

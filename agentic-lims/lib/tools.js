@@ -161,7 +161,10 @@ function renderRevision(value) {
 
 function renderConfirm(value) {
   if (value.ok === false) {
-    return `无法确认：${value.error}${value.conflicts ? `\n- ${value.conflicts.join('\n- ')}` : ''}`;
+    const hint = value.requiresReviewAck
+      ? '\n这是「需审核」的方案：请让用户明确说“审核已完成”，再带 acknowledgeReview=true 重新确认；右侧确认区也有「已完成方法审核」勾选项。'
+      : '';
+    return `无法确认：${value.error}${hint}${value.conflicts ? `\n- ${value.conflicts.join('\n- ')}` : ''}`;
   }
   return `已模拟确认 ${value.plan?.id}：${value.plan?.resources?.equipment?.name} + ${value.plan?.resources?.person?.name}。原型更新了资源占用与审计，但没有写入生产系统。`;
 }
@@ -241,6 +244,59 @@ function sampleText(sample) {
   if (!sample) return '样品信息未登记';
   const ready = sample.readyAt ? `，到位 ${formatDateTime(sample.readyAt)}` : '';
   return `${sample.statusLabel ?? sample.status}${ready}${sample.confirmed ? '' : '（原型假设，待确认）'}`;
+}
+
+function renderSpecs(value) {
+  const summary = value.summary ?? {};
+  const lines = [
+    `SPEC（${summary.total ?? 0}）｜可排 ${summary.schedulable ?? 0}｜不可排 ${summary.notSchedulable ?? 0}｜规则 ${value.ruleVersion ?? '—'}（未确认）`,
+  ];
+  const byStatus = summary.byStatus ?? {};
+  const statusLine = Object.entries(byStatus)
+    .map(([status, count]) => `${status} ${count}`)
+    .join(' / ');
+  if (statusLine) lines.push(`状态分布：${statusLine}`);
+  for (const spec of value.specs ?? []) {
+    lines.push(
+      `- ${spec.id}｜${spec.statusLabel}｜${spec.windowLabel ?? '无计划窗口'}｜${spec.priority?.code ?? '未填优先级'}｜样品 ${spec.instockDate ?? '待确认'}｜${spec.planNo ?? '无 PLAN'}｜${spec.title ?? ''}`,
+    );
+    for (const reason of spec.lifecycle?.reasons ?? []) lines.push(`  · ${reason}`);
+  }
+  lines.push('不可排原因来自 HC-101（状态准入）与 HC-102（计划窗口必填），不是引擎猜测。');
+  return lines.join('\n');
+}
+
+function renderSpec(value) {
+  const spec = value.spec ?? {};
+  const lines = [
+    `SPEC ${spec.id}｜${spec.statusLabel}｜${spec.windowLabel ?? '无计划窗口'}｜${spec.priority?.code ?? '未填优先级'}（${spec.priority?.source ?? '—'}）`,
+    `项目：${spec.project ?? '未归属'}｜站点：${spec.site ?? '—'}｜PLAN：${spec.planNo ?? '—'}｜Order：${spec.orderNo ?? '—'}`,
+    `标准：${(spec.standards ?? []).join(' / ') || '—'}｜能力校验：${spec.competencyCheck}｜样品：${spec.sample?.statusLabel ?? '待确认'}（${spec.instockDate ?? '无 Instockdate'}）`,
+  ];
+  for (const reason of spec.lifecycle?.reasons ?? []) lines.push(`不可排：${reason}`);
+  if ((spec.lifecycle?.missingFields ?? []).length > 0) lines.push(`缺字段：${spec.lifecycle.missingFields.join('、')}`);
+  for (const activity of spec.activities ?? []) {
+    lines.push(
+      `- ${activity.id} 活动 ${activity.activityNo}｜${activity.name}｜${activity.resourceName ?? '无资源'}｜${activity.durationLabel}${activity.effortHours ? ` / ${activity.effortHours}h` : ''}｜${activity.readiness?.label ?? activity.status ?? ''}`,
+    );
+  }
+  return lines.join('\n');
+}
+
+function renderWeekPlan(value) {
+  const summary = value.summary ?? {};
+  const lines = [
+    `周计划（${summary.activities ?? 0} 行 / ${summary.hours ?? 0}h）｜阈值 ${summary.threshold ?? '—'}（仅告警）｜规则 ${value.ruleVersion ?? '—'}`,
+    `周：${(value.weeks ?? []).map((week) => `${week.label} ${week.hours}h`).join('｜')}`,
+  ];
+  for (const row of value.grid ?? []) {
+    lines.push(
+      `- ${row.weekLabel ?? '—'} #${row.sequence ?? '—'}｜${row.limsNo}｜${row.test}｜${row.equipment ?? '—'}｜${row.who ?? '待分配'}｜${row.workload}h｜${row.priorityCode ?? row.priority}｜${row.statusLabel}`,
+    );
+  }
+  const missing = Object.entries(value.fillable ?? {}).filter(([, entry]) => entry.ok === false).map(([key]) => key);
+  if (missing.length > 0) lines.push(`无法回填的列：${missing.join('、')}（缺客户主数据，不是引擎算不出来）`);
+  return lines.join('\n');
 }
 
 function renderOrders(value) {
@@ -653,6 +709,71 @@ export function buildTools(store, routes) {
       },
     },
     {
+      name: 'lims_list_specs',
+      description:
+        '列出客户的测试规范（SPEC）：状态机取值、计划窗口、样品到位日期、优先级、PLAN 批次号、所属项目与站点。用户问“有哪些 spec/哪些还没法排/为什么不能排/这周要排哪些”时先调用它。状态准入（HC-101）与计划窗口（HC-102）的判定来自数据，不是估计。',
+      parameters: schema(
+        {
+          status: { type: 'string', description: '可选：按状态或阶段过滤，例如 Approved / Draft / request' },
+          projectId: { type: 'string', description: '可选：项目 ID，例如 PRJ-01-OPS' },
+        },
+        [],
+      ),
+      output: {
+        ...OUTPUT,
+        render: (_args, value) => text(renderSpecs(value)),
+      },
+      async execute(args) {
+        const query = new URLSearchParams();
+        if (args.status) query.set('status', args.status);
+        if (args.projectId) query.set('projectId', args.projectId);
+        const { data } = await call(`/api/lims/specs${query.toString() ? `?${query}` : ''}`);
+        return data;
+      },
+    },
+    {
+      name: 'lims_get_spec',
+      description:
+        '读取一个 SPEC 的完整上下文：状态与生命周期、计划窗口、样品到位日期、标准与能力项要求、所属 PLAN 批次、以及它拆出的规格活动（每个活动带设备、时长与可否排程）。排程前用它确认“这个 spec 归谁、在哪、什么时候能开始”。',
+      parameters: schema({ specId: { type: 'string', description: 'SPEC ID，例如 SPEC26AA4851' } }, ['specId']),
+      output: {
+        ...OUTPUT,
+        render: (_args, value) => text(renderSpec(value)),
+      },
+      async execute(args) {
+        const { data } = await call(`/api/lims/spec?specId=${encodeURIComponent(args.specId)}`);
+        return data;
+      },
+    },
+    {
+      name: 'lims_week_plan',
+      description:
+        '生成客户的周计划回填视图：按周桶给出 Plan No. / LIMS No. / 设备 / 执行人 / 优先级 / 周内序号 / 工作量 / 周号 / 状态 / Event date，并标明哪些列能回填、哪些缺客户主数据。用户问“下周怎么排 / 这周工作量多少 / 排进排程表看看”时调用。右侧边栏会切到「周计划」页。',
+      parameters: schema(
+        {
+          weekStart: { type: 'string', description: '可选：周起始日期 YYYY-MM-DD（默认取演示时钟所在周）' },
+          weeks: { type: 'integer', description: '可选：显示几周，1-12，默认 6' },
+          site: { type: 'string', description: '可选：站点过滤 AMPLITUDE / VOLTA' },
+        },
+        [],
+      ),
+      output: {
+        ...OUTPUT,
+        render: (_args, value) => text(renderWeekPlan(value)),
+      },
+      async execute(args) {
+        const query = new URLSearchParams();
+        if (args.weekStart) query.set('weekStart', args.weekStart);
+        if (args.weeks) query.set('weeks', String(args.weeks));
+        if (args.site) query.set('site', args.site);
+        const { data } = await call(`/api/lims/week-plan${query.toString() ? `?${query}` : ''}`);
+        if (data.ok !== false) {
+          await call('/api/lims/focus', { page: 'week', message: 'Agent 正在查看周计划。', actor: 'agent' });
+        }
+        return data;
+      },
+    },
+    {
       name: 'lims_analyze_change',
       description:
         '登记一次变更并做影响分析：样品到位时间延迟（sample_delay）、交期变更（due_date）、优先级变更（priority）。会写入原型 sample_status / task_overrides、记录 ChangeEvent，并用确定性引擎重排变更对象和共享设备/人员的相关任务。用户说“样品晚三天到会影响什么/把交期改到 X/调高优先级重新算”时调用。不会自动确认任何方案。',
@@ -904,10 +1025,15 @@ export function buildTools(store, routes) {
     {
       name: 'lims_confirm_plan',
       description:
-        '模拟确认一个候选排程方案。会重新校验设备状态、人员容量和时间冲突，写入原型的资源占用与审计记录；不会写入生产系统。用户明确说“确认/采用方案 X”后才调用。',
+        '模拟确认一个候选排程方案。会重新校验设备状态、人员容量和时间冲突，写入原型的资源占用与审计记录；不会写入生产系统。用户明确说“确认/采用方案 X”后才调用。若方案状态是「需审核」（非标准方法 / needs_review），必须先由用户明确说“审核已完成”，再带 acknowledgeReview=true 调用；不要自己替用户完成审核。',
       parameters: schema(
         {
           planId: { type: 'string', description: '候选方案 ID，以 lims_generate_plans / lims_revise_plan 返回值为准' },
+          acknowledgeReview: {
+            type: 'boolean',
+            description: '仅当用户明确表示“已完成方法 / 资质审核”时传 true；方案处于 needs_review 时必需',
+          },
+          reviewNote: { type: 'string', description: '可选：审核结论备注，写入审计' },
         },
         ['planId'],
       ),
@@ -917,7 +1043,12 @@ export function buildTools(store, routes) {
         presentationMeta: withMeta('confirm', (value) => ({ plan: value.plan, simulated: value.simulated })),
       },
       async execute(args) {
-        const { data } = await call('/api/lims/confirm', { planId: args.planId, actor: 'agent' });
+        const { data } = await call('/api/lims/confirm', {
+          planId: args.planId,
+          actor: 'agent',
+          reviewAck: args.acknowledgeReview === true,
+          reviewNote: args.reviewNote ?? '',
+        });
         return data;
       },
     },

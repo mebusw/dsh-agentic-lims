@@ -1,12 +1,10 @@
-﻿equipment_id,equipment_name,equipment_type,location,capabilities,status,maintenance_or_calibration_due,available_from,available_to
-EQ-001,Precision Balance PB-01 精密天平,Precision Balance,Analytical Lab A 分析实验室A,0.1 mg,Operational,2026-12-15,08:00,18:00
-EQ-002,Precision Balance PB-02 精密天平,Precision Balance,Analytical Lab A 分析实验室A,0.1 mg,Operational,2026-11-20,08:00,18:00
-EQ-003,HPLC HPLC-01 液相色谱,HPLC,Instrument Room B 仪器室B,HPLC / UV-Vis,Operational,2027-03-31,08:00,20:00
-EQ-004,HPLC HPLC-02 液相色谱,HPLC,Instrument Room B 仪器室B,HPLC / UV-Vis,In Calibration,2026-10-28,08:00,20:00
-EQ-005,GC GC-01 气相色谱,GC-FID,Instrument Room C 仪器室C,GC-FID,Operational,2027-01-31,08:00,18:00
-EQ-006,Climate Chamber CC-01 恒温恒湿箱,Climate Chamber,Stability Lab 稳定性实验室,Temperature / humidity,Operational,2027-06-30,00:00,23:59
-EQ-007,Universal Tester UT-01 万能试验机,Universal Tester,Materials Lab 材料实验室,Tensile / compression,Operational,2027-02-28,08:00,18:00
-EQ-008,Universal Tester UT-02 万能试验机,Universal Tester,Materials Lab 材料实验室,Tensile / compression,Maintenance Due,2026-10-27,08:00,18:00
-SP-001,Sample Prep Bench A 前处理台A,Lab Space,Prep Room A 前处理室A,Wet chemistry preparation,Available,,08:00,18:00
-SP-002,Sample Prep Bench B 前处理台B,Lab Space,Prep Room B 前处理室B,Dry sample preparation,Available,,08:00,18:00
-SP-003,Controlled Environment Booth 控温室,Lab Space,Controlled Room 控温室,Humidity-controlled preparation,Available,,08:00,18:00
+resource_id,resource_name,resource_kind,equipment_type,site,location,capabilities,status,calibration_due,calendar_mode,available_from,available_to,max_concurrent_tasks,lead_time_days,external_label
+EQPT25AA1100,盐雾箱 SM-01,equipment,Salt Mist Chamber,AMPLITUDE,Environmental Lab A,Salt mist,Operational,2027-04-03,24h,00:00,23:59,1,,new equipment for calendar_002
+EQPT25AA1101,气候箱 CC-01,equipment,Climate Chamber,AMPLITUDE,Environmental Lab A,Temperature / humidity,Operational,2027-07-03,24h,00:00,23:59,1,,climate chamber 01
+EQPT25AA1102,气候箱 CC-02,equipment,Climate Chamber,VOLTA,Environmental Lab V,Temperature / humidity,In Calibration,2026-11-01,workday,08:00,18:00,1,,climate chamber 02
+EQPT25AA1103,激光舱 LB-01,equipment,Laserbay Bench,AMPLITUDE,Measurement Room A,Laser / noise,Operational,2027-02-03,workday,08:00,18:00,1,,laserbay bench
+EQPT25AA1104,耐压台 DB-01,equipment,Dielectric Bench,VOLTA,Electrical Lab V,Dielectric,Operational,2026-12-18,workday,08:00,18:00,1,,dielectric bench
+EQPT25AA1105,机械耐久台 EB-01,equipment,Electrical Endurance Bench,AMPLITUDE,Electrical Lab A,Endurance,Maintenance Due,2026-10-30,workday,08:00,18:00,1,,endurance bench
+CUBE-A1,前处理工位 A1,space,Lab Space,AMPLITUDE,Prep Room A,Specimen prep,Available,,workday,08:00,18:00,1,,
+CUBE-V1,前处理工位 V1,space,Lab Space,VOLTA,Prep Room V,Specimen prep,Available,,workday,08:00,18:00,1,,
+VENDOR-EXT-01,外部分包实验室 EMC,subcontract,Subcontract Lab,EXTERNAL,External partner,EMC / special environment,Operational,,24h,00:00,23:59,1,10,outsourced lab

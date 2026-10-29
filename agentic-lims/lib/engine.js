@@ -206,7 +206,7 @@ function scheduleCombination(ctx, task, equipment, person, space, options = {}) 
   const sample = task.sample ?? null;
   const sampleReadyAt = sample?.readyAt ? parseInstant(sample.readyAt) : null;
   const sampleReadyDay = sampleReadyAt ? dateKey(sampleReadyAt) : null;
-  // HC-007: actual testing never starts before the sample is on hand.
+  // HC-108: actual testing never starts before the sample is on hand.
   const sampleBlocks = Boolean(sample?.blocked);
   const requestedEarliest = options.earliestStart ? startOfDay(options.earliestStart) : ctx.now;
   const earliest = sampleReadyAt && sampleReadyAt > requestedEarliest ? sampleReadyAt : requestedEarliest;
@@ -219,7 +219,9 @@ function scheduleCombination(ctx, task, equipment, person, space, options = {}) 
   let policyBlockedDays = 0;
 
   for (const day of days) {
-    if (isWeekend(day)) continue;
+    // HC-107: weekends stay closed unless both the resource and the person allow it
+    // (24h chambers / endurance benches run across weekends, people usually do not).
+    if (isWeekend(day) && !(equipment.allowsWeekend && person.weekendAllowed)) continue;
     if (remaining <= 0) break;
     if (sampleBlocks) {
       sampleBlockedDays += 1;
@@ -294,7 +296,7 @@ function scheduleCombination(ctx, task, equipment, person, space, options = {}) 
   const planDays = unique(segments.map((segment) => segment.day));
 
   const equipmentCandidates = equipmentCandidatesForTask(ctx.domain, task);
-  const personMatch = personMatches(person, task.requirements.qualifications);
+  const personMatch = personMatches(person, task.requirements.qualifications, ctx.domain.competencyById);
   const capacityOk = feasible;
   const calibrationOk = segments.every((segment) => equipmentUsableAt(equipment, segment.day, ctx.downtime));
   const calendarOk = segments.every((segment) => {
@@ -309,25 +311,27 @@ function scheduleCombination(ctx, task, equipment, person, space, options = {}) 
 
   const evaluations = [];
   evaluations.push({
-    constraintId: 'HC-001',
+    constraintId: 'HC-103',
     type: 'Hard',
-    name: '设备能力匹配',
+    name: '标准与设备能力匹配',
     result: capabilityOk ? 'pass' : 'fail',
     explanation: capabilityOk
       ? `${equipment.name}（${equipment.type}）满足任务要求`
       : `${equipment.name} 的类型/能力不满足 ${task.requirements.equipmentType}`,
   });
   evaluations.push({
-    constraintId: 'HC-002',
+    constraintId: 'HC-104',
     type: 'Hard',
-    name: '人员资质',
+    name: '能力项（Competency）',
     result: personMatch.qualified ? 'pass' : isReviewTask(task) ? 'warn' : 'fail',
     explanation: personMatch.qualified
-      ? `${person.name} 具备 ${task.requirements.qualifications.join('、')}`
-      : `${person.name} 缺少 ${personMatch.missing.join('、')}${isReviewTask(task) ? '；非标准方法允许人工复核' : ''}`,
+      ? `${person.name} 具备能力项 ${(task.requirements.qualificationLabels ?? task.requirements.qualifications).join('、')}`
+      : task.competencyCheck === 'OFF'
+        ? `${person.name} 缺 ${(personMatch.missingLabels ?? personMatch.missing).join('、')}，但该 SPEC 关闭了能力校验（competency_check=OFF），仅提示`
+        : `${person.name} 缺少能力项 ${(personMatch.missingLabels ?? personMatch.missing).join('、')}${isReviewTask(task) ? '；非标准方法允许人工复核' : ''}`,
   });
   evaluations.push({
-    constraintId: 'HC-003',
+    constraintId: 'HC-105',
     type: 'Hard',
     name: '设备状态与校准',
     result: calibrationOk ? 'pass' : 'fail',
@@ -336,29 +340,29 @@ function scheduleCombination(ctx, task, equipment, person, space, options = {}) 
       : `${equipment.name} 状态为 ${equipment.status}，或校准在计划期内到期`,
   });
   evaluations.push({
-    constraintId: 'HC-004',
+    constraintId: 'HC-106',
     type: 'Hard',
-    name: '资源时间冲突',
+    name: '资源不重复占用',
     result: capacityOk ? 'pass' : 'fail',
     explanation: capacityOk
       ? `已按每日剩余容量错峰安排，覆盖 ${planDays.length} 个工作日`
       : policyBlockedDays > 0
-        ? 'Task Type 预约规则排除了部分日期，剩余窗口内没有足够容量（见 HC-008）'
+        ? '预约模式（Reservation Mode）排除了部分日期，剩余窗口内没有足够容量（见 HC-112）'
         : '在可执行窗口内无法找到足够的连续容量',
   });
   evaluations.push({
-    constraintId: 'HC-005',
+    constraintId: 'HC-107',
     type: 'Hard',
-    name: '工作时段',
+    name: '日历规则',
     result: calendarOk ? 'pass' : 'fail',
     explanation: calendarOk
       ? '所有时段均落在人员、设备与空间的工作时间内'
       : '存在超出工作时间的时段',
   });
   evaluations.push({
-    constraintId: 'HC-006',
+    constraintId: 'HC-111',
     type: 'Hard',
-    name: '前处理空间',
+    name: '前处理工位',
     result: spaceOk ? 'pass' : 'fail',
     explanation: spaceOk
       ? space
@@ -367,7 +371,7 @@ function scheduleCombination(ctx, task, equipment, person, space, options = {}) 
       : '任务要求前处理空间，但未找到可用空间',
   });
 
-  // HC-007 — sample readiness is a first-class scheduling input (chapter 14.8).
+  // HC-108 — sample readiness is a first-class scheduling input.
   const sampleOk = Boolean(sample) ? !sample.blocks : true;
   const sampleExplained = sample
     ? sample.readyAt
@@ -375,9 +379,9 @@ function scheduleCombination(ctx, task, equipment, person, space, options = {}) 
       : `${sample.statusLabel}，但没有可用的到位时间`
     : '未登记样品信息，按可执行处理（需 TL 确认）';
   evaluations.push({
-    constraintId: 'HC-007',
+    constraintId: 'HC-108',
     ruleId: 'SAMPLE-READY',
-    ruleVersion: ctx.config?.ruleVersion ?? 'LIMS-RULES-2026.10.28',
+    ruleVersion: ctx.config?.ruleVersion ?? 'LIMS-RULES-2026.10.29',
     type: 'Hard',
     name: '样品到位',
     result: !sample ? 'warn' : sampleOk ? (sample.partial ? 'warn' : 'pass') : 'fail',
@@ -392,11 +396,11 @@ function scheduleCombination(ctx, task, equipment, person, space, options = {}) 
   // HC-008 — Task Type reservation policy (chapter 14.10).
   const policyOk = policyBlockedDays === 0 || feasible;
   evaluations.push({
-    constraintId: 'HC-008',
-    ruleId: `TASKTYPE-${String(task.taskType ?? 'default').toUpperCase().replace(/[^A-Z0-9]+/g, '-')}`,
+    constraintId: 'HC-112',
+    ruleId: `RESERVATION-${String(task.reservationMode ?? task.taskType ?? 'default').toUpperCase().replace(/[^A-Z0-9]+/g, '-')}`,
     ruleVersion: ctx.config?.policyVersion ?? 'LAB-POLICY-2026.10.28',
     type: 'Hard',
-    name: 'Task Type 预约规则',
+    name: '预约模式（Reservation Mode）',
     result: policyOk ? 'pass' : 'fail',
     explanation: policyOk
       ? policy.exclusive
@@ -406,7 +410,7 @@ function scheduleCombination(ctx, task, equipment, person, space, options = {}) 
         ? `${policy.label ?? task.taskType}：要求整日独占，但 ${equipment.name} 在可执行窗口内已有其他任务，找不到可独占工作日`
         : `${policy.label ?? task.taskType}：同日任务数已达上限 ${policy.maxConcurrentTasks ?? '—'} 个，无法再共享 ${equipment.name}`,
     evidence: {
-      taskType: task.taskType ?? null,
+      reservationMode: task.reservationMode ?? task.taskType ?? null,
       exclusive: Boolean(policy.exclusive),
       maxConcurrentTasks: policy.maxConcurrentTasks ?? null,
       blockedDays: policyBlockedDays,
@@ -428,9 +432,9 @@ function scheduleCombination(ctx, task, equipment, person, space, options = {}) 
     evaluations.push({
       constraintId: 'CL-001',
       type: 'Hard',
-      name: '预约规则冲突',
+      name: '预约模式冲突',
       result: 'fail',
-      explanation: `Task Type 规则不允许与 ${equipment.name} 上的其他任务共享，且窗口内找不到独占工作日`,
+      explanation: `预约模式不允许与 ${equipment.name} 上的其他活动共享，且窗口内找不到独占工作日`,
     });
   }
   if (sampleBlocks) {
@@ -573,7 +577,7 @@ function scheduleCombination(ctx, task, equipment, person, space, options = {}) 
     },
     assumptions: [
       '人员工时与设备占用按小时折算；现有排程占用从当日工作时段起点扣减。',
-      '原型冻结演示时钟为 2026-10-27 08:00，周末不排程。',
+      '原型冻结演示时钟为 2026-10-30 08:00，周末不排程。',
     ],
     generatedAt: new Date().toISOString(),
   };
@@ -700,10 +704,16 @@ export function generatePlans(ctx, task, options = {}) {
     addPick({ ...plan, strategy: 'score', strategyLabel: '综合评分' });
   }
 
-  const selected = picks.slice(0, count).map((plan, index) => ({
+  const shortlist = picks.slice(0, count);
+  const bestScore = shortlist.reduce((best, plan) => Math.max(best, plan.score ?? 0), -1);
+  const bestIndex = shortlist.findIndex((plan) => (plan.score ?? 0) === bestScore);
+  const selected = shortlist.map((plan, index) => ({
     ...plan,
     id: `PLAN-${task.id}-${index + 1}`,
     optionLabel: String.fromCharCode(65 + index),
+    // The decision zone highlights one option, so an all-"需审核" shortlist is
+    // still actionable instead of looking like a wall of blockers.
+    recommended: index === bestIndex,
   }));
 
   let diagnostics = [];
@@ -1246,7 +1256,10 @@ function diagnoseInfeasible(ctx, task, equipment, persons) {
     diagnostics.push({ code: 'no_equipment_requirement', text: '任务没有指定设备，且无法从方法推导设备类型' });
   }
   if (persons.length === 0) {
-    diagnostics.push({ code: 'no_qualified_person', text: `没有人员同时具备 ${task.requirements.qualifications.join('、') || '所需资质'}` });
+    diagnostics.push({
+      code: 'no_qualified_person',
+      text: `没有同站点人员同时具备 ${(task.requirements.qualificationLabels ?? task.requirements.qualifications).join('、') || '所需能力项'}（HC-104 / HC-110）`,
+    });
   }
   for (const item of equipment.required) {
     if (!equipmentUsableAt(item, dateKey(ctx.now), null)) {
@@ -1260,7 +1273,7 @@ function diagnoseInfeasible(ctx, task, equipment, persons) {
   if (task.sample?.blocked) {
     diagnostics.push({
       code: 'sample_missing',
-      text: '样品未到位且没有可用的到位时间；请先补充 sample_status，排程不能早于实际/预计到位时间（HC-007）',
+      text: '样品未到位且没有可用的到位时间；请先补充 sample_status，排程不能早于实际/预计到位时间（HC-108）',
     });
   }
   if (task.taskTypeRule?.exclusive) {
@@ -2008,10 +2021,18 @@ export function buildOverview(domain, ctx, extra = {}) {
       alerts.push({
         level: task.sample.status === 'Not in stock' ? 'warn' : 'warn',
         title: `${task.name} ${task.sample.statusLabel}`,
-        detail: `${task.id} · ${task.sample.readyAt ? `到位时间 ${formatDateTime(task.sample.readyAt)}` : '没有到位时间'}；HC-007 不允许在样品到位前开始实际测试。`,
+        detail: `${task.id} · ${task.sample.readyAt ? `到位时间 ${formatDateTime(task.sample.readyAt)}` : '没有到位时间'}；HC-108 不允许在样品到位前开始实际测试。`,
         taskId: task.id,
       });
     }
+  }
+  const specsAwaiting = domain.specs.filter((spec) => spec.phase === 'request');
+  if (specsAwaiting.length > 0) {
+    alerts.push({
+      level: 'warn',
+      title: `${specsAwaiting.length} 个 SPEC 未通过审批，不可排程`,
+      detail: `${specsAwaiting.slice(0, 3).map((spec) => `${spec.id}（${spec.statusLabel}）`).join('、')}${specsAwaiting.length > 3 ? ' 等' : ''}；HC-101 要求状态进入 Approved 之后才进入排程池。`,
+    });
   }
   const urgent = domain.tasks.filter((task) => task.priority === 'Urgent').length;
   const totalCapacity = sum(equipment.map((item) => item.used));
@@ -2020,7 +2041,7 @@ export function buildOverview(domain, ctx, extra = {}) {
       now: ctx.now.toISOString(),
       dateLabel: formatDate(ctx.now, true),
       frozen: true,
-      note: '演示时钟冻结在 2026-10-27 08:00',
+      note: '演示时钟冻结在 2026-10-30 08:00',
     },
     stats: {
       totalTasks: domain.tasks.length,
@@ -2034,6 +2055,10 @@ export function buildOverview(domain, ctx, extra = {}) {
       sampleNotReady: domain.tasks.filter((task) => task.sample && task.sample.status !== 'In stock').length,
       equipmentUtilization: equipment.length > 0 ? Math.round((totalCapacity / (equipment.length * 8 * windowDays)) * 100) : 0,
       totalLoadHours: round1(totalUsed),
+      specTotal: domain.specs.length,
+      specSchedulable: domain.specs.filter((spec) => spec.schedulable && spec.windowEnd).length,
+      specAwaitingApproval: specsAwaiting.length,
+      specNotSchedulable: domain.specs.filter((spec) => !(spec.schedulable && spec.windowEnd)).length,
     },
     tasks: domain.tasks.map((task) => {
       const daysLeft = Math.ceil(diffHours(task.dueDate, ctx.now) / 24);
@@ -2121,7 +2146,7 @@ export function resourcePage(domain, ctx) {
       blocked: round1(blocked),
       utilization: Math.round((used / (person.dailyCapacityHours * windowDays)) * 100),
       days,
-      activities: domain.activities
+      activities: domain.personActivities
         .filter((activity) => activity.personId === person.id)
         .map((activity) => ({
           id: activity.id,
@@ -2161,7 +2186,7 @@ export function taskDetail(domain, ctx, taskId, plans = []) {
   const allocations = domain.allocations
     .filter((item) => item.taskId === task.id)
     .map((item) => ({ id: item.id, date: item.date, personId: item.personId, resourceId: item.resourceId, type: item.type, load: item.load }));
-  const activities = domain.activities
+  const activities = domain.personActivities
     .filter((activity) => persons.some((entry) => entry.person.id === activity.personId))
     .map((activity) => ({
       id: activity.id,

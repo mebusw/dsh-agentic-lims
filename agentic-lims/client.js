@@ -868,6 +868,116 @@
 @media (hover: none) {
   .alims-card-actions { opacity: 1; }
 }
+.alims-filter-row { display: flex; flex-wrap: wrap; gap: 4px; }
+.alims-filter-chip { border: 1px solid var(--dsw-alias-border-l1); background: var(--dsw-alias-bg-layer-2); color: var(--dsw-alias-label-secondary); border-radius: 999px; padding: 3px 8px; font-size: 9px; cursor: pointer; font-family: inherit; }
+.alims-filter-chip.is-active { background: var(--alims-brand-bg); border-color: var(--alims-brand-border); color: var(--alims-brand); font-weight: 600; }
+.alims-spec-group { display: flex; flex-direction: column; gap: 6px; }
+.alims-spec-group-head { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; }
+.alims-spec-group-head strong { font-size: 11px; }
+.alims-spec-group-head span { font-size: 8.5px; color: var(--dsw-alias-label-secondary); }
+.alims-spec-card { border: 1px solid var(--dsw-alias-border-l1); border-radius: 8px; background: var(--dsw-alias-bg-layer-2); padding: 8px; display: flex; flex-direction: column; gap: 5px; }
+.alims-spec-card.is-blocked { border-color: var(--alims-err-border); background: linear-gradient(180deg, var(--alims-err-bg), var(--dsw-alias-bg-layer-2) 60%); }
+.alims-spec-card.is-planned { border-color: var(--alims-brand-border); }
+.alims-spec-head { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+.alims-spec-head strong { font-size: 10.5px; letter-spacing: 0.2px; }
+.alims-spec-title { font-size: 10px; color: var(--dsw-alias-label-primary); overflow-wrap: anywhere; }
+.alims-spec-meta { display: flex; flex-wrap: wrap; gap: 3px 8px; font-size: 8.5px; color: var(--dsw-alias-label-secondary); }
+.alims-spec-meta b { font-weight: 600; color: var(--dsw-alias-label-primary); }
+.alims-spec-reason { display: flex; align-items: flex-start; gap: 4px; font-size: 8.5px; color: var(--alims-err); }
+.alims-spec-reason.is-warn { color: var(--alims-warn); }
+.alims-spec-activities { border-top: 1px dashed var(--dsw-alias-border-l1); padding-top: 5px; display: flex; flex-direction: column; gap: 4px; }
+.alims-spec-activity { display: flex; align-items: center; gap: 6px; font-size: 8.5px; }
+.alims-spec-activity-main { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
+.alims-spec-activity-main b { font-size: 9px; }
+.alims-spec-foot { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+.alims-wp-nav { display: flex; align-items: center; gap: 5px; }
+.alims-wp-week { border: 1px solid var(--dsw-alias-border-l1); border-radius: 8px; background: var(--dsw-alias-bg-layer-2); overflow: hidden; }
+.alims-wp-week-head { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; padding: 6px 8px; background: var(--dsw-alias-bg-layer-1); border-bottom: 1px solid var(--dsw-alias-border-l1); }
+.alims-wp-week-head strong { font-size: 10.5px; }
+.alims-wp-week-head span { font-size: 8.5px; color: var(--dsw-alias-label-secondary); }
+.alims-wp-week.is-over .alims-wp-week-head { background: var(--alims-warn-bg); }
+.alims-wp-row { display: flex; align-items: center; gap: 6px; padding: 5px 8px; border-top: 1px solid var(--dsw-alias-border-l1); }
+.alims-wp-row:first-of-type { border-top: 0; }
+.alims-wp-seq { flex: 0 0 auto; width: 18px; text-align: center; font-size: 8.5px; font-weight: 700; color: var(--alims-brand); }
+.alims-wp-main { flex: 1 1 auto; min-width: 0; }
+.alims-wp-title { font-size: 9.5px; font-weight: 600; overflow-wrap: anywhere; }
+.alims-wp-meta { font-size: 8px; color: var(--dsw-alias-label-secondary); overflow-wrap: anywhere; }
+.alims-fillable-row { display: flex; flex-wrap: wrap; gap: 3px; }
+.alims-fillable-chip { display: inline-flex; align-items: center; gap: 3px; border-radius: 4px; padding: 2px 5px; font-size: 8px; border: 1px solid var(--dsw-alias-border-l1); color: var(--dsw-alias-label-secondary); }
+.alims-fillable-chip.is-ok { border-color: var(--alims-ok-border); color: var(--alims-ok); }
+.alims-fillable-chip.is-missing { border-color: var(--alims-err-border); color: var(--alims-err); }
+
+.alims-gantt { display: flex; flex-direction: column; gap: 6px; }
+.alims-tree-scroll { border: 1px solid var(--dsw-alias-border-l1); border-radius: 8px; overflow-x: auto; overflow-y: hidden; background: var(--dsw-alias-bg-layer-2); -webkit-overflow-scrolling: touch; }
+.alims-tree-grid { background: var(--dsw-alias-bg-layer-2); width: max-content; min-width: 100%; }
+.alims-tree-head, .alims-tree-row { display: flex; align-items: stretch; width: 100%; }
+.alims-tree-head { background: var(--dsw-alias-bg-layer-1); border-bottom: 1px solid var(--dsw-alias-border-l1); }
+.alims-tree-head-label { position: sticky; left: 0; z-index: 3; flex: 0 0 118px; width: 118px; overflow: hidden; font-size: 7.5px; color: var(--dsw-alias-label-secondary); padding: 4px 5px; display: flex; align-items: center; white-space: nowrap; background: var(--dsw-alias-bg-layer-1); box-shadow: 1px 0 0 var(--dsw-alias-border-l1); }
+.alims-tree-days { flex: 1 1 auto; min-width: 0; display: flex; position: relative; }
+.alims-tree-week { position: absolute; top: 0; bottom: 0; border-left: 1px solid rgba(127, 127, 127, 0.35); font-size: 7px; line-height: 1.15; padding: 2px 0 0 2px; color: var(--dsw-alias-label-secondary, #6b7280); white-space: nowrap; overflow: hidden; pointer-events: none; }
+.alims-tree-day { flex: 1 1 0; min-width: 0; text-align: center; font-size: 7px; line-height: 1.15; padding: 2px 0; color: var(--dsw-alias-label-secondary); border-left: 1px solid var(--dsw-alias-border-l1); white-space: nowrap; overflow: hidden; }
+.alims-tree-day.is-weekend { background: rgba(127, 127, 127, 0.08); }
+.alims-tree-day.is-today { background: var(--alims-brand-bg, #e8efff); color: var(--alims-brand, #3b82f6); font-weight: 700; }
+.alims-tree-row { border-top: 1px solid var(--dsw-alias-border-l1); }
+.alims-tree-row:first-child { border-top: 0; }
+.alims-tree-row.is-level-1 { background: var(--dsw-alias-bg-layer-1); }
+.alims-tree-label { position: sticky; left: 0; z-index: 2; flex: 0 0 118px; width: 118px; overflow: hidden; display: flex; align-items: center; gap: 2px; padding: 3px 4px; font-size: 8.5px; background: var(--dsw-alias-bg-layer-2); box-shadow: 1px 0 0 var(--dsw-alias-border-l1); }
+.alims-tree-row.is-level-1 .alims-tree-label { background: var(--dsw-alias-bg-layer-1); }
+.alims-tree-label-body { min-width: 0; flex: 1 1 auto; overflow: hidden; }
+.alims-tree-label strong { display: block; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.alims-tree-label small { display: block; color: var(--dsw-alias-label-secondary); font-size: 7.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.alims-tree-toggle { width: 11px; height: 11px; flex: 0 0 11px; display: inline-flex; align-items: center; justify-content: center; border: 0; background: transparent; color: var(--dsw-alias-label-secondary); cursor: pointer; padding: 0; }
+.alims-tree-track { flex: 1 1 auto; min-width: 0; position: relative; display: flex; min-height: 22px; }
+.alims-tree-cell { flex: 1 1 0; min-width: 0; border-left: 1px solid rgba(127, 127, 127, 0.16); }
+.alims-tree-cell.is-weekend { background: rgba(127, 127, 127, 0.07); }
+.alims-tree-cell.is-today { background: var(--alims-brand-bg, #e8efff); }
+.alims-tree-bar { position: absolute; top: 6px; height: 10px; border-radius: 3px; background: var(--alims-brand, #3b82f6); pointer-events: none; }
+.alims-tree-row.is-level-1 .alims-tree-bar { top: 8px; height: 6px; }
+.alims-tree-row.is-level-2 .alims-tree-bar { top: 7px; height: 8px; }
+.alims-tree-bar.is-ok { background: var(--alims-ok, #16a34a); }
+.alims-tree-bar.is-warn { background: var(--alims-warn, #d97706); }
+.alims-tree-bar.is-error { background: var(--alims-err, #dc2626); }
+.alims-tree-bar.is-idle { background: var(--dsw-alias-label-secondary); opacity: 0.45; }
+.alims-tree-bar.is-clipped-start { border-top-left-radius: 0; border-bottom-left-radius: 0; }
+.alims-tree-bar.is-clipped-end { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+.alims-tree-legend { display: flex; flex-wrap: wrap; gap: 6px; font-size: 8px; color: var(--dsw-alias-label-secondary); }
+.alims-tree-legend > span { display: inline-flex; align-items: center; gap: 3px; }
+.alims-tree-dot { width: 7px; height: 7px; border-radius: 2px; background: var(--alims-brand); display: inline-block; }
+.alims-tree-dot.is-ok { background: var(--alims-ok); }
+.alims-tree-dot.is-warn { background: var(--alims-warn); }
+.alims-tree-dot.is-idle { background: var(--dsw-alias-label-secondary); opacity: 0.5; }
+.alims-tree-dot.is-error { background: var(--alims-err); }
+
+.alims-decision { border: 1px solid var(--alims-brand-border); background: linear-gradient(180deg, var(--alims-brand-bg), transparent 72%); border-radius: 10px; padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+.alims-decision-head { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.alims-decision-title { display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 700; color: var(--alims-brand); }
+.alims-decision-hint { font-size: 8px; color: var(--dsw-alias-label-secondary); }
+.alims-decision-actions { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.alims-decision-actions .alims-btn { font-size: 10px; padding: 5px 10px; font-weight: 600; }
+.alims-review-ack { display: flex; align-items: flex-start; gap: 5px; border: 1px dashed var(--alims-warn-border); background: var(--alims-warn-bg); border-radius: 6px; padding: 5px 6px; font-size: 8.5px; line-height: 1.35; color: var(--dsw-alias-label-primary); cursor: pointer; }
+.alims-review-ack input { margin: 1px 0 0; flex: 0 0 auto; }
+.alims-review-ack span { flex: 1 1 auto; }
+.alims-review-ack b { color: var(--alims-warn); }
+.alims-plan-recommended { font-size: 7.5px; font-weight: 700; color: var(--alims-brand); border: 1px solid var(--alims-brand-border); background: var(--alims-brand-bg); border-radius: 3px; padding: 0 4px; margin-left: 3px; }
+
+.alims-reset-card { border-style: dashed; }
+.alims-reset-grid { display: flex; flex-wrap: wrap; gap: 5px; }
+.alims-reset-btn { display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--dsw-alias-border-l1); background: var(--dsw-alias-bg-layer-2); color: var(--dsw-alias-label-secondary); border-radius: 6px; padding: 4px 8px; font-size: 9px; cursor: pointer; font-family: inherit; }
+.alims-reset-btn:hover { border-color: var(--alims-brand-border); color: var(--alims-brand); }
+.alims-reset-btn.is-danger { border-color: var(--alims-err-border); color: var(--alims-err); }
+.alims-reset-btn.is-armed { background: var(--alims-err-bg); border-color: var(--alims-err); color: var(--alims-err); font-weight: 700; }
+.alims-reset-result { display: flex; align-items: flex-start; gap: 4px; font-size: 8.5px; color: var(--alims-ok); }
+
+.alims-tool-strip { display: flex; align-items: center; gap: 5px; width: 100%; border: 1px solid var(--dsw-alias-border-l1); background: var(--dsw-alias-bg-layer-2); color: var(--dsw-alias-label-secondary); border-radius: 6px; padding: 3px 7px; font-size: 8.5px; font-family: inherit; cursor: pointer; text-align: left; }
+.alims-tool-strip:hover { border-color: var(--alims-brand-border); color: var(--alims-brand); }
+.alims-tool-strip.is-open { border-color: var(--alims-brand-border); color: var(--alims-brand); }
+.alims-tool-strip.is-pending { opacity: 0.8; cursor: default; }
+.alims-tool-strip-icon { flex: 0 0 auto; display: inline-flex; align-items: center; color: var(--alims-ok); }
+.alims-tool-strip.is-pending .alims-tool-strip-icon { color: var(--alims-brand); }
+.alims-tool-strip-label { flex: 0 0 auto; font-weight: 600; color: var(--dsw-alias-label-primary); }
+.alims-tool-strip-sum { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.alims-tool-strip-wrap { display: flex; flex-direction: column; gap: 4px; }
+
 `;
 
   window.__ModuleLoader__.load({
@@ -880,13 +990,16 @@
       const PKG = '@local/agentic-lims';
       const KIND = 'agentic-lims';
       /** Host route surface this build relies on; older processes lack it. */
-      const REQUIRED_FEATURES = ['orders', 'change-impact', 'policies'];
+      const REQUIRED_FEATURES = ['orders', 'change-impact', 'policies', 'week-plan'];
       const MENU = [
         { id: 'dashboard', label: '概览', icon: 'grid' },
         { id: 'orders', label: '订单', icon: 'file' },
+        { id: 'specs', label: 'SPEC', icon: 'file' },
         { id: 'projects', label: '项目', icon: 'layer' },
         { id: 'tasks', label: '任务', icon: 'list' },
         { id: 'schedule', label: '排程', icon: 'calendar' },
+        { id: 'week', label: '周计划', icon: 'calendar' },
+        { id: 'gantt', label: '甘特', icon: 'chart' },
         { id: 'impact', label: '影响', icon: 'alert' },
         { id: 'resources', label: '资源', icon: 'cube' },
         { id: 'analytics', label: '分析', icon: 'chart' },
@@ -898,17 +1011,20 @@
       const PIN_VIEWS = [
         { id: 'dashboard', label: '概览' },
         { id: 'orders', label: '订单' },
+        { id: 'specs', label: 'SPEC' },
         { id: 'projects', label: '项目' },
         { id: 'schedule', label: '排程' },
+        { id: 'week', label: '周计划' },
+        { id: 'gantt', label: '甘特' },
         { id: 'impact', label: '影响' },
         { id: 'analytics', label: '分析' },
         { id: 'resources', label: '资源' },
         { id: 'audit', label: '审计' },
       ];
       const ROLES = {
-        lab: { label: '实验人员', short: 'Lab', pages: ['dashboard', 'orders', 'projects', 'tasks', 'schedule', 'resources', 'impact', 'custom'], defaultPage: 'dashboard' },
-        lead: { label: 'TM / TL', short: 'Lead', pages: ['dashboard', 'orders', 'projects', 'tasks', 'schedule', 'impact', 'resources', 'analytics', 'custom', 'audit'], defaultPage: 'schedule' },
-        ops: { label: '运营负责人', short: 'Ops', pages: ['dashboard', 'orders', 'projects', 'schedule', 'impact', 'resources', 'analytics', 'custom', 'audit'], defaultPage: 'analytics' },
+        lab: { label: '实验人员', short: 'Lab', pages: ['dashboard', 'orders', 'specs', 'projects', 'tasks', 'schedule', 'week', 'gantt', 'resources', 'impact', 'custom'], defaultPage: 'dashboard' },
+        lead: { label: 'TM / TL', short: 'Lead', pages: ['dashboard', 'orders', 'specs', 'projects', 'tasks', 'schedule', 'week', 'gantt', 'impact', 'resources', 'analytics', 'custom', 'audit'], defaultPage: 'schedule' },
+        ops: { label: '运营负责人', short: 'Ops', pages: ['dashboard', 'orders', 'specs', 'projects', 'schedule', 'week', 'gantt', 'impact', 'resources', 'analytics', 'custom', 'audit'], defaultPage: 'analytics' },
       };
       const PRIORITY = {
         Urgent: { label: '紧急', tone: 'error', rank: 0 },
@@ -1014,6 +1130,10 @@
       function fmtHours(value) {
         const number = Number(value) || 0;
         return `${Math.round(number * 10) / 10}h`;
+      }
+
+      function round1Text(value) {
+        return Math.round((Number(value) || 0) * 10) / 10;
       }
 
       function fmtMargin(hours) {
@@ -1397,6 +1517,13 @@
         return h('div', { className: 'alims-loading' }, h('span', { className: 'alims-spinner' }), h('span', null, label));
       }
 
+      function pageError(message) {
+        if (/^404|not found|no route/i.test(String(message ?? ''))) {
+          return '后端插件是旧进程，缺少这个接口。请在终端重启 `dsh --profile lims web`，再刷新本页。（' + message + '）';
+        }
+        return message;
+      }
+
       function ErrorBox({ message, onRetry }) {
         return h(
           'div',
@@ -1506,15 +1633,21 @@
         const [busy, setBusy] = useState(null);
         const [result, setResult] = useState(null);
         const [error, setError] = useState(null);
+        const [reviewAck, setReviewAck] = useState(false);
         if (!plans || plans.length === 0) return null;
+        const needsReview = plans.some((plan) => plan.status === 'needs_review');
         const confirm = async (planId) => {
           setBusy(planId);
           setError(null);
           try {
-            const data = await api('/api/lims/confirm', { method: 'POST', body: { planId } });
+            const data = await api('/api/lims/confirm', { method: 'POST', body: { planId, reviewAck } });
             setResult(data);
           } catch (failure) {
-            setError(failure.message);
+            setError(
+              failure?.data?.requiresReviewAck
+                ? '这条方案是「需审核」：勾选下面的「审核已完成」后再确认（审核结论会写入审计）。'
+                : failure.message,
+            );
           } finally {
             setBusy(null);
           }
@@ -1542,6 +1675,14 @@
             h(Icon, { name: 'info', size: 12 }),
             h('div', null, h('strong', null, '当前是候选方案，尚未确认'), h('span', null, '方案已写入 MongoDB；确认后才占用资源并写入审计。')),
           ),
+          needsReview
+            ? h(
+                'label',
+                { className: 'alims-review-ack' },
+                h('input', { type: 'checkbox', checked: reviewAck, onChange: (event) => setReviewAck(event.target.checked) }),
+                h('span', null, h('b', null, '需先完成方法 / 资质审核：'), '勾选表示你已人工审核该方案；确认时审核人与时间会写入审计。'),
+              )
+            : null,
           h(
             'div',
             { className: 'alims-tool-confirm-list' },
@@ -1554,10 +1695,24 @@
                   'button',
                   {
                     className: 'alims-btn alims-btn-primary',
-                    disabled: Boolean(busy) || plan.status === 'confirmed' || plan.status === 'superseded' || plan.status === 'needs_review',
+                    disabled:
+                      Boolean(busy) ||
+                      plan.status === 'confirmed' ||
+                      plan.status === 'superseded' ||
+                      (plan.status === 'needs_review' && !reviewAck),
                     onClick: () => confirm(plan.id),
                   },
-                  plan.status === 'confirmed' ? '已确认' : plan.status === 'superseded' ? '已替代' : plan.status === 'needs_review' ? '需审核' : busy === plan.id ? '确认中…' : '确认此方案',
+                  plan.status === 'confirmed'
+                    ? '已确认'
+                    : plan.status === 'superseded'
+                      ? '已替代'
+                      : busy === plan.id
+                        ? '确认中…'
+                        : plan.status === 'needs_review'
+                          ? reviewAck
+                            ? '确认此方案（已审核）'
+                            : '需审核'
+                          : '确认此方案',
                 ),
               ),
             ),
@@ -1617,31 +1772,126 @@
         );
       }
 
+      /**
+       * Only decision points and final answers render a full card in the chat.
+       * Everything else (reads, lookups, policy dumps) collapses into a one-line
+       * strip: during a multi-step turn those results are still moving, and a wall
+       * of cards buries the conclusion.
+       */
+      const CARD_TOOLS = new Set([
+        'lims_generate_plans',
+        'lims_revise_plan',
+        'lims_confirm_plan',
+        'lims_analyze_downtime',
+        'lims_analyze_change',
+        'lims_prepare_task_draft',
+        'lims_create_task_draft',
+        'lims_week_plan',
+        'lims_generate_test_plan',
+        'lims_equipment_bookings',
+      ]);
+      const TOOL_LABELS = {
+        lims_overview: '读取实验室概览',
+        lims_list_specs: '读取 SPEC 列表',
+        lims_get_spec: '读取 SPEC 详情',
+        lims_list_tasks: '读取规格活动',
+        lims_get_task: '读取活动详情',
+        lims_list_projects: '读取项目',
+        lims_get_project: '读取项目详情',
+        lims_list_requests: '读取测试请求',
+        lims_list_orders: '读取订单',
+        lims_get_order: '读取订单详情',
+        lims_list_policies: '读取排程规则',
+        lims_explain_resource: '解释资源可用性',
+        lims_analyze_bottlenecks: '分析瓶颈',
+        lims_simulate_capacity: '情景模拟',
+        lims_analyze_downtime: '停机影响分析',
+        lims_analyze_change: '变更影响分析',
+        lims_generate_plans: '候选排程方案',
+        lims_revise_plan: '按新约束重排',
+        lims_confirm_plan: '确认方案',
+        lims_prepare_task_draft: '拆解草稿',
+        lims_create_task_draft: '创建任务草稿',
+        lims_week_plan: '周计划',
+        lims_equipment_bookings: '设备预约数',
+      };
+
+      function toolStripSummary(toolName, meta, text) {
+        if (!meta) {
+          const firstLine = String(text ?? '').split('\n').find((line) => line.trim());
+          return firstLine ? firstLine.slice(0, 60) : '已完成';
+        }
+        if (meta.kind === 'overview') {
+          const stats = meta.overview?.stats ?? meta.stats ?? {};
+          return `${stats.totalTasks ?? '—'} 条活动 · 设备 ${stats.equipmentAvailable ?? '—'}/${stats.equipmentTotal ?? '—'}`;
+        }
+        if (meta.kind === 'tasks') return `${meta.total ?? (meta.tasks ?? []).length} 条活动`;
+        if (meta.kind === 'task') return meta.task?.name ?? meta.task?.id ?? '活动详情';
+        if (meta.kind === 'projects') return `${(meta.projects ?? []).length} 个项目`;
+        if (meta.kind === 'orders') return `${(meta.orders ?? []).length} 个订单`;
+        if (meta.kind === 'requests') return `${(meta.requests ?? []).length} 条请求`;
+        if (meta.kind === 'resource') return meta.resource?.name ? `${meta.resource.name} · ${meta.usable ? '可用' : '不可用'}` : '资源解释';
+        if (meta.kind === 'analytics') return `瓶颈 ${(meta.bottleneck?.slice?.(0, 2) ?? []).join('、') || '—'}`;
+        if (meta.kind === 'policies') return `规则 ${meta.policy?.ruleVersion ?? meta.ruleVersion ?? '—'}（未确认）`;
+        return '已完成';
+      }
+
+      function ToolStrip({ toolName, summary, pending, expanded, onToggle }) {
+        return h(
+          'button',
+          {
+            type: 'button',
+            className: cx('alims-tool-strip', pending && 'is-pending', expanded && 'is-open'),
+            onClick: onToggle,
+            title: expanded ? '收起这次查询' : '展开这次查询的明细',
+          },
+          h('span', { className: 'alims-tool-strip-icon' }, pending ? h('span', { className: 'alims-spinner' }) : h(Icon, { name: 'check', size: 10 })),
+          h('span', { className: 'alims-tool-strip-label' }, TOOL_LABELS[toolName] ?? toolName),
+          h('span', { className: 'alims-tool-strip-sum' }, pending ? '进行中…' : summary),
+          h(Icon, { name: 'chevron', size: 9, style: expanded ? { transform: 'rotate(90deg)' } : undefined }),
+        );
+      }
+
       function LimsToolView(props) {
         return h(ToolQuoteContext.Provider, { value: props.inputActions || null }, h(LimsToolViewBody, props));
       }
 
       function LimsToolViewBody({ phase, block, toolName }) {
+        const [expanded, setExpanded] = useState(false);
+        const isCardTool = CARD_TOOLS.has(toolName);
         if (phase !== 'result') {
-          return h(
-            'div',
-            { className: 'alims-tool-card is-pending' },
-            h(
-              'div',
-              { className: 'alims-tool-head' },
-              h('span', { className: 'alims-tool-icon is-brand' }, h(Icon, { name: 'spark', size: 13 })),
-              h('div', { className: 'alims-tool-head-text' }, h('div', { className: 'alims-tool-title' }, '智能实验室正在查询'), h('div', { className: 'alims-tool-sub' }, toolName)),
-              h('span', { className: 'alims-tool-badge' }, 'LIMS'),
-            ),
-            h('div', { className: 'alims-tool-pending' }, h('span', { className: 'alims-spinner' }), '运行确定性引擎…'),
-          );
+          // Mid-turn: never a card. Just a thin line while the read runs.
+          return h(ToolStrip, { toolName, summary: '', pending: true, expanded: false, onToggle: () => {} });
         }
         const meta = block?.meta;
+        const textContent = (block?.content ?? []).filter((item) => item.type === 'text').map((item) => item.text).join('\n');
+        // Reads collapse to one line; the user can open the detail. Decisions and
+        // final answers keep the full card, because that is where they act.
+        if (!isCardTool && !(meta && meta.kind === 'error')) {
+          if (!expanded) {
+            return h(ToolStrip, {
+              toolName,
+              summary: toolStripSummary(toolName, meta, textContent),
+              pending: false,
+              expanded: false,
+              onToggle: () => setExpanded(true),
+            });
+          }
+          return h(
+            'div',
+            { className: 'alims-tool-strip-wrap' },
+            h(ToolStrip, { toolName, summary: toolStripSummary(toolName, meta, textContent), pending: false, expanded: true, onToggle: () => setExpanded(false) }),
+            h(LimsToolCardBody, { block, toolName, meta, textContent }),
+          );
+        }
+        return h(LimsToolCardBody, { block, toolName, meta, textContent });
+      }
+
+      function LimsToolCardBody({ block, toolName, meta, textContent }) {
         if (meta && meta.kind === 'error') {
           return h(ToolCard, { icon: 'alert', title: 'LIMS 查询失败', subtitle: meta.tool, tone: 'error' }, h('div', { className: 'alims-tool-error' }, meta.error));
         }
         if (!meta) {
-          const textContent = (block?.content ?? []).filter((item) => item.type === 'text').map((item) => item.text).join('\n');
           return h(ToolCard, { icon: 'flask', title: '智能实验室', subtitle: toolName }, h('pre', { className: 'alims-tool-raw' }, textContent || '已完成。'));
         }
         if (meta.kind === 'bookings') {
@@ -1892,7 +2142,7 @@
           const orders = meta.orders ?? [];
           return h(
             ToolCard,
-            { icon: 'file', title: 'Test Orders 与 Spec', subtitle: `${orders.length} 个订单 · ${meta.policy?.ruleVersion ?? ''}`, facts: [`规则版本 ${meta.policy?.ruleVersion ?? '—'}`, '订单与任务关联为原型推断'] },
+            { icon: 'file', title: 'Test Orders 与 Spec', subtitle: `${orders.length} 个订单 · ${meta.policy?.ruleVersion ?? ''}`, facts: [`规则版本 ${meta.policy?.ruleVersion ?? '—'}`, 'Order 列与 SPEC 精确关联'] },
             h(ToolKpis, {
               items: [
                 { label: '订单', value: orders.length, unit: '个' },
@@ -1914,7 +2164,7 @@
                 ),
               },
             ),
-            h('div', { className: 'alims-tool-note' }, '订单 → 任务关联为原型推断（同模板 + 交期接近），需 TL 确认。'),
+            h('div', { className: 'alims-tool-note' }, 'Order 与 SPEC 按排程表的 Order 列关联；没有 Order 的 SPEC 留空，不做推断。'),
           );
         }
         if (meta.kind === 'order') {
@@ -2051,6 +2301,9 @@
         'lims_list_policies',
         'lims_prepare_task_draft',
         'lims_create_task_draft',
+        'lims_list_specs',
+        'lims_get_spec',
+        'lims_week_plan',
       ];
       const LIMS_ANSWER_CARD_KEY = 'lims-answer-cards';
       const SURFACE_EVENT_TYPES = new Set(['system/message', 'developer/message', 'user/message', 'assistant/message', 'tool/result']);
@@ -2344,6 +2597,7 @@
                 });
               }),
           h('div', { className: 'alims-inline-note' }, '聊天按钮会把卡片主题插入聊天输入框；回答区可继续用同一组业务卡片（工具卡片、资源卡、项目卡等）呈现结果。'),
+          h(DataResetCard, null),
         );
       }
 
@@ -3019,6 +3273,632 @@
         );
       }
 
+      // ----------------------------------------------------------- data reset card
+      const RESET_SCOPES = [
+        { id: 'all', label: '全部重置（初始 mock）', hint: 'SPEC / 活动 / 方案 / 停机 / 变更 / 审计全部回到初始状态', danger: true },
+        { id: 'plans', label: '清空候选与已确认方案', hint: '只删方案和确认写入的占用，SPEC 数据不动', danger: false },
+        { id: 'downtime', label: '清空停机登记', hint: '删掉 lims_analyze_downtime 写入的设备停机', danger: false },
+        { id: 'changes', label: '清空变更记录', hint: '删掉 ChangeEvent / 影响行 / 样品与交期覆盖', danger: false },
+      ];
+
+      function DataResetCard() {
+        const ctx = React.useContext(LimsContext) || {};
+        const [armed, setArmed] = useState(null);
+        const [busy, setBusy] = useState(null);
+        const [last, setLast] = useState(null);
+        const [error, setError] = useState(null);
+        const taskId = ctx.workspace?.taskId || null;
+        const armTimer = useRef(null);
+
+        const run = async (scope, targetId) => {
+          setBusy(scope);
+          setError(null);
+          try {
+            const data = await api('/api/lims/reset', { method: 'POST', body: { scope, targetId, actor: 'workspace' } });
+            setLast({ scope, at: new Date().toISOString(), message: data.message, cleared: data.cleared ?? null });
+            ctx.showToast?.('测试数据已重置', 'ok', data.message || scope);
+            setArmed(null);
+            if (scope === 'all') {
+              ctx.setPage?.('dashboard');
+            }
+            ctx.reloadAll?.();
+          } catch (failure) {
+            setError(failure.message);
+            ctx.showToast?.('重置失败', 'error', failure.message);
+          } finally {
+            setBusy(null);
+          }
+        };
+
+        const press = (scope, targetId) => {
+          if (armed?.scope !== scope || armed?.targetId !== targetId) {
+            setArmed({ scope, targetId, at: Date.now() });
+            if (armTimer.current) clearTimeout(armTimer.current);
+            armTimer.current = setTimeout(() => setArmed(null), 4000);
+            return;
+          }
+          if (armTimer.current) clearTimeout(armTimer.current);
+          run(scope, targetId);
+        };
+
+        const buttonFor = (scope, label, hint, targetId, danger) => {
+          const isArmed = armed?.scope === scope && (armed?.targetId ?? null) === (targetId ?? null);
+          const isBusy = busy === scope;
+          return h(
+            'button',
+            {
+              key: `${scope}-${targetId ?? ''}`,
+              className: cx('alims-reset-btn', danger && 'is-danger', isArmed && 'is-armed'),
+              title: hint,
+              disabled: Boolean(busy),
+              onClick: () => press(scope, targetId),
+            },
+            h(Icon, { name: isBusy ? 'refresh' : isArmed ? 'alert' : 'refresh', size: 11 }),
+            isBusy ? '重置中…' : isArmed ? `再点一次确认：${label}` : label,
+          );
+        };
+
+        return h(
+          Card,
+          { className: 'alims-reset-card' },
+          h(SectionTitle, { title: '测试数据', meta: '演示用 · 两段确认 · 只影响原型 MongoDB' }),
+          h(
+            'div',
+            { className: 'alims-reset-grid' },
+            RESET_SCOPES.map((entry) => buttonFor(entry.id, entry.label, entry.hint, null, entry.danger)),
+            buttonFor('workspace', '复位工作区（回概览）', '只把右侧工作区复位，不动任何数据', null, false),
+            buttonFor(
+              'task',
+              taskId ? `重置当前活动 ${taskId}` : '重置当前活动（先在排程页选一个）',
+              '清空这条活动的方案、确认占用与变更覆盖',
+              taskId,
+              false,
+            ),
+          ),
+          h(
+            'div',
+            { className: 'alims-inline-note' },
+            '第一次点击是"待确认"，4 秒内再点一次才执行；全部重置会把数据库恢复到 data/*.csv 的初始 mock 数据。',
+          ),
+          error ? h('div', { className: 'alims-tool-error' }, error) : null,
+          last
+            ? h(
+                'div',
+                { className: 'alims-reset-result' },
+                h(Icon, { name: 'check', size: 11 }),
+                h('span', null, `${new Date(last.at).toLocaleTimeString()} · ${last.message || last.scope}`),
+              )
+            : null,
+        );
+      }
+
+      // --------------------------------------------------------------- spec board
+      const SPEC_PHASES = [
+        { id: 'planning', label: '待排', hint: 'Approved + 有计划窗口才可排', icon: 'target' },
+        { id: 'booked', label: '已占位 / 已定稿', hint: 'Pre-booked / Finalized', icon: 'check' },
+        { id: 'executing', label: '执行中', hint: '已产生占用', icon: 'play' },
+        { id: 'request', label: '请求 / 审批', hint: '不可排 · HC-101', icon: 'file' },
+        { id: 'post', label: '结果 / 报告审批', hint: '执行后的审批', icon: 'info' },
+        { id: 'closed', label: '已关闭', hint: 'Completed / Cancelled', icon: 'x' },
+      ];
+
+      function specTone(spec) {
+        if (spec.lifecycle?.schedulable) return 'ok';
+        if (spec.lifecycle?.state === 'no_window') return 'warn';
+        if (spec.phase === 'executing') return 'warn';
+        return 'idle';
+      }
+
+      function SpecActivityRow({ activity }) {
+        const tone = activity.readiness?.tone ?? 'idle';
+        return h(
+          'div',
+          { className: 'alims-spec-activity' },
+          h('span', { style: { color: 'var(--dsw-alias-label-secondary)' } }, `#${activity.activityNo}`),
+          h(
+            'div',
+            { className: 'alims-spec-activity-main' },
+            h('b', null, activity.name),
+            h(
+              'span',
+              { style: { color: 'var(--dsw-alias-label-secondary)' } },
+              ` · ${activity.resourceName ?? '无资源'} · ${activity.durationLabel}${activity.effortHours ? ` / ${activity.effortHours}h` : ''}${activity.personId ? ` · ${activity.personId}` : ''}`,
+            ),
+          ),
+          h(Pill, { tone }, activity.readiness?.label ?? activity.status ?? '记录'),
+        );
+      }
+
+      function SpecCard({ spec, open, onToggle, onOpenTask, onGenerate }) {
+        const activities = spec.activities ?? [];
+        const ready = activities.filter((activity) => activity.readiness?.state === 'ready');
+        const reason = (spec.lifecycle?.reasons ?? [])[0] ?? null;
+        return h(
+          'div',
+          {
+            className: cx('alims-spec-card', spec.lifecycle?.schedulable ? 'is-planned' : 'is-blocked'),
+            onClick: onToggle,
+            role: 'button',
+            tabIndex: 0,
+            onKeyDown: (event) => {
+              if (event.key === 'Enter' || event.key === ' ') onToggle();
+            },
+          },
+          h(
+            'div',
+            { className: 'alims-spec-head' },
+            h('strong', null, spec.id),
+            h(Pill, { tone: specTone(spec), dot: true }, spec.statusLabel),
+            spec.priority?.code ? h(Pill, { tone: priorityInfo(spec.priority.value).tone }, spec.priority.code) : h(Pill, { tone: 'idle' }, '未填优先级'),
+            spec.competencyCheck === 'OFF' ? h(Pill, { tone: 'warn' }, '能力 OFF') : null,
+          ),
+          spec.title ? h('div', { className: 'alims-spec-title' }, spec.title) : null,
+          h(
+            'div',
+            { className: 'alims-spec-meta' },
+            h('span', null, h('b', null, '窗口 '), spec.windowLabel ?? '无'),
+            h('span', null, h('b', null, '样品 '), spec.instockDate ?? '待确认'),
+            h('span', null, h('b', null, '活动 '), `${activities.length}`),
+            spec.planNo ? h('span', null, h('b', null, 'PLAN '), spec.planNo) : null,
+            spec.orderNo ? h('span', null, h('b', null, 'Order '), spec.orderNo) : null,
+            spec.site ? h('span', null, h('b', null, '站点 '), spec.site) : null,
+          ),
+          reason
+            ? h(
+                'div',
+                { className: cx('alims-spec-reason', spec.lifecycle?.state === 'no_window' && 'is-warn') },
+                h(Icon, { name: 'alert', size: 11 }),
+                h('span', null, reason),
+              )
+            : null,
+          open
+            ? h(
+                'div',
+                { className: 'alims-spec-activities' },
+                activities.length > 0
+                  ? activities.map((activity) => h(SpecActivityRow, { key: activity.id, activity }))
+                  : h('div', { className: 'alims-spec-meta' }, '该 SPEC 还没有拆出规格活动。'),
+                (spec.lifecycle?.missingFields ?? []).length > 0
+                  ? h('div', { className: 'alims-spec-meta' }, h('span', null, h('b', null, '缺字段 '), spec.lifecycle.missingFields.join('、')))
+                  : null,
+              )
+            : null,
+          h(
+            'div',
+            { className: 'alims-spec-foot' },
+            h(
+              'button',
+              {
+                className: 'alims-link',
+                onClick: (event) => {
+                  event.stopPropagation();
+                  onToggle();
+                },
+              },
+              open ? '收起活动' : '展开活动',
+            ),
+            ready.length > 0
+              ? h(
+                  'button',
+                  {
+                    className: 'alims-link',
+                    onClick: (event) => {
+                      event.stopPropagation();
+                      onGenerate(ready[0].id);
+                    },
+                  },
+                  `排 ${ready[0].id}`,
+                )
+              : null,
+            (spec.taskIds ?? []).length > 0
+              ? h(
+                  'button',
+                  {
+                    className: 'alims-link',
+                    onClick: (event) => {
+                      event.stopPropagation();
+                      onOpenTask(spec.taskIds[0]);
+                    },
+                  },
+                  '活动详情',
+                )
+              : null,
+          ),
+        );
+      }
+
+      function SpecsPage({ onOpenTask, onGenerate }) {
+        const state = useApi('/api/lims/specs');
+        const [phase, setPhase] = useState('all');
+        const [openId, setOpenId] = useState(null);
+        if (state.loading && !state.data) return h('div', { className: 'alims-page' }, h(Loading, { label: '正在读取 SPEC…' }));
+        if (state.error) return h('div', { className: 'alims-page' }, h(ErrorBox, { message: pageError(state.error), onRetry: state.reload }));
+        const data = state.data;
+        if (!data) return null;
+        const summary = data.summary ?? {};
+        const specs = data.specs ?? [];
+        const groups = SPEC_PHASES.map((entry) => ({
+          ...entry,
+          specs: specs.filter((spec) => spec.phase === entry.id),
+        })).filter((entry) => entry.specs.length > 0);
+        const visible = phase === 'all' ? groups : groups.filter((entry) => entry.id === phase);
+        const byStatus = summary.byStatus ?? {};
+        return h(
+          'div',
+          { className: 'alims-page' },
+          h(
+            'div',
+            { className: 'alims-stats' },
+            h(StatTile, { label: 'SPEC', value: summary.total ?? specs.length, unit: '个', foot: `${Object.keys(byStatus).length} 种状态`, tone: 'brand', icon: 'file' }),
+            h(StatTile, { label: '可排', value: summary.schedulable ?? 0, unit: '个', foot: 'Approved / Pre-booked / Finalized', tone: 'ok', icon: 'target' }),
+            h(StatTile, { label: '不可排', value: summary.notSchedulable ?? 0, unit: '个', foot: '状态或计划窗口不满足', tone: 'warn', icon: 'alert' }),
+            h(StatTile, { label: '活动', value: summary.tasks ?? 0, unit: '条', foot: '已投影成可排活动', tone: 'brand', icon: 'list' }),
+          ),
+          h(
+            'div',
+            { className: 'alims-filter-row' },
+            h(
+              'button',
+              { className: cx('alims-filter-chip', phase === 'all' && 'is-active'), onClick: () => setPhase('all') },
+              `全部 ${specs.length}`,
+            ),
+            groups.map((group) =>
+              h(
+                'button',
+                { key: group.id, className: cx('alims-filter-chip', phase === group.id && 'is-active'), onClick: () => setPhase(group.id) },
+                `${group.label} ${group.specs.length}`,
+              ),
+            ),
+          ),
+          ...visible.map((group) =>
+            h(
+              'div',
+              { key: group.id, className: 'alims-spec-group' },
+              h(
+                'div',
+                { className: 'alims-spec-group-head' },
+                h('strong', null, group.label),
+                h('span', null, `${group.hint} · ${group.specs.length}`),
+              ),
+              group.specs.map((spec) =>
+                h(SpecCard, {
+                  key: spec.id,
+                  spec,
+                  open: openId === spec.id,
+                  onToggle: () => setOpenId(openId === spec.id ? null : spec.id),
+                  onOpenTask,
+                  onGenerate,
+                }),
+              ),
+            ),
+          ),
+          h(
+            'div',
+            { className: 'alims-disclaimer' },
+            `规则 ${data.ruleVersion ?? '—'}（未确认）。不可排原因来自 HC-101 状态准入与 HC-102 计划窗口必填，是数据判定不是估计。`,
+          ),
+        );
+      }
+
+      // ------------------------------------------------------------- week plan
+      function shiftDayKey(key, days) {
+        const date = new Date(`${key}T00:00:00Z`);
+        date.setUTCDate(date.getUTCDate() + days);
+        return date.toISOString().slice(0, 10);
+      }
+
+      function WeekPlanPage({ onOpenTask }) {
+        const [weeks, setWeeks] = useState(6);
+        const [anchor, setAnchor] = useState(null);
+        const query = `/api/lims/week-plan?weeks=${weeks}${anchor ? `&weekStart=${encodeURIComponent(anchor)}` : ''}`;
+        const state = useApi(query, [weeks, anchor]);
+        if (state.loading && !state.data) return h('div', { className: 'alims-page' }, h(Loading, { label: '正在汇总周计划…' }));
+        if (state.error) return h('div', { className: 'alims-page' }, h(ErrorBox, { message: pageError(state.error), onRetry: state.reload }));
+        const data = state.data;
+        if (!data) return null;
+        const summary = data.summary ?? {};
+        const weekStart = anchor || data.weekStart;
+        const rowsByWeek = new Map((data.weeks ?? []).map((week) => [week.index, []]));
+        for (const row of data.rows ?? []) {
+          for (const index of row.weekNumbers ?? []) {
+            if (rowsByWeek.has(index)) rowsByWeek.get(index).push(row);
+          }
+        }
+        const fillable = Object.entries(data.fillable ?? {});
+        return h(
+          'div',
+          { className: 'alims-page' },
+          h(
+            'div',
+            { className: 'alims-stats' },
+            h(StatTile, { label: '活动', value: summary.activities ?? 0, unit: '条', foot: `${summary.scheduled ?? 0} 候选 / ${summary.booked ?? 0} 已占`, tone: 'brand', icon: 'calendar' }),
+            h(StatTile, { label: '工时', value: summary.hours ?? 0, unit: 'h', foot: '按活动工时汇总', tone: 'brand', icon: 'clock' }),
+            h(StatTile, { label: '周阈值', value: summary.threshold ?? '—', unit: 'h', foot: `${summary.overThreshold ?? 0} 周超阈值`, tone: summary.overThreshold > 0 ? 'warn' : 'ok', icon: 'gauge' }),
+            h(StatTile, { label: '站点', value: Object.keys(summary.bySite ?? {}).length, foot: Object.entries(summary.bySite ?? {}).map(([site, count]) => `${site} ${count}`).join(' · '), tone: 'brand', icon: 'cube' }),
+          ),
+          h(
+            'div',
+            { className: 'alims-wp-nav' },
+            h('button', { className: 'alims-icon-btn', onClick: () => setAnchor(shiftDayKey(weekStart, -7)), title: '上一周' }, h(Icon, { name: 'chevron', size: 12, style: { transform: 'rotate(180deg)' } })),
+            h('button', { className: 'alims-icon-btn', onClick: () => setAnchor(null), title: '回到演示时钟所在周' }, h(Icon, { name: 'target', size: 12 })),
+            h('button', { className: 'alims-icon-btn', onClick: () => setAnchor(shiftDayKey(weekStart, 7)), title: '下一周' }, h(Icon, { name: 'chevron', size: 12 })),
+            h('div', { className: 'alims-filter-row' },
+              [4, 6, 8].map((value) => h('button', { key: value, className: cx('alims-filter-chip', weeks === value && 'is-active'), onClick: () => setWeeks(value) }, `${value} 周`)),
+            ),
+          ),
+          ...(data.weeks ?? []).map((week) => {
+            const rows = (rowsByWeek.get(week.index) ?? []).sort((first, second) => (first.sequence ?? 99) - (second.sequence ?? 99));
+            return h(
+              'div',
+              { key: week.key, className: cx('alims-wp-week', week.overThreshold && 'is-over') },
+              h(
+                'div',
+                { className: 'alims-wp-week-head' },
+                h('strong', null, `${week.label} · 第 ${week.week} 周`),
+                h('span', null, `${week.rangeLabel} · ${week.hours}h · ${rows.length} 条${week.overThreshold ? ' · 超阈值' : ''}`),
+              ),
+              rows.length === 0
+                ? h('div', { className: 'alims-wp-row' }, h('div', { className: 'alims-wp-main' }, h('div', { className: 'alims-wp-meta' }, '本周没有已排活动。')))
+                : rows.map((row) =>
+                    h(
+                      'div',
+                      {
+                        key: `${row.activityId}-${week.index}`,
+                        className: 'alims-wp-row',
+                        onClick: row.activityId ? () => onOpenTask(row.activityId) : undefined,
+                        role: row.activityId ? 'button' : undefined,
+                      },
+                      h('span', { className: 'alims-wp-seq' }, row.sequence ? `#${row.sequence}` : '—'),
+                      h(
+                        'div',
+                        { className: 'alims-wp-main' },
+                        h('div', { className: 'alims-wp-title' }, row.test),
+                        h(
+                          'div',
+                          { className: 'alims-wp-meta' },
+                          `${row.limsNo ?? row.specId} · ${row.priorityCode ?? row.priority} · ${row.equipmentName ?? '—'} · ${row.personName ?? '待分配'} · ${round1Text(row.weeks?.[week.index] ?? 0)}h${row.eventDate ? ` · ${row.eventDate}` : ''}${row.planNo ? ` · ${row.planNo}` : ''}`,
+                        ),
+                      ),
+                      h(Pill, { tone: row.status === 'confirmed' ? 'ok' : row.source === 'booking' ? 'brand' : 'warn' }, row.statusLabel ?? row.status),
+                    ),
+                  ),
+            );
+          }),
+          h(
+            Card,
+            null,
+            h(SectionTitle, { title: '回填字段', meta: `${fillable.filter(([, entry]) => entry.ok).length}/${fillable.length} 可填` }),
+            h(
+              'div',
+              { className: 'alims-fillable-row' },
+              fillable.map(([key, entry]) =>
+                h(
+                  'span',
+                  { key, className: cx('alims-fillable-chip', entry.ok ? 'is-ok' : 'is-missing'), title: entry.note },
+                  entry.ok ? h(Icon, { name: 'check', size: 9 }) : h(Icon, { name: 'x', size: 9 }),
+                  key,
+                ),
+              ),
+            ),
+            h('div', { className: 'alims-spec-meta', style: { marginTop: '5px' } }, (data.notes ?? []).join(' ')),
+          ),
+        );
+      }
+
+      // ------------------------------------------------------------- four-layer gantt
+      function GanttRow({ row, days, collapsed, toggle, onOpenTask }) {
+        const tone = row.tone || 'brand';
+        const hasChildren = row.kind !== 'activity';
+        const indent = (row.level - 1) * 7;
+        const left = row.span ? (row.span.from / days.length) * 100 : 0;
+        const width = row.span ? ((row.span.to - row.span.from + 1) / days.length) * 100 : 0;
+        return h(
+          'div',
+          { className: cx('alims-tree-row', `is-level-${row.level}`) },
+          h(
+            'div',
+            { className: 'alims-tree-label', style: { paddingLeft: `${5 + indent}px` } },
+            hasChildren
+              ? h(
+                  'button',
+                  {
+                    className: 'alims-tree-toggle',
+                    title: collapsed ? '展开' : '收起',
+                    onClick: (event) => {
+                      event.stopPropagation();
+                      toggle(row.id);
+                    },
+                  },
+                  h(Icon, { name: 'chevron', size: 9, style: collapsed ? { transform: 'rotate(-90deg)' } : undefined }),
+                )
+              : h('span', { className: 'alims-tree-toggle' }),
+            h(
+              'div',
+              { className: 'alims-tree-label-body' },
+              h('strong', { title: row.label }, row.label),
+              row.sublabel ? h('small', { title: row.sublabel }, row.sublabel) : null,
+            ),
+          ),
+          h(
+            'div',
+            {
+              className: 'alims-tree-track',
+              onClick: row.kind === 'activity' && row.activityId ? () => onOpenTask(row.activityId) : undefined,
+              role: row.kind === 'activity' ? 'button' : undefined,
+              style: row.kind === 'activity' ? { cursor: 'pointer' } : undefined,
+            },
+            days.map((day, index) =>
+              h('span', {
+                key: day.key,
+                className: cx('alims-tree-cell', day.isWeekend && 'is-weekend', day.isToday && 'is-today'),
+              }),
+            ),
+            row.span
+              ? h('span', {
+                  className: cx('alims-tree-bar', `is-${tone}`, row.clippedStart && 'is-clipped-start', row.clippedEnd && 'is-clipped-end'),
+                  style: { left: `${left}%`, width: `${Math.max(width, 0.8)}%` },
+                  title: `${row.label}｜${row.startKey} → ${row.endKey}${row.hours ? `｜${row.hours}h` : ''}${row.statusLabel ? `｜${row.statusLabel}` : ''}`,
+                })
+              : null,
+          ),
+        );
+      }
+
+      function GanttPage({ onOpenTask }) {
+        const [site, setSite] = useState('all');
+        const [collapsed, setCollapsed] = useState({});
+        const [dayWidth, setDayWidth] = useState(22);
+        const query = `/api/lims/gantt${site === 'all' ? '' : `?site=${encodeURIComponent(site)}`}`;
+        const state = useApi(query, [site]);
+        if (state.loading && !state.data) return h('div', { className: 'alims-page' }, h(Loading, { label: '正在生成四层甘特…' }));
+        if (state.error) return h('div', { className: 'alims-page' }, h(ErrorBox, { message: pageError(state.error), onRetry: state.reload }));
+        const data = state.data;
+        if (!data) return null;
+        const days = data.window?.days ?? [];
+        const summary = data.summary ?? {};
+        const rows = data.rows ?? [];
+        const sites = summary.sites ?? [];
+        const hidden = new Set();
+        const flat = [];
+        for (const row of rows) {
+          const parentHidden = row.parentId ? hidden.has(row.parentId) : false;
+          if (collapsed[row.parentId]) {
+            hidden.add(row.id);
+            continue;
+          }
+          if (parentHidden) {
+            hidden.add(row.id);
+            continue;
+          }
+          if (row.offWindow) {
+            hidden.add(row.id);
+            continue;
+          }
+          flat.push(row);
+        }
+        const toggle = (id) => setCollapsed((previous) => ({ ...previous, [id]: !previous[id] }));
+        return h(
+          'div',
+          { className: 'alims-page' },
+          h(
+            'div',
+            { className: 'alims-stats' },
+            h(StatTile, { label: '项目', value: summary.projects ?? 0, unit: '个', foot: `${summary.plans ?? 0} 个 PLAN 批次`, tone: 'brand', icon: 'layer' }),
+            h(StatTile, { label: 'SPEC', value: summary.specs ?? 0, unit: '个', foot: `${summary.sites?.length ?? 0} 个站点`, tone: 'brand', icon: 'file' }),
+            h(StatTile, { label: '活动已排', value: summary.scheduled ?? 0, unit: '条', foot: `共 ${summary.activities ?? 0} 条，${summary.unscheduled ?? 0} 条未排`, tone: 'ok', icon: 'calendar' }),
+            h(StatTile, { label: '工时', value: summary.hours ?? 0, unit: 'h', foot: `窗口 ${data.window?.label ?? '—'}`, tone: 'brand', icon: 'clock' }),
+          ),
+          h(
+            'div',
+            { className: 'alims-wp-nav' },
+            h(
+              'div',
+              { className: 'alims-filter-row' },
+              [{ id: 'all', label: `全部 ${summary.activities ?? 0}` }]
+                .concat(sites.map((entry) => ({ id: entry, label: entry })))
+                .map((option) =>
+                  h(
+                    'button',
+                    { key: option.id, className: cx('alims-filter-chip', site === option.id && 'is-active'), onClick: () => setSite(option.id) },
+                    option.label,
+                  ),
+                ),
+            ),
+            h(
+              'div',
+              { className: 'alims-filter-row' },
+              [
+                { width: 14, label: '紧凑' },
+                { width: 22, label: '标准' },
+                { width: 34, label: '宽松' },
+              ].map((option) =>
+                h(
+                  'button',
+                  { key: option.width, className: cx('alims-filter-chip', dayWidth === option.width && 'is-active'), onClick: () => setDayWidth(option.width) },
+                  option.label,
+                ),
+              ),
+            ),
+            h('button', { className: 'alims-link', onClick: () => setCollapsed({}) }, '全部展开'),
+          ),
+          h(
+            'div',
+            { className: 'alims-gantt' },
+            h(
+              'div',
+              { className: 'alims-tree-scroll' },
+              h(
+              'div',
+              { className: 'alims-tree-grid', style: { minWidth: `${118 + Math.max(days.length, 1) * dayWidth}px` } },
+              h(
+                'div',
+                { className: 'alims-tree-head' },
+                h('div', { className: 'alims-tree-head-label' }, data.window?.label ?? ''),
+                h(
+                  'div',
+                  { className: 'alims-tree-days' },
+                  days.map((day) =>
+                    h('span', {
+                      key: day.key,
+                      className: cx('alims-tree-day', day.isWeekend && 'is-weekend', day.isToday && 'is-today'),
+                      title: day.label,
+                    }),
+                  ),
+                  days
+                    .map((day, index) => ({ day, index }))
+                    .filter((entry) => entry.index === 0 || entry.day.weekday === '周一')
+                    .map((entry) => {
+                      const weeks = days
+                        .map((day, index) => ({ day, index }))
+                        .filter((item) => item.day.weekday === '周一' || item.index === 0);
+                      const following = weeks.find((item) => item.index > entry.index);
+                      const end = following ? following.index : days.length;
+                      return h(
+                        'span',
+                        {
+                          key: `week-${entry.day.key}`,
+                          className: 'alims-tree-week',
+                          style: { left: `${(entry.index / days.length) * 100}%`, width: `${((end - entry.index) / days.length) * 100}%` },
+                          title: entry.day.label,
+                        },
+                        `W${entry.day.week} ${entry.day.month}/${entry.day.day}`,
+                      );
+                    }),
+                ),
+              ),
+              flat.length === 0
+                ? h('div', { className: 'alims-wp-row' }, h('div', { className: 'alims-wp-main' }, h('div', { className: 'alims-wp-meta' }, '这个窗口内没有可显示的计划。')))
+                : flat.map((row) =>
+                    h(GanttRow, {
+                      key: row.id,
+                      row,
+                      days,
+                      collapsed: Boolean(collapsed[row.id]),
+                      toggle,
+                      onOpenTask,
+                    }),
+                  ),
+              ),
+            ),
+            h(
+              'div',
+              { className: 'alims-tree-legend' },
+              h('span', null, h('i', { className: 'alims-tree-dot' }), '候选 / 计划中'),
+              h('span', null, h('i', { className: 'alims-tree-dot is-ok' }), '已确认'),
+              h('span', null, h('i', { className: 'alims-tree-dot is-warn' }), '已占位 / 执行中'),
+              h('span', null, h('i', { className: 'alims-tree-dot is-idle' }), '记录 / 未排'),
+              h('span', null, h('i', { className: 'alims-tree-dot is-error' }), '不可行'),
+              h('span', null, '层级：Project → PLAN 批次 → SPEC → 规格活动'),
+            ),
+          ),
+          h(
+            'div',
+            { className: 'alims-disclaimer' },
+            '层级与客户甘特导出一致（Project / PLAN / SPEC / activity）。历史记录（6–9 月）落在窗口外自动隐藏；点活动行进入排程详情。',
+          ),
+        );
+      }
+
       function OrdersPage({ initialOrderId, onOpenTask, onGenerate }) {
         const list = useApi('/api/lims/orders');
         const [filter, setFilter] = useState('all');
@@ -3056,7 +3936,7 @@
             h(
               'div',
               { className: 'alims-orders-kpis' },
-              h(StatTile, { label: '订单', value: orders.length, unit: '个', foot: '来自 test_requests' }),
+              h(StatTile, { label: '订单', value: orders.length, unit: '个', foot: 'Order 列来自排程回填表' }),
               h(StatTile, { label: '待拆解', value: filters[1].count, unit: '个', tone: filters[1].count > 0 ? 'warn' : 'brand', foot: '还没有关联任务' }),
               h(StatTile, { label: '样品未到位', value: orders.filter((order) => order.sample?.status === 'Not in stock').length, unit: '个', tone: 'warn', foot: '排程不得早于到位时间' }),
               h(StatTile, { label: '未关联任务', value: list.data?.unlinkedTasks?.length || 0, unit: '个', foot: '项目制任务，需 TL 确认订单归属' }),
@@ -3065,7 +3945,7 @@
               'div',
               { className: 'alims-orders-note' },
               h(Icon, { name: 'info', size: 12 }),
-              h('span', null, '订单 → 任务的关联为原型推断（同模板 + 交期接近），不是 LIMS 已确认关系；样品状态与 Task Type 均为待确认假设。'),
+              h('span', null, 'Order 与 SPEC 按 Order 列精确关联；样品读 SPEC 的 Instockdate；能力校验与预约模式标记为待确认。'),
             ),
             h(
               'div',
@@ -3334,8 +4214,16 @@
           h(
             'div',
             { className: 'alims-stats' },
-            h(StatTile, { label: '已有方案 / 未生成', value: `${scheduledTasks} / ${unscheduledTasks}`, unit: '项', foot: `共 ${stats.openTasks ?? totalTasks} 项进行中`, tone: 'brand', icon: 'list' }),
-            h(StatTile, { label: '需关注', value: stats.riskTasks, unit: '项', foot: `${stats.reviewTasks} 项待方法审核`, tone: 'warn', icon: 'alert' }),
+            h(StatTile, {
+              label: 'SPEC 可排 / 不可排',
+              value: `${stats.specSchedulable ?? '—'} / ${stats.specNotSchedulable ?? '—'}`,
+              unit: '个',
+              foot: `共 ${stats.specTotal ?? '—'} 个 · ${stats.specAwaitingApproval ?? 0} 个待审批`,
+              tone: 'brand',
+              icon: 'file',
+            }),
+            h(StatTile, { label: '活动已排 / 未生成', value: `${scheduledTasks} / ${unscheduledTasks}`, unit: '项', foot: `共 ${stats.totalTasks ?? totalTasks} 条规格活动`, tone: 'brand', icon: 'list' }),
+            h(StatTile, { label: '需关注', value: stats.riskTasks, unit: '项', foot: `${stats.sampleNotReady ?? 0} 条样品未齐`, tone: 'warn', icon: 'alert' }),
             h(StatTile, { label: '设备可用', value: `${stats.equipmentAvailable}/${stats.equipmentTotal}`, foot: `${stats.spacesAvailable} 个空间可用`, tone: 'ok', icon: 'cube' }),
             h(StatTile, { label: '14 天负荷', value: stats.equipmentUtilization, unit: '%', foot: `${stats.totalLoadHours ?? 0}h 已占用`, tone: 'brand', icon: 'chart' }),
           ),
@@ -3349,7 +4237,7 @@
               h('div', { className: 'alims-agent-icon' }, h(Icon, { name: 'spark', size: 15 })),
               h('div', null, h('div', { className: 'alims-agent-title' }, 'Agent 协作入口'), h('div', { className: 'alims-agent-sub' }, '右侧对话已接入排程工具；说一句话，方案会出现在这里。')),
               h('div', { className: 'alims-agent-spacer' }),
-              h(Pill, { tone: 'brand', dot: true }, '演示时钟 10/27 08:00'),
+              h(Pill, { tone: 'brand', dot: true }, `演示时钟 ${overview?.clock?.dateLabel ?? '10/30 08:00'}`),
             ),
             h(
               'div',
@@ -3420,7 +4308,7 @@
           h(
             Card,
             { title: '样品到位', className: 'alims-sample-card' },
-            h(SectionTitle, { title: '样品到位 · HC-007', meta: `${sampleTasks.length} 项未齐`, action: h('button', { className: 'alims-link', onClick: () => onNavigate('impact') }, '登记延迟') }),
+            h(SectionTitle, { title: '样品到位 · HC-108', meta: `${sampleTasks.length} 项未齐`, action: h('button', { className: 'alims-link', onClick: () => onNavigate('impact') }, '登记延迟') }),
             sampleTasks.length === 0
               ? h('div', { className: 'alims-muted' }, '所有任务的样品都已到位。')
               : h(
@@ -3805,7 +4693,13 @@
           h(
             'div',
             { className: 'alims-plan-card-head' },
-            h('div', null, h('span', { className: 'alims-plan-option' }, plan.optionLabel || 'A'), h('span', { className: 'alims-plan-strategy' }, plan.strategyLabel)),
+            h(
+              'div',
+              null,
+              h('span', { className: 'alims-plan-option' }, plan.optionLabel || 'A'),
+              h('span', { className: 'alims-plan-strategy' }, plan.strategyLabel),
+              plan.recommended ? h('span', { className: 'alims-plan-recommended' }, '推荐') : null,
+            ),
             h(Pill, { tone: tone.tone }, tone.label),
           ),
           h('div', { className: 'alims-plan-score' }, plan.score, h('span', null, '分')),
@@ -4195,24 +5089,28 @@
       }
 
       function SchedulePage({ tasks, equipment, taskId, plans, selectedPlanId, comparison, actionFeedback, scheduleRefresh, onAudit, onDismissFeedback, onSelectTask, onGenerate, onRevise, onSelectPlan, onClearComparison, onConfirm, busy, toast }) {
-        const [localTask, setLocalTask] = useState(taskId || 'TASK-2005');
+        const [localTask, setLocalTask] = useState(taskId || '');
         const autoTried = useRef(false);
         useEffect(() => {
           if (taskId) setLocalTask(taskId);
         }, [taskId]);
         useEffect(() => {
-          if (plans.length === 0 && !autoTried.current && !busy) {
-            autoTried.current = true;
-            const initial = taskId || 'TASK-2005';
-            setLocalTask(initial);
-            onGenerate(initial);
-          }
-        }, []);
+          if (autoTried.current || busy || plans.length > 0) return;
+          const initial = taskId || tasks[0]?.id;
+          if (!initial) return;
+          autoTried.current = true;
+          setLocalTask(initial);
+          onGenerate(initial);
+        }, [tasks, taskId, busy, plans.length]);
         const selected = plans.find((plan) => plan.id === selectedPlanId) || plans[0] || null;
         const task = tasks.find((item) => item.id === localTask) || tasks[0];
         const [avoidFriday, setAvoidFriday] = useState(false);
         const [preferredEquipment, setPreferredEquipment] = useState('');
         const [earliestStart, setEarliestStart] = useState('');
+        const [reviewAck, setReviewAck] = useState(false);
+        useEffect(() => {
+          setReviewAck(false);
+        }, [selectedPlanId, localTask]);
         return h(
           'div',
           { className: 'alims-page' },
@@ -4288,7 +5186,14 @@
               h('span', { className: 'alims-inline-note' }, '重排会保留旧方案版本并标记为“已替代”，不可再确认。'),
             ),
           ),
-          task?.review ? h('div', { className: 'alims-callout is-warn' }, h(Icon, { name: 'alert', size: 13 }), h('div', null, h('strong', null, '非标准方法'), '：该任务会产生“需审核”方案，确认按钮会被引擎拒绝，直到人工完成方法审核。')) : null,
+          task?.review
+            ? h(
+                'div',
+                { className: 'alims-callout is-warn' },
+                h(Icon, { name: 'alert', size: 13 }),
+                h('div', null, h('strong', null, '非标准方法'), '：产生的方案会标记「需审核」。确认前请在决策区勾选「已完成方法审核」，审核人 / 时间与结论会写入审计。'),
+              )
+            : null,
           h(ResourceScheduleGantt, { initialWeekStart: selected?.segments?.[0]?.day, refreshKey: scheduleRefresh }),
           plans.length === 0
             ? h(Empty, {
@@ -4318,21 +5223,58 @@
                   ),
                   h(
                     'div',
-                    { className: cx('alims-plan-confirm-state', selected.status === 'confirmed' ? 'is-confirmed' : 'is-pending') },
-                    h(Icon, { name: selected.status === 'confirmed' ? 'check' : 'info', size: 12 }),
+                    { className: 'alims-decision', 'data-decision': 'confirm-plan' },
                     h(
                       'div',
-                      { className: 'alims-plan-confirm-text' },
-                      h('strong', null, selected.status === 'confirmed' ? '已模拟确认' : '候选方案 · 尚未确认'),
-                      h('span', null, selected.status === 'confirmed' ? '资源占用与审计已写入；无需再次确认。' : '方案已写入 MongoDB，但尚未占用资源；点右侧按钮确认后才生效。'),
+                      { className: 'alims-decision-head' },
+                      h('div', { className: 'alims-decision-title' }, h(Icon, { name: 'target', size: 11 }), '需要你决定'),
+                      h('span', { className: 'alims-decision-hint' }, '下面是决策区，不是展示区'),
                     ),
-                    selected.status === 'confirmed'
-                      ? null
-                      : h(
-                          'button',
-                          { className: 'alims-btn alims-btn-primary', disabled: busy || selected.status === 'needs_review', onClick: () => onConfirm(selected.id) },
-                          selected.status === 'needs_review' ? '需审核' : '确认此方案',
-                        ),
+                    h(
+                      'div',
+                      { className: cx('alims-plan-confirm-state', selected.status === 'confirmed' ? 'is-confirmed' : 'is-pending') },
+                      h(Icon, { name: selected.status === 'confirmed' ? 'check' : 'info', size: 12 }),
+                      h(
+                        'div',
+                        { className: 'alims-plan-confirm-text' },
+                        h('strong', null, selected.status === 'confirmed' ? '已模拟确认' : '候选方案 · 尚未确认'),
+                        h('span', null, selected.status === 'confirmed' ? '资源占用与审计已写入；无需再次确认。' : '方案已写入 MongoDB，但尚未占用资源；确认后才生效。'),
+                      ),
+                    ),
+                    selected.status === 'needs_review'
+                      ? h(
+                          'label',
+                          { className: 'alims-review-ack' },
+                          h('input', {
+                            type: 'checkbox',
+                            checked: reviewAck,
+                            onChange: (event) => setReviewAck(event.target.checked),
+                          }),
+                          h(
+                            'span',
+                            null,
+                            h('b', null, '需先完成方法 / 资质审核：'),
+                            '我已人工审核该非标准方法的资源与能力项，允许确认这条方案。确认时会把审核人、时间与结论写进审计（原型不绕过审核）。',
+                          ),
+                        )
+                      : null,
+                    h(
+                      'div',
+                      { className: 'alims-decision-actions' },
+                      selected.status === 'confirmed'
+                        ? null
+                        : h(
+                            'button',
+                            {
+                              className: 'alims-btn alims-btn-primary',
+                              disabled: busy || (selected.status === 'needs_review' && !reviewAck),
+                              onClick: () => onConfirm(selected.id, { reviewAck }),
+                            },
+                            h(Icon, { name: 'check', size: 12 }),
+                            selected.status === 'needs_review' ? (reviewAck ? '确认此方案（已审核）' : '确认此方案') : '确认此方案',
+                          ),
+                      h('span', { className: 'alims-inline-note' }, '确认前会重新校验设备状态、人员容量与冲突；原型不写生产系统。'),
+                    ),
                   ),
                   h(
                     'div',
@@ -4354,12 +5296,6 @@
                         h('span', { className: 'alims-score-value' }, `${item.value}/${item.max}`),
                       ),
                     ),
-                  ),
-                  h(
-                    'div',
-                    { className: 'alims-plan-actions' },
-                    h('button', { className: 'alims-btn alims-btn-primary', disabled: busy || selected.status === 'confirmed' || selected.status === 'needs_review', onClick: () => onConfirm(selected.id) }, h(Icon, { name: selected.status === 'confirmed' ? 'check' : 'play', size: 12 }), selected.status === 'confirmed' ? '已模拟确认' : '确认并提交（模拟）'),
-                    h('span', { className: 'alims-inline-note' }, '确认前会重新校验设备状态、人员容量与冲突；原型不写生产系统。'),
                   ),
                   h(ActionBanner, { feedback: actionFeedback, onAudit, onDismiss: onDismissFeedback }),
                 ),
@@ -4424,7 +5360,7 @@
           [initialChangeId],
         );
         const [type, setType] = useState('sample_delay');
-        const [taskId, setTaskId] = useState('TASK-2005');
+        const [taskId, setTaskId] = useState('');
         const [value, setValue] = useState('2026-10-31');
         const [delayDays, setDelayDays] = useState(2);
         const [reason, setReason] = useState('样品批次延期');
@@ -4457,7 +5393,7 @@
           setBusy(true);
           setError(null);
           try {
-            const payload = { type, taskId, reason, actor: 'workspace' };
+            const payload = { type, taskId: taskId || taskList[0]?.id, reason, actor: 'workspace' };
             if (type === 'priority') payload.value = value;
             else if (type === 'due_date') payload.value = value;
             else if (value) payload.value = value;
@@ -4513,7 +5449,7 @@
               h('span', { className: 'alims-field-label' }, '任务'),
               h(
                 'select',
-                { className: 'alims-select', value: taskId, onChange: (event) => { setTaskId(event.target.value); setResult(null); } },
+                { className: 'alims-select', value: taskId || taskList[0]?.id || '', onChange: (event) => { setTaskId(event.target.value); setResult(null); } },
                 taskList.map((task) => h('option', { key: task.id, value: task.id }, `${task.id} · ${task.name}`)),
               ),
             ),
@@ -4877,7 +5813,7 @@
           };
         }, [explainId, refreshKey]);
         if (state.loading && !state.data) return h('div', { className: 'alims-page' }, h(Loading, null));
-        if (state.error) return h('div', { className: 'alims-page' }, h(ErrorBox, { message: state.error, onRetry: state.reload }));
+        if (state.error) return h('div', { className: 'alims-page' }, h(ErrorBox, { message: pageError(state.error), onRetry: state.reload }));
         const data = state.data;
         if (!data) return null;
         return h(
@@ -5011,7 +5947,7 @@
         const [type, setType] = useState('HPLC');
         const [count, setCount] = useState(1);
         if (state.loading && !state.data) return h('div', { className: 'alims-page' }, h(Loading, null));
-        if (state.error) return h('div', { className: 'alims-page' }, h(ErrorBox, { message: state.error, onRetry: state.reload }));
+        if (state.error) return h('div', { className: 'alims-page' }, h(ErrorBox, { message: pageError(state.error), onRetry: state.reload }));
         const data = state.data;
         if (!data) return null;
         const maxBucket = Math.max(1, ...(data.dueBuckets || []).map((bucket) => bucket.count));
@@ -5153,7 +6089,7 @@
       function AuditPage() {
         const state = useApi('/api/lims/audit');
         if (state.loading && !state.data) return h('div', { className: 'alims-page' }, h(Loading, null));
-        if (state.error) return h('div', { className: 'alims-page' }, h(ErrorBox, { message: state.error, onRetry: state.reload }));
+        if (state.error) return h('div', { className: 'alims-page' }, h(ErrorBox, { message: pageError(state.error), onRetry: state.reload }));
         const events = state.data?.events || [];
         return h(
           'div',
@@ -5510,10 +6446,13 @@
         );
 
         const confirmPlan = useCallback(
-          async (planId) => {
+          async (planId, options = {}) => {
             setBusy(true);
             try {
-              const data = await api('/api/lims/confirm', { method: 'POST', body: { planId } });
+              const data = await api('/api/lims/confirm', {
+                method: 'POST',
+                body: { planId, reviewAck: options.reviewAck === true, reviewNote: options.reviewNote ?? '' },
+              });
               setPlans((previous) => previous.map((plan) => (plan.id === planId ? { ...plan, status: 'confirmed', statusLabel: '已模拟确认' } : plan)));
               setActionFeedback({
                 ok: true,
@@ -5534,8 +6473,10 @@
               setActionFeedback({
                 ok: false,
                 at: new Date().toISOString(),
-                title: '确认被拒绝',
-                detail: `${error.message}${error.data?.conflicts ? `：${error.data.conflicts.join('；')}` : ''}`,
+                title: error.data?.requiresReviewAck ? '需要先完成审核' : '确认被拒绝',
+                detail: error.data?.requiresReviewAck
+                  ? '这条方案是「需审核」状态：请先在确认区勾选「已完成方法 / 资质审核」，或说明审核已完成，再确认一次。'
+                  : `${error.message}${error.data?.conflicts ? `：${error.data.conflicts.join('；')}` : ''}`,
               });
               showToast('确认被拒绝', 'error', error.message + (error.data?.conflicts ? `\n${error.data.conflicts.join('\n')}` : ''));
             } finally {
@@ -5599,7 +6540,24 @@
             : null,
           h(
             LimsContext.Provider,
-            { value: { inputActions, showToast, pinned, togglePin, removePin, sendToChat, setPage, quote, contextLines } },
+            {
+              value: {
+                inputActions,
+                showToast,
+                pinned,
+                togglePin,
+                removePin,
+                sendToChat,
+                setPage,
+                quote,
+                contextLines,
+                workspace,
+                reloadAll: () => {
+                  loadOverview();
+                  setScheduleRefresh((value) => value + 1);
+                },
+              },
+            },
             h(
               'div',
               { className: 'alims-body' },
@@ -5623,6 +6581,12 @@
             page === 'orders'
               ? h(OrdersPage, {
                   initialOrderId: orderTarget?.orderId,
+                  onOpenTask: openTask,
+                  onGenerate: (id) => generatePlans(id, { page: 'schedule', actor: 'agent' }),
+                })
+              : null,
+            page === 'specs'
+              ? h(SpecsPage, {
                   onOpenTask: openTask,
                   onGenerate: (id) => generatePlans(id, { page: 'schedule', actor: 'agent' }),
                 })
@@ -5666,6 +6630,12 @@
                   busy,
                   toast,
                 })
+              : null,
+            page === 'week'
+              ? h(WeekPlanPage, { onOpenTask: openTask })
+              : null,
+            page === 'gantt'
+              ? h(GanttPage, { onOpenTask: openTask })
               : null,
             page === 'impact'
               ? h(ImpactPage, {

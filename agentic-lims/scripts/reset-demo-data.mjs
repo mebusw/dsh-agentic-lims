@@ -41,7 +41,9 @@ await db.collection('workspace').updateOne(
 );
 
 const counts = {
-  tasks: await db.collection('raw_tasks').countDocuments(),
+  specs: await db.collection('raw_specs').countDocuments(),
+  activities: await db.collection('raw_spec_activities').countDocuments(),
+  plansBatches: await db.collection('raw_plans').countDocuments(),
   plans: await db.collection('plans').countDocuments(),
   testPlans: await db.collection('test_plans').countDocuments(),
   downtime: await db.collection('downtime_events').countDocuments(),

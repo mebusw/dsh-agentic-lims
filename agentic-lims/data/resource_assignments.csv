@@ -1,19 +1,4 @@
-﻿assignment_id,task_id,resource_id,resource_role,assignment_status
-RAS-001,TASK-2001,P-004,Operator,Proposed
-RAS-002,TASK-2001,EQ-007,Primary equipment,Proposed
-RAS-003,TASK-2002,P-004,Operator,Proposed
-RAS-004,TASK-2002,EQ-007,Primary equipment,Proposed
-RAS-005,TASK-2003,P-002,Operator,Proposed
-RAS-006,TASK-2003,EQ-003,Primary equipment,Proposed
-RAS-007,TASK-2003,SP-001,Preparation space,Proposed
-RAS-008,TASK-2004,P-005,Operator,Proposed
-RAS-009,TASK-2004,EQ-006,Primary equipment,Proposed
-RAS-010,TASK-2005,P-003,Operator,Proposed
-RAS-011,TASK-2005,EQ-005,Primary equipment,Proposed
-RAS-012,TASK-2006,P-001,Operator,Proposed
-RAS-013,TASK-2006,EQ-001,Primary equipment,Proposed
-RAS-014,TASK-2007,P-002,Operator,Needs review
-RAS-015,TASK-2007,EQ-003,Primary equipment,Needs review
-RAS-016,TASK-2007,SP-001,Preparation space,Needs review
-RAS-017,TASK-2008,P-004,Operator,Proposed
-RAS-018,TASK-2008,EQ-007,Primary equipment,Proposed
+assignment_id,task_id,resource_id,resource_role,assignment_status
+AS-1001,SA26AA4781-01,EQPT25AA1104,Primary equipment,Active
+AS-1002,SA26AA4781-01,Meixia WANG,Tester,Active
+AS-1003,SA26AA4855-01,EQPT25AA1100,Primary equipment,Reserved

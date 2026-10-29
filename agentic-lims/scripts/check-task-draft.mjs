@@ -5,7 +5,7 @@ const client = await MongoClient.connect('mongodb://127.0.0.1:27018');
 const db = client.db('agentic_lims_test_draft');
 await db.dropDatabase();
 await seedDatabase(db, { force: true });
-const routes = buildRoutes({ db, config: { demoNow: '2026-10-27T08:00:00+08:00' } });
+const routes = buildRoutes({ db, config: { demoNow: '2026-10-30T08:00:00+08:00' } });
 const call = async (path, body) => {
   const [pathname, query = ''] = path.split('?');
   const route = routes.find((r) => r.path === pathname && r.methods.includes(body ? 'POST' : 'GET'));

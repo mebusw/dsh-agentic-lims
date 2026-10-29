@@ -61,17 +61,17 @@ export function parseCsv(text) {
 }
 
 const FILES = {
-  resources: 'resources.csv',
   persons: 'persons.csv',
+  competencies: 'competencies.csv',
   equipment: 'equipment_resources.csv',
-  templates: 'templates.csv',
-  requests: 'test_requests.csv',
-  tasks: 'test_tasks.csv',
+  standards: 'standards.csv',
+  specs: 'specs.csv',
+  specActivities: 'spec_activities.csv',
+  plans: 'plans.csv',
   activities: 'person_activities.csv',
   assignments: 'resource_assignments.csv',
   allocations: 'daily_schedule_allocations.csv',
   history: 'historical_schedules.csv',
-  candidates: 'candidate_schedules.csv',
   constraints: 'constraints.csv',
 };
 

@@ -1,7 +1,6 @@
-﻿person_id,person_name,employment_type,team,qualifications,daily_capacity_hours,workday_start,workday_end,status
-P-001,Tester 01 张伟,Permanent 正式,Analytical Chemistry 分析化学,HPLC Level 2; Balance Level 1,8,08:00,17:00,Active
-P-002,Tester 02 李娜,Permanent 正式,Analytical Chemistry 分析化学,HPLC Level 2; GC Level 2,8,08:00,17:00,Active
-P-003,Tester 03 王强,Temporary 临时,Analytical Chemistry 分析化学,GC Level 2; Sample Prep,7,08:00,16:00,Active
-P-004,Tester 04 赵敏,Permanent 正式,Materials Testing 材料测试,Universal Tester Level 2,8,08:00,17:00,Active
-P-005,Tester 05 陈晨,Permanent 正式,Stability Testing 稳定性测试,Climate Chamber Level 1,8,08:00,17:00,Active
-P-006,Tester 06 刘洋,Temporary 临时,General Lab Support 实验室支持,Sample Prep; Balance Level 1,6,09:00,16:00,Active
+person_id,person_name,employment_type,team,site,competency_ids,daily_capacity_hours,workday_start,workday_end,weekend_allowed,status
+P-101,Linghong Zhang,Permanent,TESTS,AMPLITUDE,COMP-ELEC-DIEL;COMP-ELEC-MECH;COMP-REPORT,8,08:00,17:00,0,Active
+P-102,Tingting Tang,Permanent,TESTS,AMPLITUDE,COMP-ENV-SALT;COMP-ENV-CLIM;COMP-MEAS-PERF,8,08:00,17:00,0,Active
+P-103,Meixia WANG,Permanent,TESTS,VOLTA,COMP-ELEC-DIEL;COMP-ENV-CLIM;COMP-REPORT,8,08:00,17:00,0,Active
+P-104,NEWUSER_02,Temporary,TESTS,AMPLITUDE,COMP-ENV-SALT;COMP-PREP,6,09:00,16:00,0,Active
+P-105,Xiaowei LU,Permanent,TESTS,AMPLITUDE,COMP-ELEC-LASER;COMP-MEAS-PERF,8,08:00,17:00,0,Active

@@ -1,0 +1,9 @@
+competency_id,external_id,competency_type,domain,sub_domain,sub_domain2,description
+COMP-ENV-SALT,ENV-SALT-MIST-L2,Test,Environmental Test,Salt mist,Corrosion,盐雾腐蚀试验与判定
+COMP-ENV-CLIM,ENV-CLIMATE-L2,Test,Environmental Test,Climate,Damp heat,湿热、温度循环与冷热态电气测量
+COMP-ELEC-DIEL,ELEC-DIELECTRIC-L2,Test,Electrical Test,Dielectric,Voltage withstand,工频耐压与绝缘距离
+COMP-ELEC-MECH,ELEC-MECHANICAL-L2,Test,Electrical Test,Mechanical endurance,Operation cycles,机械操作耐久与寿命计数
+COMP-ELEC-LASER,ELEC-LASERBAY-L1,Test,Electrical Test,Laserbay,Optical measurement,激光舱尺寸、位移与噪声数据采集
+COMP-MEAS-PERF,MEAS-PERFORMANCE-L2,Test,Performance measure,Data acquisition,Recording,性能测量与数据记录
+COMP-PREP,LAB-PREP-L1,Test,Lab Support,Sample preparation,Specimen,样品前处理、装夹与编号
+COMP-REPORT,REPORT-REVIEW-L2,Data Management,Report,Approval,Release,报告审核与放行

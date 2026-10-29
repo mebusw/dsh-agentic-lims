@@ -4,7 +4,9 @@
  */
 import { analyzeChange, analyzeDowntime, buildOverview, comparePlans, computeAnalytics, createEngineContext, equipmentBookings, explainResource, generatePlans, generateTestPlan, projectDetail, projectSummaries, resourcePage, resourceSchedule, taskDetail } from './engine.js';
 import { createTaskDrafts, prepareTaskDrafts } from './drafts.js';
-import { isReviewTask, taskSummary } from './model.js';
+import { isReviewTask, specLifecycle, specSummary, taskSummary } from './model.js';
+import { buildWeekPlan } from './weekplan.js';
+import { buildGantt } from './gantt.js';
 import { orderSummary, policyPayload, sampleLeadHours } from './upgrade.js';
 import {
   addAudit,
@@ -37,7 +39,7 @@ import { dateKey, diffHours, formatDate, parseInstant, priorityRank, round1, sum
 /** Bumped whenever the host route surface changes; the client checks this to
  * explain a stale `dsh web` process instead of showing a raw HTTP 404. */
 const BUILD = '2026.10.28.2';
-const FEATURES = ['orders', 'order-detail', 'change-impact', 'policies', 'sample-status'];
+const FEATURES = ['orders', 'order-detail', 'change-impact', 'policies', 'sample-status', 'specs', 'plan-batches', 'week-plan', 'gantt'];
 
 function json(data, status = 200) {
   return Response.json(data, { status, headers: { 'cache-control': 'no-store' } });
@@ -56,7 +58,7 @@ async function readBody(request) {
 }
 
 async function makeContext(db, domain, config) {
-  const now = parseInstant(config?.demoNow ?? '2026-10-27T08:00:00+08:00');
+  const now = parseInstant(config?.demoNow ?? '2026-10-30T08:00:00+08:00');
   const downtime = await readDowntime(db);
   return createEngineContext(domain, now, { downtime });
 }
@@ -201,12 +203,27 @@ async function handleConfirm(db, config, request) {
   if (plan.status === 'superseded') {
     return fail('该方案已被新版本替代，请在最新候选中确认', 409, { code: 'superseded', plan });
   }
+  // A non-standard method needs a human review, but a review must never be a
+  // dead end: every candidate would sit in `needs_review` and nothing could be
+  // confirmed. The reviewer acknowledges explicitly and we record who/when.
+  const reviewAck = body.reviewAck === true || body.review?.acknowledged === true;
+  const reviewNote = String(body.review?.note ?? body.reviewNote ?? '').trim();
+  let reviewRecord = null;
   if (isReviewTask(task) || plan.status === 'needs_review') {
-    return fail('该任务是非标准方法，必须先完成方法/资质人工审核（模拟环境不绕过审核）', 409, {
-      code: 'needs_review',
-      plan,
-      evaluations: plan.evaluations,
-    });
+    if (!reviewAck) {
+      return fail(
+        '该方案是非标准方法，需要先完成方法 / 资质人工审核。在右侧确认区勾选「已完成方法审核」后再确认，或在对话里明确说"审核已完成，确认方案 <ID>"。',
+        409,
+        { code: 'needs_review', requiresReviewAck: true, plan, evaluations: plan.evaluations },
+      );
+    }
+    reviewRecord = {
+      acknowledgedAt: new Date().toISOString(),
+      acknowledgedBy: body.actor ?? 'workspace',
+      note: reviewNote || 'TL 在原型中确认已完成方法 / 资质审核',
+      taskStatus: task.status,
+      evaluations: (plan.evaluations ?? []).filter((entry) => entry.result !== 'pass').map((entry) => entry.constraintId),
+    };
   }
   if (!plan.feasible) {
     return fail('该方案未通过硬约束校验，不能确认', 409, { code: 'infeasible', plan });
@@ -218,7 +235,7 @@ async function handleConfirm(db, config, request) {
   const currentReady = task.sample?.readyAt ?? null;
   if (plan.inputSnapshot && snapshotReady !== currentReady) {
     conflicts.push(
-      `样品到位时间在方案生成后已变化（${snapshotReady ?? '—'} → ${currentReady ?? '—'}），请重新生成候选方案（HC-007）`,
+      `样品到位时间在方案生成后已变化（${snapshotReady ?? '—'} → ${currentReady ?? '—'}），请重新生成候选方案（HC-108）`,
     );
   }
   if (task.sample?.readyAt) {
@@ -228,7 +245,7 @@ async function handleConfirm(db, config, request) {
     const readyMin = shifted.getUTCHours() * 60 + shifted.getUTCMinutes();
     for (const segment of plan.segments) {
       if (segment.day < readyDay || (segment.day === readyDay && segment.startMin < readyMin)) {
-        conflicts.push(`${segment.dateLabel} ${segment.start} 早于样品到位时间 ${task.sample.readyAt}（HC-007）`);
+        conflicts.push(`${segment.dateLabel} ${segment.start} 早于样品到位时间 ${task.sample.readyAt}（HC-108）`);
       }
     }
   }
@@ -244,9 +261,9 @@ async function handleConfirm(db, config, request) {
           .map((item) => item.taskId),
       );
       if (reservation.exclusive && others.size > 0) {
-        conflicts.push(`${segment.dateLabel} ${plan.resources.equipment.name} 已被 ${[...others].join('、')} 占用，Prebook 要求整日独占（HC-008）`);
+        conflicts.push(`${segment.dateLabel} ${plan.resources.equipment.name} 已被 ${[...others].join('、')} 占用，Exclusive 要求整日独占（HC-112）`);
       } else if (reservation.maxConcurrentTasks && others.size >= reservation.maxConcurrentTasks) {
-        conflicts.push(`${segment.dateLabel} ${plan.resources.equipment.name} 同日任务数已达上限 ${reservation.maxConcurrentTasks}（HC-008）`);
+        conflicts.push(`${segment.dateLabel} ${plan.resources.equipment.name} 同日任务数已达上限 ${reservation.maxConcurrentTasks}（HC-112）`);
       }
     }
   }
@@ -254,25 +271,25 @@ async function handleConfirm(db, config, request) {
   const equipment = domain.equipmentById.get(plan.resources.equipment.id);
   const person = domain.personById.get(plan.resources.person.id);
   if (!equipment || equipment.status !== 'Operational') {
-    conflicts.push(`${plan.resources.equipment.name} 当前状态为 ${equipment?.status ?? '不存在'}（HC-003）`);
+    conflicts.push(`${plan.resources.equipment.name} 当前状态为 ${equipment?.status ?? '不存在'}（HC-105）`);
   }
   if (!person || person.status !== 'Active') {
     conflicts.push(`${plan.resources.person.name} 当前不可用（HC-002）`);
   }
   if (equipment?.calibrationDue && plan.segments.some((segment) => segment.day > equipment.calibrationDue)) {
-    conflicts.push(`${equipment.name} 的校准/维护到期日 ${equipment.calibrationDue} 早于计划执行日（HC-003）`);
+    conflicts.push(`${equipment.name} 的校准/维护到期日 ${equipment.calibrationDue} 早于计划执行日（HC-105）`);
   }
   if (person && task.requirements.qualifications.length > 0) {
     const missing = task.requirements.qualifications.filter((qualification) => !person.qualifications.includes(qualification));
     if (missing.length > 0 && !isReviewTask(task)) {
-      conflicts.push(`${person.name} 缺少资质：${missing.join('、')}（HC-002）`);
+      conflicts.push(`${person.name} 缺少能力项：${missing.join('、')}（HC-104）`);
     }
   }
   const equipmentCapacity = equipment ? (equipment.availableTo - equipment.availableFrom) / 60 : 8;
   const space = plan.resources.space ? domain.spaceById.get(plan.resources.space.id) : null;
   for (const segment of plan.segments) {
     if (ctx.downtime?.has(`${equipment?.id}|${segment.day}`)) {
-      conflicts.push(`${segment.dateLabel} ${equipment?.name ?? '设备'} 处于计划停机窗口（HC-004 / HC-003）`);
+      conflicts.push(`${segment.dateLabel} ${equipment?.name ?? '设备'} 处于计划停机窗口（HC-106 / HC-105）`);
     }
     const otherPersonLoad = domain.allocations
       .filter((item) => item.personId === person?.id && item.date === segment.day && item.taskId !== task.id)
@@ -285,7 +302,7 @@ async function handleConfirm(db, config, request) {
           .filter((item) => item.resourceId === space.id && item.date === segment.day && item.taskId !== task.id)
           .reduce((total, item) => total + item.load, 0)
       : 0;
-    const blocked = domain.activities
+    const blocked = domain.personActivities
       .filter((item) => item.personId === person?.id && dateKey(item.start) <= segment.day && dateKey(item.end) >= segment.day)
       .reduce((total, item) => total + item.blockedHours, 0);
     if (otherPersonLoad + blocked + segment.hours > (person?.dailyCapacityHours ?? 8) + 0.01) {
@@ -363,15 +380,33 @@ async function handleConfirm(db, config, request) {
         statusLabel: '已模拟确认',
         confirmedAt: new Date().toISOString(),
         confirmedBy: body.actor ?? 'workspace',
+        ...(reviewRecord ? { reviewAck: reviewRecord } : {}),
       },
     },
   );
-  await db.collection('raw_tasks').updateOne({ task_id: task.id }, { $set: { status: 'Scheduled' } });
+  if (reviewRecord) {
+    await addAudit(db, {
+      type: 'review_ack',
+      actor: reviewRecord.acknowledgedBy,
+      summary: `已完成方法审核：${task.name}（${task.id}）`,
+      detail: `确认方案 ${planId} 前登记人工审核：${reviewRecord.note}；未通过的约束项 ${
+        reviewRecord.evaluations.length ? reviewRecord.evaluations.join('、') : '无（仅状态原因）'
+      }。原型不绕过审核，只记录审核结论。`,
+      taskId: task.id,
+      planId,
+    });
+  }
+  await db.collection('raw_spec_activities').updateOne(
+    { activity_id: task.id },
+    { $set: { status: 'Scheduled' } },
+  ).catch(() => null);
   const audit = await addAudit(db, {
     type: 'plan_confirmed',
     actor: body.actor ?? 'workspace',
     summary: `模拟确认 ${planId}（${task.name}）`,
-    detail: `${plan.resources.equipment.name} + ${plan.resources.person.name}；${plan.segments.length} 个工作日；未写入生产系统，已更新原型资源占用与审计。`,
+    detail: `${plan.resources.equipment.name} + ${plan.resources.person.name}；${plan.segments.length} 个工作日；未写入生产系统，已更新原型资源占用与审计。${
+      reviewRecord ? '含人工审核确认（reviewAck）。' : ''
+    }`,
     taskId: task.id,
     planId,
   });
@@ -385,6 +420,122 @@ async function handleConfirm(db, config, request) {
   });
   const updated = await readPlan(db, planId);
   return json({ ok: true, simulated: true, plan: updated, allocations: allocations.length, audit, workspace });
+}
+
+
+/**
+ * Demo data reset. The workshop needs a one-click "put the data back" button,
+ * and during the demo we sometimes only need to undo one slice (plans, one
+ * activity, a downtime registration) without touching the rest.
+ */
+async function handleReset(db, config, request) {
+  const body = await readBody(request);
+  const scope = String(body.scope ?? 'all');
+  const actor = body.actor ?? 'workspace';
+  const targetId = body.targetId ?? null;
+  const cleared = {};
+
+  if (scope === 'all') {
+    const result = await seedDatabase(db, { force: true });
+    const workspace = await writeWorkspace(db, {
+      page: 'dashboard',
+      taskId: null,
+      planIds: [],
+      selectedPlanId: null,
+      message: '测试数据已重置为初始 mock 数据。',
+      source: actor,
+    });
+    return json({
+      ok: true,
+      scope,
+      reseeded: true,
+      version: result.version,
+      workspace,
+      message: '全部测试数据已恢复为初始状态（SPEC / 活动 / PLAN / 方案 / 停机 / 变更 / 审计全部重置）。',
+    });
+  }
+
+  if (scope === 'plans') {
+    cleared.plans = (await db.collection('plans').deleteMany({})).deletedCount;
+    cleared.testPlans = (await db.collection('test_plans').deleteMany({})).deletedCount;
+    cleared.confirmedAllocations = (await db.collection('raw_allocations').deleteMany({ source: 'confirmed_plan' })).deletedCount;
+  } else if (scope === 'downtime') {
+    cleared.downtime = (await db.collection('downtime_events').deleteMany({})).deletedCount;
+  } else if (scope === 'changes') {
+    cleared.changeEvents = (await db.collection('change_events').deleteMany({})).deletedCount;
+    cleared.changeImpacts = (await db.collection('change_impacts').deleteMany({})).deletedCount;
+    cleared.sampleOverrides = (await db.collection('sample_status').deleteMany({})).deletedCount;
+    cleared.taskOverrides = (await db.collection('task_overrides').deleteMany({})).deletedCount;
+  } else if (scope === 'workspace') {
+    const workspace = await writeWorkspace(db, {
+      page: 'dashboard',
+      taskId: null,
+      planIds: [],
+      selectedPlanId: null,
+      comparison: null,
+      message: '工作区已复位。',
+      source: actor,
+    });
+    return json({ ok: true, scope, workspace, cleared, message: '工作区已复位到概览页。' });
+  } else if (scope === 'task' || scope === 'spec') {
+    const domain = await loadDomain(db);
+    let activityIds = [];
+    if (scope === 'task') {
+      if (!targetId) return fail('缺少 targetId（活动 ID）', 400);
+      if (!domain.taskById.has(targetId) && !domain.specActivities.some((activity) => activity.id === targetId)) {
+        return fail(`找不到活动 ${targetId}`, 404);
+      }
+      activityIds = [targetId];
+    } else {
+      if (!targetId) return fail('缺少 targetId（SPEC ID）', 400);
+      const spec = domain.specById.get(targetId);
+      if (!spec) return fail(`找不到 SPEC ${targetId}`, 404);
+      activityIds = spec.activityIds;
+    }
+    cleared.plans = (await db.collection('plans').deleteMany({ taskId: { $in: activityIds } })).deletedCount;
+    cleared.confirmedAllocations = (
+      await db.collection('raw_allocations').deleteMany({ task_id: { $in: activityIds }, $or: [{ source: 'confirmed_plan' }, { plan_id: { $exists: true } }] })
+    ).deletedCount;
+    cleared.sampleOverrides = (await db.collection('sample_status').deleteMany({ taskId: { $in: activityIds } })).deletedCount;
+    cleared.taskOverrides = (await db.collection('task_overrides').deleteMany({ taskId: { $in: activityIds } })).deletedCount;
+    const workspace = await writeWorkspace(db, {
+      page: 'schedule',
+      taskId: activityIds[0] ?? null,
+      planIds: [],
+      selectedPlanId: null,
+      message: `已重置 ${targetId} 的方案与变更记录。`,
+      source: actor,
+    });
+    await addAudit(db, {
+      type: 'data_reset',
+      actor,
+      summary: `重置 ${scope === 'spec' ? 'SPEC' : '活动'} ${targetId}`,
+      detail: `清空方案 ${cleared.plans ?? 0} 条、确认占用 ${cleared.confirmedAllocations ?? 0} 条、变更覆盖 ${(cleared.sampleOverrides ?? 0) + (cleared.taskOverrides ?? 0)} 条。`,
+      taskId: activityIds[0] ?? null,
+    });
+    return json({ ok: true, scope, cleared, workspace, message: `${targetId} 已重置为「未排程、无变更」状态。` });
+  } else {
+    return fail(`未知的重置范围：${scope}`, 400);
+  }
+
+  await addAudit(db, {
+    type: 'data_reset',
+    actor,
+    summary: `重置测试数据：${scope}`,
+    detail: Object.entries(cleared).map(([key, value]) => `${key} ${value}`).join('、'),
+  });
+  const workspace = await writeWorkspace(db, {
+    page: scope === 'workspace' ? 'dashboard' : 'schedule',
+    message: `已重置：${scope}`,
+    source: actor,
+  });
+  return json({
+    ok: true,
+    scope,
+    cleared,
+    workspace,
+    message: `已清空 ${scope}（${Object.values(cleared).reduce((total, value) => total + value, 0)} 条记录）。`,
+  });
 }
 
 async function handleExplain(db, config, request) {
@@ -533,7 +684,7 @@ async function handleChange(db, config, request) {
       else nextInstant = parseInstant(raw);
     }
     if (!nextInstant && body.delayDays !== undefined) {
-      const base = currentReady ? parseInstant(currentReady) : parseInstant(config.demoNow ?? '2026-10-27T08:00:00+08:00');
+      const base = currentReady ? parseInstant(currentReady) : parseInstant(config.demoNow ?? '2026-10-30T08:00:00+08:00');
       nextInstant = new Date(base.getTime() + (Number(body.delayDays) || 0) * 86400000);
     }
     if (!nextInstant) return fail('sample_delay 需要 value（日期/时间）或 delayDays', 400);
@@ -663,7 +814,7 @@ export function buildRoutes(store) {
           mongo: 'connected',
           seed: meta?.version ?? null,
           seededAt: meta?.seededAt ?? null,
-          demoNow: config?.demoNow ?? '2026-10-27T08:00:00+08:00',
+          demoNow: config?.demoNow ?? '2026-10-30T08:00:00+08:00',
           workspaceRevision: workspace.revision,
         });
       }),
@@ -748,6 +899,126 @@ export function buildRoutes(store) {
           ruleStatus: request.ruleStatus,
         }));
         return json({ ok: true, requests });
+      }),
+    },
+    {
+      path: '/api/lims/specs',
+      methods: ['GET'],
+      requestBody: 'buffered',
+      fetch: wrap(async (request) => {
+        const url = new URL(request.url);
+        const status = url.searchParams.get('status');
+        const projectId = url.searchParams.get('projectId');
+        const domain = await loadDomain(db);
+        const ctx = await makeContext(db, domain, config);
+        let specs = domain.specs;
+        if (status) specs = specs.filter((spec) => spec.status === status || spec.phase === status);
+        if (projectId) specs = specs.filter((spec) => spec.projectId === projectId);
+        const rows = specs.map((spec) => specSummary(domain, spec, ctx.now));
+        const byStatus = {};
+        for (const spec of domain.specs) byStatus[spec.status] = (byStatus[spec.status] ?? 0) + 1;
+        return json({
+          ok: true,
+          specs: rows,
+          summary: {
+            total: domain.specs.length,
+            schedulable: domain.specs.filter((spec) => specLifecycle(domain, spec).schedulable).length,
+            notSchedulable: domain.specs.filter((spec) => !specLifecycle(domain, spec).schedulable).length,
+            byStatus,
+            tasks: domain.tasks.length,
+          },
+          statusMachine: domain.config.statusMachine,
+          ruleVersion: domain.config.ruleVersion,
+          confirmed: domain.config.confirmed,
+        });
+      }),
+    },
+    {
+      path: '/api/lims/spec',
+      methods: ['GET'],
+      requestBody: 'buffered',
+      fetch: wrap(async (request) => {
+        const url = new URL(request.url);
+        const specId = url.searchParams.get('specId');
+        if (!specId) return fail('缺少 specId', 400);
+        const domain = await loadDomain(db);
+        const spec = domain.specById.get(specId);
+        if (!spec) return fail(`找不到 SPEC ${specId}`, 404);
+        const ctx = await makeContext(db, domain, config);
+        const summary = specSummary(domain, spec, ctx.now);
+        const tasks = summary.taskIds.map((id) => domain.taskById.get(id)).filter(Boolean);
+        return json({
+          ok: true,
+          spec: summary,
+          tasks: tasks.map((task) => taskSummary(domain, task, ctx.now)),
+          plan: spec.planNo ? domain.planByNo.get(spec.planNo) ?? null : null,
+          policy: policyPayload(domain.config),
+        });
+      }),
+    },
+    {
+      path: '/api/lims/plan-batches',
+      methods: ['GET'],
+      requestBody: 'buffered',
+      fetch: wrap(async () => {
+        const domain = await loadDomain(db);
+        const ctx = await makeContext(db, domain, config);
+        const plans = domain.plans.map((plan) => {
+          const specs = plan.specIds.map((id) => domain.specById.get(id)).filter(Boolean).map((spec) => specSummary(domain, spec, ctx.now));
+          return {
+            planNo: plan.planNo,
+            project: plan.project,
+            site: plan.site,
+            status: plan.status,
+            createdBy: plan.createdBy,
+            windowStart: plan.windowStart?.toISOString() ?? null,
+            windowEnd: plan.windowEnd?.toISOString() ?? null,
+            windowLabel:
+              plan.windowStart && plan.windowEnd
+                ? `${formatDate(plan.windowStart)}–${formatDate(plan.windowEnd)}`
+                : null,
+            specs,
+            taskIds: specs.flatMap((spec) => spec.taskIds),
+            note: plan.note,
+          };
+        });
+        return json({ ok: true, plans, ruleVersion: domain.config.ruleVersion });
+      }),
+    },
+    {
+      path: '/api/lims/week-plan',
+      methods: ['GET'],
+      requestBody: 'buffered',
+      fetch: wrap(async (request) => {
+        const url = new URL(request.url);
+        const domain = await loadDomain(db);
+        const ctx = await makeContext(db, domain, config);
+        const plans = await readActivePlans(db);
+        const plan = buildWeekPlan(domain, ctx, {
+          weekStart: url.searchParams.get('weekStart') ?? undefined,
+          weeks: Number(url.searchParams.get('weeks')) || 6,
+          site: url.searchParams.get('site') ?? undefined,
+          plans,
+        });
+        return json({ ok: true, ...plan });
+      }),
+    },
+    {
+      path: '/api/lims/gantt',
+      methods: ['GET'],
+      requestBody: 'buffered',
+      fetch: wrap(async (request) => {
+        const url = new URL(request.url);
+        const domain = await loadDomain(db);
+        const ctx = await makeContext(db, domain, config);
+        const plans = await readActivePlans(db);
+        const gantt = buildGantt(domain, ctx, {
+          plans,
+          site: url.searchParams.get('site') ?? undefined,
+          projectId: url.searchParams.get('projectId') ?? undefined,
+          horizonDays: Number(url.searchParams.get('horizonDays')) || 45,
+        });
+        return json(gantt);
       }),
     },
     {
@@ -1184,7 +1455,7 @@ export function buildRoutes(store) {
       requestBody: 'buffered',
       fetch: wrap(async (request) => {
         const body = await readBody(request);
-        const allowed = new Set(['dashboard', 'orders', 'projects', 'tasks', 'task', 'schedule', 'impact', 'resources', 'analytics', 'custom', 'audit']);
+        const allowed = new Set(['dashboard', 'orders', 'specs', 'projects', 'tasks', 'task', 'schedule', 'week', 'gantt', 'impact', 'resources', 'analytics', 'custom', 'audit']);
         if (!allowed.has(body.page)) return fail('无效页面', 400);
         const workspace = await writeWorkspace(db, {
           page: body.page,
@@ -1203,6 +1474,12 @@ export function buildRoutes(store) {
       methods: ['POST'],
       requestBody: 'buffered',
       fetch: wrap((request) => handleSimulate(db, config, request)),
+    },
+    {
+      path: '/api/lims/reset',
+      methods: ['POST'],
+      requestBody: 'buffered',
+      fetch: wrap((request) => handleReset(db, config, request)),
     },
     {
       path: '/api/lims/seed',
