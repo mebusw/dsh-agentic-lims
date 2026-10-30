@@ -212,7 +212,11 @@ function scheduleCombination(ctx, task, equipment, person, space, options = {}) 
   const earliest = sampleReadyAt && sampleReadyAt > requestedEarliest ? sampleReadyAt : requestedEarliest;
   const firstDay = dateKey(earliest);
   const dueKey = dateKey(task.dueDate);
-  const limitDay = dateKey(addDays(Math.max(startOfDay(task.dueDate), startOfDay(ctx.now)), 10));
+  // Math.max over two Date objects returns a number, which parseInstant() cannot
+  // read and silently falls back to DEMO_NOW. That capped the horizon at now+10
+  // days, so anything further out was reported as "no capacity". Compare epoch ms.
+  const horizonBase = new Date(Math.max(startOfDay(task.dueDate).getTime(), startOfDay(ctx.now).getTime()));
+  const limitDay = dateKey(addDays(horizonBase, 10));
   const days = ctx.days.filter((day) => day >= firstDay && day <= limitDay);
   let lastDay = null;
   let sampleBlockedDays = 0;
